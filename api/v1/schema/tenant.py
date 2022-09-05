@@ -26,6 +26,14 @@ class TenantItemOut(ModelSchema):
         model = Tenant
         model_fields = ["id","name","slug","icon"]
         
+    is_platform_tenant:bool = Field(
+        title=_("是否是平台租户")
+    )
+    
+    @staticmethod
+    def resolve_is_platform_tenant(obj):
+        return obj.is_platform_tenant
+        
 class TenantOut(ResponseSchema):
     
     data: TenantItemOut
@@ -98,6 +106,10 @@ class DefaultTenantItemOut(ModelSchema):
     class Config:
         model = Tenant
         model_fields = ["id", "name"]
+        
+    is_platform_tenant:bool = Field(
+        title=_("是否是平台租户")
+    )
 
 class DefaultTenantOut(ResponseSchema):
     data: DefaultTenantItemOut

@@ -107,9 +107,22 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
         authcode_key = data.get('authcode_key')
         
         if not self.check_authcode(authcode,authcode_key):
-            return False,self.error(
-                ErrorCode.AUTHCODE_NOT_MATCH
+            
+            settings = self.get_settings(tenant)
+            key, code, image = self.get_authcode_picture(
+                settings.settings.get("auth_code_length",4),
+                settings.settings.get("width",180),
+                settings.settings.get("height",60)
             )
+            
+            cache.set(key,code)
+            rs = self.error(ErrorCode.AUTHCODE_NOT_MATCH)
+            rs["data"] = {
+                "image": str(image, 'utf8'),
+                "authcode_key": key
+            }
+            
+            return False,rs
         return True,None
             
     def create_register_page(self, event, config, config_data):
@@ -270,14 +283,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
 
     @operation(GenrateAuthCodeOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def get_authcode(self, request, tenant_id: str):
-        """视图：获取图形验证码
-
-        Args:
-            request (HttpRequest): 请求
-            tenant_id (str): 租户ID
-
-        Returns:
-            HttpResponse: 图片与key
+        """ 获取图形验证码
         """
         tenant = Tenant.active_objects.get(id=tenant_id)
         settings = self.get_settings(tenant)
@@ -297,15 +303,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
     
     @operation(CheckAuthCodeOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
     def check_auth_code(self,request,tenant_id:str,data:CheckAuthCodeIn):
-        """视图：校验图形验证码
-
-        Args:
-            request (HttpRequest): 请求
-            tenant_id (str): 租户ID
-            data (CheckAuthCodeIn): 待校验数据
-
-        Returns:
-            HttpResponse: 校验结果
+        """ 校验图形验证码
         """
         if self.check_authcode(data.authcode, data.authcode_key):
             return self.success()
@@ -316,13 +314,6 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
             
     def check_authcode(self,authcode,authcode_key):
         """校验图形验证码
-
-        Args:
-            authcode (str): 图形验证码
-            authcode_key (str): 图形验证码缓存KEY
-
-        Returns:
-            bool: 验证结果
         """
         return cache.get(authcode_key).lower() == authcode.lower()
     

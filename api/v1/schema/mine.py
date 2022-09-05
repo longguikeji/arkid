@@ -42,6 +42,9 @@ class ProfileSchemaIn(ModelSchema):
 
 
 class MineTenantListItemOut(ModelSchema):
+    
+    role:str = Field(title='角色')
+    
     class Config:
         model = Tenant
         model_fields = ["id", "name", "slug", "icon"]
@@ -49,6 +52,7 @@ class MineTenantListItemOut(ModelSchema):
 class MinePermissionListSchemaOut(Schema):
 
     id: UUID = Field(hidden=True)
+    operation_id: str = Field(default='', title=_("操作ID"))
     name: str
     # app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
     category: str

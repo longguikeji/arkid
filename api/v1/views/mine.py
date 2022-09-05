@@ -8,7 +8,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from arkid.core.event import ACCOUNT_UNBIND, dispatch_event, Event
 from arkid.core.models import App, AppGroup, Message, Tenant, ApproveRequest, User
-from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
+from arkid.core.constants import *
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from ninja.pagination import paginate
@@ -70,6 +70,7 @@ def get_mine_permissions(
     app_id: str = None,
     app_name: str = None,
     category: str = None,
+    operation_id: str = None,
 ):
     """我的权限列表"""
     login_user = request.user
@@ -77,7 +78,7 @@ def get_mine_permissions(
 
     permissiondata = PermissionData()
     items = permissiondata.get_permissions_by_mine_search(
-        tenant_id, app_id, None, None, login_user, app_name=app_name, category=category
+        tenant_id, app_id, None, None, login_user, app_name=app_name, category=category, operation_id=operation_id,
     )
     return items
 
@@ -180,12 +181,17 @@ def get_mine_logout(request, tenant_id: str):
 
 
 @api.get("/mine/tenants/", response=List[MineTenantListItemOut], tags=["我的"])
-@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_USER, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_mine_tenants(request):
     """获取我的租户"""
-    tenants = Tenant.active_objects.filter(users=request.user).all()
-    return list(tenants)
+    tenants = list(Tenant.active_objects.filter(users=request.user).all())
+    for tenant in tenants:
+        if tenant.has_admin_perm(request.user):
+            tenant.role = '管理员'
+        else:
+            tenant.role = '普通用户'
+    return tenants
 
 
 @api.get("/mine/tenant/{tenant_id}/accounts/", tags=["我的"], response=List[MineBindAccountItem])
@@ -371,7 +377,7 @@ def get_mine_app_groups(request, tenant_id: str, parent_id=None):
 @api.get("/mine/tenant/{tenant_id}/mine_group_apps/", response=List[MineAppListItemOut], tags=["我的"])
 @operation(MineAppListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_mine_apps_with_group(request, tenant_id: str, app_group_id=None):
+def get_mine_apps_with_group(request, tenant_id: str, app_group_id:str=None,order:str=None):
     """获取我的分组应用
     """
     apps = []
@@ -385,7 +391,12 @@ def get_mine_apps_with_group(request, tenant_id: str, app_group_id=None):
             id=app_group_id
         )
         
-        apps = app_group.apps.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True)).all()
+        apps = app_group.apps.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True))
+    
+    if order:
+        apps = apps.order_by(order)
+    
+    apps = apps.all()
         
     return list(apps) if apps else []
 

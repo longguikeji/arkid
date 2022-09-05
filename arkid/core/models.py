@@ -2,7 +2,6 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from arkid.common.model import BaseModel
-from arkid.common.utils import generate_secret
 from arkid.core.translation import gettext_default as _
 from arkid.core.expand import ExpandManager, ExpandModel
 from arkid.extension.models import TenantExtensionConfig, Extension
@@ -74,11 +73,15 @@ class Tenant(BaseModel, ExpandModel):
         '''
         是否是平台租户
         '''
-        tenant = Tenant.valid_objects.filter(slug='').first()
-        if tenant.id == self.id:
+        if self.slug == '':
             return True
         else:
             return False
+        # tenant = Tenant.valid_objects.filter(slug='').first()
+        # if tenant.id == self.id:
+        #     return True
+        # else:
+        #     return False
 
     @staticmethod
     def platform_tenant():
@@ -102,6 +105,11 @@ class User(BaseModel, ExpandModel):
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
     scim_external_id = models.CharField(max_length=128, blank=True, null=True)
 
+    def save(self, *args, **kwargs):
+        if self.tenant.slug == '':
+            self.is_platform_user = True
+        super().save(*args, **kwargs)
+
     # tenants = models.ManyToManyField(
     #     'Tenant',
     #     blank=False,
@@ -120,6 +128,14 @@ class User(BaseModel, ExpandModel):
             if self.id == User.valid_objects.order_by('created').first().id
             else False
         )
+    
+    @property
+    def user_of_platform(self):
+        if self.tenant.slug == '':
+            return True
+        else:
+            return False
+
 
 
 class UserGroup(BaseModel, ExpandModel):
@@ -210,11 +226,6 @@ class App(BaseModel, ExpandModel):
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'
-
-    def save(self, *args, **kwargs):
-        if self.secret == '':
-            self.secret = generate_secret()
-        super().save(*args, **kwargs)
 
 
 class AppGroup(BaseModel, ExpandModel):
@@ -434,6 +445,38 @@ class GroupPermissionResult(BaseModel, ExpandModel):
 
     def __str__(self) -> str:
         return f'User: {self.user_group.name}'
+
+
+class AppPermissionResult(BaseModel, ExpandModel):
+    class Meta(object):
+        verbose_name = _("AppPermissionResult", "应用权限结果")
+        verbose_name_plural = _("AppPermissionResult", "应用权限结果")
+
+    self_app = models.ForeignKey(
+        App,
+        default=None,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        verbose_name='自身应用',
+        related_name='self_app'
+    )
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    app = models.ForeignKey(
+        App,
+        default=None,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        verbose_name='App',
+        related_name='select_app'
+    )
+    result = models.CharField(
+        max_length=1024, blank=True, null=True, verbose_name='权限结果'
+    )
+
+    def __str__(self) -> str:
+        return f'User: {self.user.username}'
 
 
 # class Approve(BaseModel, ExpandModel):

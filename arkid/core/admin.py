@@ -3,7 +3,8 @@ from .models import(
     User, UserGroup, Tenant,
     App, AppGroup, Permission,
     ExpiringToken, GroupPermissionResult,
-    UserPermissionResult, SystemPermission, ApproveAction, ApproveRequest
+    UserPermissionResult, SystemPermission, ApproveAction,
+    ApproveRequest, AppPermissionResult,
 )
 
 admin.site.register(Tenant)
@@ -18,3 +19,4 @@ admin.site.register(ExpiringToken)
 admin.site.register(SystemPermission)
 admin.site.register(UserPermissionResult)
 admin.site.register(GroupPermissionResult)
+admin.site.register(AppPermissionResult)

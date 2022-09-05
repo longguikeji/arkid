@@ -33,6 +33,6 @@ def create_message(request, tenant_id: str, data: MessageCreateIn):
 def delete_message(request, tenant_id: str, id: str):
     """ 删除消息
     """
-    item = get_object_or_404(Message.active_objects,id=id)
+    item = get_object_or_404(Message.valid_objects,id=id)
     item.delete()
     return ErrorDict(ErrorCode.OK)

@@ -34,6 +34,12 @@ class AppListsOut(ResponseSchema):
 class AppItemOut(ModelSchema):
 
     id: UUID = Field(readonly=True)
+    read_secret: str = Field(readonly=True, title=_('secret', '接口访问密钥'), default='', append={
+        "http": {
+            "url": '/api/v1/tenant/{tenant_id}/apps/{id}/read_secret/',
+            "method": "get",
+        },
+    })
     
     class Config:
         model = App
@@ -42,6 +48,15 @@ class AppItemOut(ModelSchema):
 
 class AppOut(ResponseSchema):
     data: AppItemOut
+
+
+class AppReadSecretItemOut(Schema):
+
+    read_secret: str = Field(readonly=True, title=_('secret', '接口访问密钥'))
+
+
+class AppReadSecretOut(ResponseSchema):
+    data: AppReadSecretItemOut
 
 
 class AppUpdateIn(ModelSchema):

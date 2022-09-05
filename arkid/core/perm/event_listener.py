@@ -21,6 +21,8 @@ from arkid.core.event import (
 )
 import uuid
 
+from arkid.extension.models import Extension, TenantExtension
+
 def user_saved(sender, instance: User, created: bool, **kwargs):
     if created:
         # print('检测到用户创建')
@@ -42,7 +44,17 @@ def tenant_saved(sender, instance: Tenant, created: bool, **kwargs):
 
         pd = PermissionData()
         pd.create_tenant_admin_permission(instance)
-
+        
+        extension = Extension.active_objects.filter(
+            package="com.longgui.auth.factor.password"
+        ).first()
+        
+        if extension:
+            tenant_extension, created = TenantExtension.objects.update_or_create(
+                tenant=instance,
+                extension=extension,
+                defaults={"is_rented": True,"is_active":True}
+            )
 
 def usergroup_saved(sender, instance: UserGroup, created: bool, **kwargs):
     if created:

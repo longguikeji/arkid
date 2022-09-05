@@ -54,7 +54,7 @@ def delete_language(request, tenant_id: str,id:str):
     """ 创建自定义语言包
     """
     language_data = get_object_or_404(
-        LanguageData.active_objects,
+        LanguageData.valid_objects,
         id=id
     )
     if language_data.extension:

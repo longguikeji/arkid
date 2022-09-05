@@ -24,16 +24,32 @@ class PermissionsListSchemaOut(ModelSchema):
 
     app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
     sort_id: int = Field(hidden=True)
-    is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value}, title=_("是否授权给其它租户"))
+    # is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value}, title=_("是否授权给其它租户"))
     category: str = Field(title=_("分类名称"))
+    operation_id: str = Field(default='', title=_("操作ID"))
 
     class Config:
         model = Permission
-        model_fields = ['id', 'name', 'is_system']
+        model_fields = ['id', 'operation_id', 'name', 'is_system']
+
+
+class AppPermissionsItemSchemaOut(Schema):
+
+    id: UUID = Field(hidden=True)
+    operation_id: str = Field(default='', title=_("操作ID"))
+    name: str = Field(title=_("名称"))
+    app_name: str = Field(default=None, alias='app.name', title=_("应用名称"))
+    sort_id: int = Field(hidden=True)
+    category: str = Field(title=_("分类名称"))
+
+
+class AppPermissionsListSchemaOut(ResponseSchema):
+    data: List[AppPermissionsItemSchemaOut]
 
 class UserAppLastPermissionsItemSchemaOut(Schema):
 
     id: UUID = Field(default=None)
+    operation_id: str = Field(default='', title=_("操作ID"))
     name: str = Field(title=_("名称"))
     is_system: bool = Field(title=_("是否是系统权限"))
     app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
