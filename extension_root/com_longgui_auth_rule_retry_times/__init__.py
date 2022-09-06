@@ -1,3 +1,4 @@
+from typing import Optional
 import uuid
 from api.v1.views.loginpage import login_page
 from arkid.core import actions, pages
@@ -13,7 +14,7 @@ from pydantic import Field
 from arkid.extension.models import TenantExtensionConfig,Extension
 from .error import ErrorCode
 from .schema import *
-from django.core.cache import cache
+from arkid.common import cache
 from arkid.core import event as core_event
 class AuthRuleRetryTimesExtension(AuthRuleExtension):
 
@@ -72,7 +73,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         for config in self.get_tenant_configs(event.tenant):
             if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"]:
                 host = event.request.META.get("REMOTE_ADDR")
-                if self.check_retry_times(host,config.id.hex,config.config.get("try_times",0)):
+                if self.check_retry_times(event.tenant,host,config.id.hex,config.config.get("try_times",0)):
                     # 判定需要验证
                     responses = dispatch_event(
                         Event(
@@ -105,18 +106,18 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
             if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"]:
                 host = event.request.META.get("REMOTE_ADDR")
                 key = self.gen_key(host,config.id.hex)
-                try_times  = cache.get(key,0)
-                cache.set(key,try_times+1)
-                if self.check_retry_times(host,config.id.hex,config.config.get("try_times",0)) and not self.check_refresh_status(host,config.id.hex):
+                try_times  = int(cache.get(event.tenant,key) or 0)
+                cache.set(event.tenant,key,try_times+1,expired=config.config.get("expired",30)*60)
+                if self.check_retry_times(event.tenant,host,config.id.hex,config.config.get("try_times",0)) and not self.check_refresh_status(event.tenant,host,config.id.hex):
                     data.update(self.error(ErrorCode.AUTH_FAIL_TIMES_OVER_LIMITED))
-                    self.set_refresh_status(host,config.id.hex)
+                    self.set_refresh_status(event.tenant,host,config.id.hex)
                     data["refresh"] = True
                     
 
     def check_rule(self, event, config):
         login_pages = event.data
         
-        if self.check_retry_times(event.request.META.get("REMOTE_ADDR"),config.id.hex,config.config.get("try_times",0)): 
+        if self.check_retry_times(event.tenant,event.request.META.get("REMOTE_ADDR"),config.id.hex,config.config.get("try_times",0)): 
             dispatch_event(
                 Event(
                     core_event.AUTHRULE_FIX_LOGIN_PAGE,
@@ -133,7 +134,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
                 )
             )
             
-    def check_retry_times(self,host,config_id,limited=3):
+    def check_retry_times(self,tenant,host,config_id,limited=3):
         """校验认证失败次数是否超出限制
 
         Args:
@@ -145,19 +146,19 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
             bool: 校验结果
         """
         key=self.gen_key(host,config_id)
-        retry_times = cache.get(key,0)
+        retry_times = int(cache.get(tenant,key) or limited)
         return retry_times > limited
     
-    def set_refresh_status(self,host,config_id):
+    def set_refresh_status(self,tenant,host,config_id):
         """设置登陆页面刷新tag
 
         Args:
             host (str): 客户一端IP地址
             config_id (str): 插件运行时ID
         """
-        cache.set(self.gen_refresh_key(host,config_id),1)
+        cache.set(tenant,self.gen_refresh_key(host,config_id),1)
     
-    def check_refresh_status(self,host,config_id):
+    def check_refresh_status(self,tenant,host,config_id):
         """校验是否需要刷新页面
 
         Args:
@@ -167,7 +168,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         Returns:
             bool: 是否需要刷新页面
         """
-        return bool(cache.get(self.gen_refresh_key(host,config_id),0))
+        return bool(cache.get(tenant,self.gen_refresh_key(host,config_id)))
         
     def gen_refresh_key(self,host:str,config_id:str):
         """页面刷新标识KEY
@@ -245,6 +246,14 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
                     Field(
                         title=_('second_auth_factor', '次认证因素'),
                         page=second_auth_factor_page.tag
+                    )
+                ),
+                (
+                    'expired', 
+                    Optional[int],
+                    Field(
+                        title=_('expired', '有效期/分钟'),
+                        default=30,
                     )
                 ),
             ],
