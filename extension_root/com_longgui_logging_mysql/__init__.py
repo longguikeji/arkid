@@ -1,4 +1,5 @@
 import json
+from django.utils import timezone
 from datetime import datetime
 from pydantic import UUID4
 from typing import Optional, List
@@ -102,6 +103,13 @@ class LogConfigResponseOut(ResponseSchema):
     data: LogConfigSchema
 
 
+def get_log_retention_date(tenant):
+    import datetime
+    config, created = TenantLogConfig.active_objects.get_or_create(tenant=tenant)
+    log_retention_date = timezone.now() - datetime.timedelta(days=config.log_retention_period)
+    return log_retention_date
+
+
 class MysqlLoggingExtension(LoggingExtension):
 
     def load(self):
@@ -196,25 +204,41 @@ class MysqlLoggingExtension(LoggingExtension):
 
     @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     def get_log(self, request, tenant_id:str, id: str):
-        log = Log.active_objects.filter(tenant=request.tenant, id=id).first()
+        """ 获取日志详细信息
+        """
+        log = Log.active_objects.filter(tenant=request.tenant, id=id) \
+            .filter(created__gt=get_log_retention_date(request.tenant)) \
+            .first()
         return {"data": log}
 
     @operation(LogListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     @paginate(CustomPagination)
     def list_user_logs(self, request, tenant_id:str):
-        logs = Log.active_objects.filter(tenant=request.tenant, is_tenant_admin=False).order_by("-created")
+        """ 获取普通用户日志列表
+        """
+        logs = Log.active_objects.filter(tenant=request.tenant, is_tenant_admin=False) \
+            .filter(created__gt=get_log_retention_date(request.tenant)) \
+            .order_by("-created")
         return logs
 
     @operation(LogListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     @paginate(CustomPagination)
     def list_manager_logs(self, request, tenant_id:str):
-        logs = Log.active_objects.filter(tenant=request.tenant, is_tenant_admin=True).order_by("-created")
+        """ 获取管理员日志列表
+        """
+        logs = Log.active_objects.filter(tenant=request.tenant, is_tenant_admin=True) \
+            .filter(created__gt=get_log_retention_date(request.tenant)) \
+            .order_by("-created")
         return logs
 
     @operation(LogListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     @paginate(CustomPagination)
     def list_logs(self, request, tenant_id:str):
-        logs = Log.active_objects.filter(tenant=request.tenant).order_by("-created")
+        """ 获取日志列表
+        """
+        logs = Log.active_objects.filter(tenant=request.tenant) \
+            .filter(created__gt=get_log_retention_date(request.tenant)) \
+            .order_by("-created")
         return logs
 
     @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
