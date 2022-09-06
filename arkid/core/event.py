@@ -12,6 +12,7 @@ from django.db.models.query import QuerySet
 from arkid.common.logger import logger
 from arkid.common.utils import data_to_simplenamespace
 import json
+from django.core.serializers.json import DjangoJSONEncoder
 from types import SimpleNamespace
 event_id_map = {}
 
@@ -45,7 +46,7 @@ def get_event_payload(event):
 
     if event.response and isinstance(event.response, HttpResponse):
         response = {
-            "body": str(event.response.body, encoding='utf-8'),
+            "body": str(event.response.content, encoding='utf-8'),
             "status_code": event.response.status_code,
         }
     elif type(event.response) is dict:
@@ -58,7 +59,7 @@ def get_event_payload(event):
         "data": data,
         "uuid": event.uuid,
     }
-    return json.dumps(payload)
+    return json.dumps(payload, cls=DjangoJSONEncoder)
 
 signal_maps = {}
 
