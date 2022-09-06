@@ -19,6 +19,7 @@ from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.pagenation import CustomPagination
 from ninja.pagination import paginate
+from django.utils import timezone
 
 # ------------- 用户列表接口 --------------        
 @api.get("/tenant/{tenant_id}/users/",response=List[UserListItemOut], tags=['用户'])
@@ -35,6 +36,10 @@ def user_list(request, tenant_id: str,order:str = None, query_data: UserListQuer
     tenant = request.tenant
     pd = PermissionData()
     users = pd.get_manage_all_user(login_user, tenant, users)
+    
+    for user in users:
+        user['created'] = timezone.localtime(user['created']).strftime('%Y-%m-%d %H:%M:%S')
+    
     return list(users)
 
 @api.get("/tenant/{tenant_id}/user_no_super/",response=UserListOut, tags=['用户'])
