@@ -31,3 +31,4 @@ class TenantLogConfig(BaseModel):
 
     tenant = models.OneToOneField(Tenant, on_delete=models.PROTECT, verbose_name='租户')
     log_retention_period = models.IntegerField(blank=True, default=30, verbose_name='日志保存天数')
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True, db_index=True, verbose_name='创建时间')
