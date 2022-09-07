@@ -125,7 +125,7 @@ def get_exclude_apps(request, tenant_id: str, app_group_id: str):
     
     group = get_object_or_404(AppGroup.active_objects,id=app_group_id,tenant=request.tenant)
     selected_apps = group.apps.filter(is_del=False, is_active=True).all()
-    apps = App.expand_objects.filter(tenant__id=tenant_id).exclude(id__in=selected_apps).all()
+    apps = App.expand_objects.filter(tenant__id=tenant_id, is_del=False, is_active=True).exclude(id__in=selected_apps).all()
     
     return apps
 

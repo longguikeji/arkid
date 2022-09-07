@@ -268,7 +268,7 @@ def get_mine_unbind_accounts(request, tenant_id: str):
                     if extension_name in qs_dict and field_name in user_expand and extension_name not in add_package_record:
 
                         user_filter_value = user_expand.get(field_name, None)
-                        if user_filter_value is None or user_filter_value == '':
+                        if 'id' in field_name and (user_filter_value is None or user_filter_value == ''):
                             qs_item = qs_dict.get(extension_name)
                             items.append({
                                 'id': qs_item.id,
@@ -361,17 +361,24 @@ def get_mine_app_groups(request, tenant_id: str, parent_id=None):
     appgroups = AppGroup.active_objects.filter(
         tenant=tenant
     )
-    
     if parent_id in [None,""]:
         # 未传则获取所有一级分组
-        appgroups = list(appgroups.filter(parent=None).all())
+        appgroups = appgroups.filter(parent=None)
     elif parent_id in [0,"0"]:
         # 虚拟节点返回空
         appgroups = []
     else:
-        appgroups = list(appgroups.filter(parent__id=parent_id).all())
-    
-    return {"data": appgroups if appgroups else []}
+        appgroups = appgroups.filter(parent__id=parent_id)
+    # 需要排除掉空分组数据
+    ids = []
+    for appgroup in appgroups:
+        if appgroup.apps.exists():
+            ids.append(appgroup.id)
+    if ids:
+        appgroups = appgroups.filter(id__in=ids).all()
+    else:
+        appgroups = []
+    return {"data": list(appgroups) if appgroups else []}
     
 
 @api.get("/mine/tenant/{tenant_id}/mine_group_apps/", response=List[MineAppListItemOut], tags=["我的"])
