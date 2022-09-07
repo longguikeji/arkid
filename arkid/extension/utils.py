@@ -127,10 +127,6 @@ def import_extension(ext_dir: str) -> any:
     if ext and hasattr(ext, 'extension'):
         ext.extension.ext_dir = ext_dir
         logger.info(f'{ext_name} import success')
-        # 插件安装完成需要更新权限开始
-        from arkid.core.tasks.tasks import update_system_permission
-        update_system_permission.delay()
-        # 插件安装完成需要更新权限结束
         return ext.extension
     else:
         logger.info(f'{ext_name} import fail')
