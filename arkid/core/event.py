@@ -23,7 +23,7 @@ def send_event_through_webhook(event):
 
     tenant = event.tenant
     payload = get_event_payload(event)
-    logger.info(f"Webhook is handling event: {payload}")
+    # logger.info(f"Webhook is handling event: {payload}")
     trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
 
 
