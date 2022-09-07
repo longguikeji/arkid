@@ -22,16 +22,22 @@ class CacheExtension(Extension):
         self.listen_event(CACHE_SET, self.event_cache_set)
 
     def event_cache_get(self, event, **kwargs):
-        return self.get(
-            event.tenant,
-            **event.data
-        )
+        try:
+            return self.get(
+                event.tenant,
+                **event.data
+            )
+        except Exception as err:
+            logger.error(err)
     
     def event_cache_set(self,event,**kwargs):
-        return self.set(
-            tenant=event.tenant,
-            **event.data
-        )
+        try:
+            return self.set(
+                tenant=event.tenant,
+                **event.data
+            )
+        except Exception as err:
+            logger.error(err)
 
     @abstractmethod
     def get(self, tenant, key: str, **kwargs):
