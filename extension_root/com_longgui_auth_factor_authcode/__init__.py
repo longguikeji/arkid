@@ -17,7 +17,7 @@ from .schema import *
 from django.db import transaction
 from arkid.core.translation import gettext_default as _
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from django.core.cache import cache
+from arkid.common import cache
 from .error import ErrorCode
 from arkid.core import event as core_event
 from arkid.core.constants import *
@@ -106,7 +106,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
         authcode = data.get('authcode')
         authcode_key = data.get('authcode_key')
         
-        if not self.check_authcode(authcode,authcode_key):
+        if not self.check_authcode(event.tenant,authcode,authcode_key):
             
             settings = self.get_settings(tenant)
             key, code, image = self.get_authcode_picture(
@@ -115,7 +115,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
                 settings.settings.get("height",60)
             )
             
-            cache.set(key,code)
+            cache.set(event.tenant,key,code,expired=settings.settings.get("expired",10)*60)
             rs = self.error(ErrorCode.AUTHCODE_NOT_MATCH)
             rs["data"] = {
                 "image": str(image, 'utf8'),
@@ -186,6 +186,14 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
                 ('width', int, Field(title=_("验证码图片宽度"),default=180)),
                 ('height',  int, Field(title=_("验证码图片高度"),default=60)),
                 ('auth_code_length',  int, Field(title=_("验证码长度"),default=4)),
+                (
+                    'expired', 
+                    Optional[int],
+                    Field(
+                        title=_('expired', '有效期/分钟'),
+                        default=10,
+                    )
+                ),
             ]
         )
 
@@ -293,7 +301,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
             settings.settings.get("height",60)
         )
         
-        cache.set(key,code)
+        cache.set(request.tenant,key,code,expired=settings.settings.get("expired",10)*60)
         return {
             "data": {
                 "image": str(image, 'utf8'),
@@ -305,17 +313,17 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
     def check_auth_code(self,request,tenant_id:str,data:CheckAuthCodeIn):
         """ 校验图形验证码
         """
-        if self.check_authcode(data.authcode, data.authcode_key):
+        if self.check_authcode(request.tenant,data.authcode, data.authcode_key):
             return self.success()
         else:
             return self.error(
                 ErrorCode.AUTHCODE_NOT_MATCH
             )
             
-    def check_authcode(self,authcode,authcode_key):
+    def check_authcode(self,tenant,authcode,authcode_key):
         """校验图形验证码
         """
-        return cache.get(authcode_key).lower() == authcode.lower()
+        return authcode_key and cache.get(tenant,authcode_key).lower() == authcode.lower()
     
     def register_extension_api(self):
         """注册插件API

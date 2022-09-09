@@ -1,6 +1,7 @@
 from typing import Any, List
 from pydantic import Field
 from ninja import ModelSchema, Schema
+from arkid.config import get_app_config
 from arkid.core.translation import gettext_default as _
 from arkid.core.schema import ResponseSchema
 from arkid.core.models import App
@@ -34,12 +35,17 @@ class AppListsOut(ResponseSchema):
 class AppItemOut(ModelSchema):
 
     id: UUID = Field(readonly=True)
-    read_secret: str = Field(readonly=True, title=_('secret', '接口访问密钥'), default='', append={
-        "http": {
-            "url": '/api/v1/tenant/{tenant_id}/apps/{id}/read_secret/',
+    read_secret: str = Field(
+        readonly=True, 
+        title=_('secret', '接口访问密钥'), 
+        default='请点击刷新按钮获取密钥', 
+        suffix_action={
+            "path": get_app_config().get_host() + '/api/v1/tenant/{tenant_id}/apps/{id}/read_secret/',
             "method": "get",
+            "delay":60,
+            "name":_("刷新密钥")
         },
-    })
+    )
     
     class Config:
         model = App

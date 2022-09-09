@@ -16,6 +16,6 @@ class UserMobile(UserExpandAbstract):
     class Meta:
         app_label = app_label
 
-    mobile = models.CharField(_("Mobile", "电话号码"), max_length=256)
+    mobile = models.CharField(_("Mobile", "电话号码"), max_length=256,blank=True,null=True)
     
     area_code = models.CharField(_("AreaCode","区号"), max_length=10, default="86")

@@ -339,7 +339,7 @@ class ExternalIdpExtension(Extension):
         for config in configs:
             img_url, redirect_url = self.get_img_and_redirect_url(config)
             if img_url and redirect_url:
-                buttons = [{"img": img_url, "redirect": {"url": redirect_url}}]
+                buttons = [{"img": img_url, "redirect": {"url": redirect_url}, "tooltip":config.name}]
                 data[config.id.hex] = {"login": {'extend': {"buttons": buttons}}}
 
         logger.info(f'{self.package} add idp login buttions end')

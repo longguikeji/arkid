@@ -401,6 +401,22 @@ class MobileAuthFactorExtension(AuthFactorExtension):
                     Field(
                         title=_('sms extension config', '短信插件运行时'),
                         page=select_sms_page.tag,
+                    ),
+                ),
+                (
+                    'code_length', 
+                    int, 
+                    Field(
+                        title=_('code_length', '验证码长度'),
+                        default=6
+                    )
+                ),
+                (
+                    'expired', 
+                    Optional[int],
+                    Field(
+                        title=_('expired', '有效期/分钟'),
+                        default=10,
                     )
                 ),
             ],
@@ -413,15 +429,16 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         """发送短信验证码
         """
         tenant = request.tenant
-        code = create_sms_code(data.mobile)
         mobile = data.mobile
-        print(code)
         config = self.get_config_by_id(config_id)
         if not config:
             return self.error(ErrorCode.CONFIG_IS_NOT_EXISTS)
         
         if not mobile or mobile=="mobile":
             return self.error(ErrorCode.MOBILE_EMPTY)
+        
+        code = create_sms_code(tenant,mobile,config.config.get('code_length',6),config.config.get("expired",10)*60)
+
         
         responses = dispatch_event(
             Event(
@@ -457,7 +474,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         if not ret:
             return self.error(message)
         
-        if not check_sms_code(mobile,data.code):
+        if not check_sms_code(request.tenant,mobile,data.code):
             return self.error(ErrorCode.SMS_CODE_MISMATCH)
         
         user = request.user

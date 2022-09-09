@@ -34,6 +34,12 @@ page.create_actions(
             down="/api/v1/tenant/{tenant_id}/users/?order=-username",
             method=actions.FrontActionMethod.GET,
             order_parm="username"
+        ),
+        "order_created":actions.OrderAction(
+            up="/api/v1/tenant/{tenant_id}/users/?order=created",
+            down="/api/v1/tenant/{tenant_id}/users/?order=-created",
+            method=actions.FrontActionMethod.GET,
+            order_parm="created"
         )
     },
     local_actions={

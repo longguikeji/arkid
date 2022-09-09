@@ -380,7 +380,10 @@ def load_installed_extension(ext_dir):
         tenant = platform_tenant,
         extension = extension,
     )
-
+    # 插件安装完成需要更新权限开始
+    from arkid.core.tasks.tasks import update_system_permission
+    update_system_permission.delay()
+    # 插件安装完成需要更新权限结束
     # 如果新安装的插件有models需重启django
     extension_models= Path(ext_dir) / 'models.py'
     if extension_models.exists():
