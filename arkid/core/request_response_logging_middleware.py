@@ -16,8 +16,9 @@ class LoggingMiddleware:
         self.get_response = get_response
         # One-time configuration and initialization.
 
-        # Filter to log all request to url's that start with any of the strings below.
+        # Filter to log all request to url's that does not start with any of the strings below.
         self.prefixs = [
+            "/api/v1/ping/"
         ]
 
     def __call__(self, request):
@@ -32,10 +33,10 @@ class LoggingMiddleware:
 
         exec_time = int((time.time() - start)*1000)
 
-        # If the url does not start with on of the prefixes above, then return response and dont save log.
+        # If the url starts with on of the prefixes above, then return response and dont save log.
         # (Remove these two lines below to log everything)
-        # if not list(filter(request.get_full_path().startswith, self.prefixs)): 
-            # return response
+        if list(filter(request.get_full_path().startswith, self.prefixs)): 
+            return response
 
         try:
             body_request = str(request.body.decode())
