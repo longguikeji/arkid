@@ -72,6 +72,10 @@ def set_frontend_url(request, data:FrontendUrlSchemaIn):
         )
     config.frontend_url = url
     config.save()
+    
+    from arkid import settings
+    if config.frontend_url:
+        settings.CSRF_TRUSTED_ORIGINS.append(config.frontend_url)
 
     dispatch_event(
         Event(

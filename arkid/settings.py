@@ -232,3 +232,6 @@ ARKSTOER_URL = 'https://arkstore.longguikeji.com' # 插件商店链接
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
+
+
+CSRF_TRUSTED_ORIGINS = []
