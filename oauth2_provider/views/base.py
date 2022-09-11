@@ -375,6 +375,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         else:
             return super().post(request, *args, **kwargs)
 
+
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
