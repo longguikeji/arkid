@@ -7,8 +7,6 @@ from django.http import HttpResponseRedirect
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from arkid.core import api as core_api, event as core_event
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 
 import urllib.parse
 
@@ -92,7 +90,6 @@ class AppProtocolExtension(Extension):
             response: 函数执行结果
         '''
         # 入口函数
-        @method_decorator(csrf_exempt, name="dispatch")
         class EnterView(View):
 
             def get(self, request, **kwargs):
