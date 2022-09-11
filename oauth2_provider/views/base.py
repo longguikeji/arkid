@@ -352,6 +352,7 @@ class AuthorizationView(BaseAuthorizationView, FormView):
         log.debug("Success url for the request: {0}".format(self.success_url))
         return self.redirect(self.success_url, application)
 
+    @csrf_exempt
     def post(self, request, *args, **kwargs):
         if 'credentials' in request.session and request.session['credentials']:
             credentials = request.session.get("credentials")
