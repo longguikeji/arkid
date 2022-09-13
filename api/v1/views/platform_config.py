@@ -114,12 +114,16 @@ def get_version(request):
         new_version = ''
         update_available = False
     else:
-        arkid_saas_version_url = settings.ARKID_SAAS_URL + '/api/v1/version/'
-        resp = requests.get(arkid_saas_version_url, timeout=5).json()
-        new_version = resp.get('data', {}).get('version', '')
-        if version and new_version and version < new_version:
-            update_available = True
-        else:
+        try:
+            arkid_saas_version_url = settings.ARKID_SAAS_URL + '/api/v1/version/'
+            resp = requests.get(arkid_saas_version_url, timeout=5).json()
+            new_version = resp.get('data', {}).get('version', '')
+            if version and new_version and version < new_version:
+                update_available = True
+            else:
+                update_available = False
+        except:
+            new_version = ''
             update_available = False
 
     return SuccessDict(
