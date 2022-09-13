@@ -1,4 +1,6 @@
 import os
+import requests
+from django.conf import settings
 from arkid.config import get_app_config
 from arkid.core.api import api, operation
 from arkid.core.constants import *
@@ -86,5 +88,34 @@ def set_frontend_url(request, data:FrontendUrlSchemaIn):
             "db_url": config.frontend_url,
             "toml_url": get_app_config().get_frontend_host(),
             "dev": False if os.environ.get('K8SORDC') else True
+        }
+    )
+
+
+@api.get("/version/",response=VersionOut, tags=["平台配置"], auth=None)
+def get_version(request):
+    """ 获取ArkId版本
+    """
+    version = os.environ.get('ARKID_VERSION', '')
+    update_url = settings.UPDATE_URL
+
+    if settings.IS_CENTRAL_ARKID:
+        new_version = ''
+        update_available = False
+    else:
+        arkid_saas_version_url = settings.ARKID_SAAS_URL + '/api/v1/version/'
+        resp = requests.get(arkid_saas_version_url, timeout=5).json()
+        new_version = resp.get('data', {}).get('version', '')
+        if version and new_version and version < new_version:
+            update_available = True
+        else:
+            update_available = False
+
+    return SuccessDict(
+        data={
+            "version": version,
+            "update_available": update_available,
+            "new_version": new_version,
+            "update_url": update_url
         }
     )
