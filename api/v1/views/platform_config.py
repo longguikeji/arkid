@@ -18,7 +18,7 @@ def get_platform_config(request):
 
 @api.get("/platform_config_with_no_permission/",response=PlatformConfigOut, tags=["平台配置"],auth=None)
 @operation()
-def get_platform_config(request):
+def get_platform_config_with_no_permission(request):
     """ 获取平台配置
     """
     return {"data": Platform.get_config() }
