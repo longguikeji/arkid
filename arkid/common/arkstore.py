@@ -285,8 +285,22 @@ def install_arkstore_extension(tenant, token, extension_id):
     res = get_arkstore_extension_detail(access_token, extension_id)
     if res['type'] == 'auto_form_fill':
         app = get_arkid_saas_app_detail(tenant, token, extension_id)
-        app['data'] = {}
-        create_tenant_app(tenant, app)
+        local_app = App.active_objects.filter(tenant=tenant, arkstore_app_id=extension_id).first()
+        if not local_app:
+            local_app = create_tenant_oidc_app(tenant, app['url'], app['name'], app['description'], app['logo'])
+            local_app.arkstore_app_id = res['uuid']
+
+        local_app.name = app['name']
+        local_app.description = app['description']
+        local_app.logo = app['logo']
+
+        config = get_app_config()
+        frontend_url = config.get_frontend_host(schema=True)
+        pname = "com_longgui_auto_form_fill"
+        url = f'{frontend_url}/api/v1/{pname}/apps/{local_app.id.hex}/arkid_form_login/'
+        local_app.url = url
+
+        local_app.save()
     elif res['type'] == 'extension':
         download_arkstore_extension(tenant, token, extension_id, res)
     else:
@@ -678,3 +692,13 @@ def click_arkstore_app(access_token, arkstore_app_id):
         raise Exception(f'Error click_arkstore_app: {resp.status_code}')
     resp = resp.json()
     return resp
+
+def get_app_config_from_arkstore(request, arkstore_app_id):
+    token = request.user.auth_token
+    tenant = request.tenant
+    access_token = get_arkstore_access_token(tenant, token)
+    res = get_arkstore_extension_detail(access_token, arkstore_app_id)
+    if res['type'] == 'auto_form_fill':
+        app = get_arkid_saas_app_detail(tenant, token, arkstore_app_id)
+        return app.get('config', {}).get('config', {})
+    return {}
