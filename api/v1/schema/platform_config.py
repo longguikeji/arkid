@@ -27,3 +27,14 @@ class FrontendUrlSchema(Schema):
 
 class FrontendUrlOut(ResponseSchema):
     data: Optional[FrontendUrlSchema]
+
+
+class VersionSchema(Schema):    
+    version: Optional[str] = Field(title=_("Version", "版本"))
+    update_available: Optional[bool] = Field(title=_("Update Available", "是否有更新"))
+    new_version: Optional[str] = Field(title=_("New Version", "新版本"))
+    update_url: Optional[str] = Field(title=_("Update URL", "更新链接"))
+
+
+class VersionOut(ResponseSchema):
+    data: Optional[VersionSchema]
