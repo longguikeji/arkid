@@ -35,3 +35,11 @@ class CoreConfig(AppConfig):
         # 监听
         from arkid.core import listener
 
+        try:
+            from arkid import settings
+            from arkid.core.models import Platform
+            config = Platform.get_config()
+            if config.frontend_url:
+                settings.CSRF_TRUSTED_ORIGINS.append(config.frontend_url)
+        except Exception as e:
+            print(e)

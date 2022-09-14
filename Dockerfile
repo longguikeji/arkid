@@ -3,9 +3,11 @@ FROM ${BASEIMAGE}
 ARG DEBIAN=http://mirrors.aliyun.com/debian
 ARG DEBIANSRT=http://mirrors.aliyun.com/debian-security
 ARG PIP=https://mirrors.aliyun.com/pypi/simple
+ARG ARKID_VERSION=dev
+
 WORKDIR /var/arkid
 
-ENV PYTHONUSERBASE=/var/arkid/arkid_extensions PATH=$PATH:/var/arkid/arkid_extensions/bin
+ENV PYTHONUSERBASE=/var/arkid/arkid_extensions PATH=$PATH:/var/arkid/arkid_extensions/bin ARKID_VERSION=${ARKID_VERSION}
 
 ADD . .
 RUN sed -i 's/MinProtocol = TLSv1.2/MinProtocol = TLSv1.0/g' /etc/ssl/openssl.cnf; \

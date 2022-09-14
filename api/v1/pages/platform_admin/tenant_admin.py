@@ -28,7 +28,7 @@ page.create_actions(
         )
     },
     local_actions={
-        "switch": actions.URLAction(
+        "switch": actions.DirectAction(
             name=_("切换"),
             path='/api/v1/mine/switch_tenant/{id}/',
             method=actions.FrontActionMethod.GET
