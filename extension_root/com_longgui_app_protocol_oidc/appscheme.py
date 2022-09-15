@@ -35,6 +35,7 @@ class Oauth2ConfigSchema(ConfigBaseSchema):
     token: str = Field(title=_('token','获取token地址'), readonly=True, default='')
     userinfo: str = Field(title=_('userinfo','用户信息地址'), readonly=True, default='')
     logout: str = Field(title=_('logout', '退出登录地址'), readonly=True, default='')
+    openid_configuration: str = Field(title=_('openid configuration', 'OpenID 配置'), readonly=True, default='')
 
 
 # class OAuth2AppSchema(AppBaseSchema):
@@ -57,4 +58,4 @@ class OIDCConfigSchema(ConfigBaseSchema):
     token: str = Field(title=_('token','获取token地址'), readonly=True, default='')
     userinfo: str = Field(title=_('userinfo','用户信息地址'), readonly=True, default='')
     logout: str = Field(title=_('logout', '退出登录地址'), readonly=True, default='')
-
+    openid_configuration: str = Field(title=_('openid configuration', 'OpenID 配置'), readonly=True, default='')

@@ -327,7 +327,7 @@ def list_arkstore_categorys(request, tenant_id: str, parent_id:str = None, type:
     result = []
     if items:
         result.extend(list(items))
-    if show_local == 1:
+    if show_local == 1 and parent_id in [None,""]:
         result.append({
             'arkstore_id': -1,
             'arkstore_name': '自建应用' 
