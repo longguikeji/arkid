@@ -121,16 +121,16 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
                 userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(
                     reverse(namespace+":oauth-user-info", args=[tenant_id])
                 )
-                jwks_uri = request.build_absolute_uri(reverse(namespace+":jwks-info"))
+                jwks_uri = request.build_absolute_uri(reverse(namespace+":jwks-info", args=[tenant_id]))
             else:
                 parsed_url = urlparse(oauth2_settings.OIDC_ISS_ENDPOINT)
                 host = parsed_url.scheme + "://" + parsed_url.netloc
-                authorization_endpoint = "{}{}".format(host, reverse(namespace+":authorize", args=[tenant_id]))
+                authorization_endpoint = "{}{}".format(host, reverse(namespace+":authorize", args=[tenant_id, app_id]))
                 token_endpoint = "{}{}".format(host, reverse(namespace+":token", args=[tenant_id]))
                 userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or "{}{}".format(
                     host, reverse(namespace+":oauth-user-info", args=[tenant_id])
                 )
-                jwks_uri = "{}{}".format(host, reverse(namespace+":jwks-info"))
+                jwks_uri = "{}{}".format(host, reverse(namespace+":jwks-info", args=[tenant_id]))
         else:
             namespace = f'api:com_longgui_arkidsaas'
 
