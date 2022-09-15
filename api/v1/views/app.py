@@ -28,7 +28,7 @@ from api.v1.schema.app import *
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'])
 @operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_apps(request, tenant_id: str,order:str=None):
+def list_apps(request, tenant_id: str,order:str=None, category_id:str=None):
     '''
     app列表
     '''
@@ -38,6 +38,10 @@ def list_apps(request, tenant_id: str,order:str=None):
         is_del=False
     )
     
+    if category_id and category_id != "" and category_id != "0" and category_id != "-1":
+        apps = apps.filter(arkstore_category_id=category_id)
+    elif category_id == "-1":
+        apps = apps.filter(arkstore_category_id=None, arkstore_app_id=None)
     if order:
         apps = apps.order_by(order)
     else:
