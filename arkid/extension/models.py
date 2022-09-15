@@ -19,7 +19,25 @@ class Extension(BaseModel):
     is_active = models.BooleanField(default=True, verbose_name=_('是否启动'))
     profile = models.JSONField(blank=True, default=dict, verbose_name=_('Setup Profile','启动设置'))
     is_allow_use_platform_config = models.BooleanField(default=False, verbose_name=_('是否允许租户使用平台配置'))
-    
+    category_id = models.IntegerField(default=None, null=True, verbose_name=_('ArkStore分类ID'))
+
+class ArkStoreCategory(BaseModel):
+
+    class Meta(object):
+        verbose_name = _("ArkStore分类")
+        verbose_name_plural = _("ArkStore分类")
+
+    TYPE_CHOICES = (
+        ("app", "应用"),
+        ("extension", "插件"),
+    )
+
+    arkstore_id = models.IntegerField(default=None, null=True, verbose_name=_('ArkStoreID'))
+    arkstore_name = models.CharField(max_length=128, default='', blank=True, null=True, verbose_name=_('ArkStore名称'))
+    arkstore_parent_id = models.IntegerField(default=None, null=True, verbose_name=_('ArkStoreParentID'))
+    arkstore_type = models.CharField(
+        choices=TYPE_CHOICES, default="app", max_length=128, verbose_name="类别"
+    )
 
 class TenantExtension(BaseModel):
     class Meta(object):

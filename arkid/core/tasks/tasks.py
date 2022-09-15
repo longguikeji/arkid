@@ -311,6 +311,31 @@ def remove_app_permission_to_user(tenant_id, app_id, user_id, permission_id):
     )
 
 
+@app.task
+def get_arkstore_category_http():
+    from django.conf import settings
+    from arkid.extension.models import ArkStoreCategory
+    import logging
+    url = '/api/v1/arkstore/all_categories'
+    resp = requests.get(settings.ARKSTOER_URL + url)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_apps_and_extensions: {url}, {resp.status_code}')
+    resp = resp.json()
+    data = resp.get('data', [])
+    for item in data:
+        arkstore_id = item.get('id')
+        arkstore_name = item.get('name', '')
+        arkstore_type = item.get('type', '')
+        arkstore_parent_id = item.get('parent_id', None)
+
+        arkstorecategory, created = ArkStoreCategory.objects.get_or_create(arkstore_id=arkstore_id)
+        arkstorecategory.arkstore_name = arkstore_name
+        arkstorecategory.arkstore_type = arkstore_type
+        arkstorecategory.arkstore_parent_id = arkstore_parent_id
+        arkstorecategory.save()
+    logging.info('同步arkstore分类')
+
+
 class WebhookSchemes(str, Enum):
     HTTP = "http"
     HTTPS = "https"

@@ -132,12 +132,16 @@ class ExtensionListOut(ModelSchema):
 @api.get("/extensions/", response=List[ExtensionListOut], tags=['平台插件'])
 @operation(roles=[PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_extensions(request, status: str = None):
+def list_extensions(request, status: str = None, category_id: str = None):
     """ 获取平台插件列表"""
     if not status:
-        qs = ExtensionModel.valid_objects.all()
+        qs = ExtensionModel.valid_objects.filter()
     else:
-        qs = ExtensionModel.valid_objects.filter(status=status).all()
+        qs = ExtensionModel.valid_objects.filter(status=status)
+
+    if category_id and category_id != "" and category_id != "0":
+        qs = qs.filter(category_id=int(category_id))
+
     if settings.IS_CENTRAL_ARKID:
         return qs
 

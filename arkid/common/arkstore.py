@@ -126,6 +126,8 @@ def get_arkstore_extensions(access_token, purchased=None, rented=False, type=Non
             url = '/api/v1/arkstore/extensions/purchased'
     elif type == 'app':
         url = '/api/v1/arkstore/apps/purchased'
+    elif type == 'category':
+        url = '/api/v1/arkstore/app/categories'
     else:
         url = '/api/v1/arkstore/apps_and_extensions'
     arkstore_extensions_url = settings.ARKSTOER_URL + url
@@ -331,7 +333,7 @@ def download_arkstore_extension(tenant, token, extension_id, extension_detail):
         zip_ref.extractall(extract_folder)
 
     try:
-        load_installed_extension(ext_dir)
+        load_installed_extension(ext_dir, extension_detail)
         logger.info(f'load download extension: {ext_package} scuess')
     except Exception as e:
         logger.exception(f'load download extension: {ext_package} failed: {str(e)}')
@@ -357,7 +359,7 @@ def uninstall_extension(ext_dir):
         extension.delete()
 
 
-def load_installed_extension(ext_dir):
+def load_installed_extension(ext_dir, extension_detail):
     ext = import_extension(ext_dir)
     extension, is_create = Extension.objects.update_or_create(
         defaults={
@@ -371,6 +373,10 @@ def load_installed_extension(ext_dir):
         package = ext.package,
     )
     # load_extension_apps([extension])
+    category_id = extension_detail.get('category_id', None)
+    if category_id:
+        extension.category_id = category_id
+        extension.save()
 
     platform_tenant = Tenant.platform_tenant()
     tenant_extension, is_create = TenantExtension.objects.update_or_create(
