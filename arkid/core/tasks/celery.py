@@ -4,6 +4,7 @@ import os
 
 from celery import Celery, bootsteps
 from click import Option
+from datetime import timedelta
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
@@ -41,5 +42,14 @@ app.steps['worker'].add(MyBootstep)
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
 
+app.conf.update( 
+    CELERYBEAT_SCHEDULE = {
+        'add-arkstore-3-hours': {
+            'task': 'arkid.core.tasks.tasks.get_arkstore_category_http',
+            'schedule': timedelta(hours=3),
+            'args': ()
+        },
+    }
+)
 
 from arkid.core.tasks import tasks

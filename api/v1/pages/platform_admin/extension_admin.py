@@ -7,13 +7,23 @@ name = '平台插件'
 
 page = pages.TabsPage(tag=tag, name=name)
 
-store_page = pages.CardsPage(name='插件商店')
-installed_page = pages.CardsPage(name='已安装')
+# store_page = pages.CardsPage(name='插件商店')
+store_page = pages.TreePage(name=_("Extension Store", "插件商店"),show_vnode=True,show_page_if_no_node=False)
+store_cascade_page = pages.CardsPage(name='')
+
+# installed_page = pages.CardsPage(name='已安装')
+installed_page = pages.TreePage(name=_("Installed", "已安装"),show_vnode=True,show_page_if_no_node=False)
+installed_cascade_page = pages.CardsPage(name='')
+
 arkstore_markdown_page = pages.FormPage(name=_("文档"))
 order_page = pages.StepPage(name=_('Order', '购买'))
 trial_page = pages.FormPage(name=_('Trial', '试用'))
 bind_agent_page = pages.FormPage(name=_('Bind Agent', '绑定代理商'))
-purchased_page = pages.CardsPage(name='已购买')
+
+# purchased_page = pages.CardsPage(name='已购买')
+purchased_page = pages.TreePage(name=_("Purchased", "已购买"),show_vnode=True,show_page_if_no_node=False)
+purchased_cascade_page = pages.CardsPage(name='')
+
 history_page = pages.TablePage(name='插件历史版本')
 markdown_page = pages.FormPage(name=_("文档"))
 profile_page = pages.FormPage(name='插件配置')
@@ -24,12 +34,15 @@ payment_page = pages.FormPage(name='支付')
 
 pages.register_front_pages(page)
 pages.register_front_pages(installed_page)
+pages.register_front_pages(installed_cascade_page)
 pages.register_front_pages(store_page)
+pages.register_front_pages(store_cascade_page)
 pages.register_front_pages(arkstore_markdown_page)
 pages.register_front_pages(order_page)
 pages.register_front_pages(trial_page)
 pages.register_front_pages(bind_agent_page)
 pages.register_front_pages(purchased_page)
+pages.register_front_pages(purchased_cascade_page)
 pages.register_front_pages(history_page)
 pages.register_front_pages(markdown_page)
 pages.register_front_pages(profile_page)
@@ -52,8 +65,44 @@ page.add_pages([
 ])
 
 installed_page.create_actions(
+
     init_action=actions.DirectAction(
-        path='/api/v1/extensions/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=extension',
+        method=actions.FrontActionMethod.GET,
+    ),
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=extension&parent_id={id}',
+            method=actions.FrontActionMethod.GET,
+        ),
+        actions.CascadeAction(
+            page=installed_cascade_page
+        )
+    ]
+
+    # init_action=actions.DirectAction(
+    #     path='/api/v1/extensions/',
+    #     method=actions.FrontActionMethod.GET,
+    # ),
+    # local_actions={
+    #     "markdown": actions.OpenAction(
+    #         name='文档',
+    #         page=markdown_page
+    #     ),
+    #     "update": actions.DirectAction(
+    #         name='更新',
+    #         path='/api/v1/tenant/{tenant_id}/arkstore/update/{package}/',
+    #         method=actions.FrontActionMethod.POST,
+    #     ),
+    #     "profile": actions.OpenAction(
+    #         name='插件配置',
+    #         page=profile_page
+    #     ),
+    # },
+)
+installed_cascade_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/extensions/?category_id={category_id}',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
@@ -73,10 +122,50 @@ installed_page.create_actions(
     },
 )
 
+
 store_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/arkstore/extensions/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=extension',
         method=actions.FrontActionMethod.GET,
+    ),
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=extension&parent_id={id}',
+            method=actions.FrontActionMethod.GET,
+        ),
+        actions.CascadeAction(
+            page=store_cascade_page
+        )
+    ]
+    # init_action=actions.DirectAction(
+    #     path='/api/v1/tenant/{tenant_id}/arkstore/extensions/',
+    #     method=actions.FrontActionMethod.GET,
+    # ),
+    # global_actions={
+    #    'bind_agent': actions.OpenAction(
+    #         name='绑定代理商',
+    #         page=bind_agent_page
+    #     ),
+    # },
+    # local_actions={
+    #     "markdown": actions.OpenAction(
+    #         name='文档',
+    #         page=arkstore_markdown_page
+    #     ),
+    #     "order": actions.OpenAction(
+    #         name='购买',
+    #         page=order_page
+    #     ),
+    #     "trial": actions.OpenAction(
+    #         name='试用',
+    #         page=trial_page
+    #     )
+    # },
+)
+store_cascade_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/arkstore/extensions/?category_id={category_id}',
+        method=actions.FrontActionMethod.GET
     ),
     global_actions={
        'bind_agent': actions.OpenAction(
@@ -101,8 +190,44 @@ store_page.create_actions(
 )
 
 purchased_page.create_actions(
+
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/arkstore/purchased/extensions/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=extension',
+        method=actions.FrontActionMethod.GET,
+    ),
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=extension&parent_id={id}',
+            method=actions.FrontActionMethod.GET,
+        ),
+        actions.CascadeAction(
+            page=purchased_cascade_page
+        )
+    ]
+
+    # init_action=actions.DirectAction(
+    #     path='/api/v1/tenant/{tenant_id}/arkstore/purchased/extensions/',
+    #     method=actions.FrontActionMethod.GET,
+    # ),
+    # local_actions={
+    #     "markdown": actions.OpenAction(
+    #         name='文档',
+    #         page=arkstore_markdown_page
+    #     ),
+    #     "history": actions.OpenAction(
+    #         name='历史版本',
+    #         page=history_page
+    #     ),
+    #     "install": actions.DirectAction(
+    #         name='安装',
+    #         path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
+    #         method=actions.FrontActionMethod.POST,
+    #     ),
+    # },
+)
+purchased_cascade_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/arkstore/purchased/extensions/?category_id={category_id}',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={

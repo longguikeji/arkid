@@ -205,12 +205,14 @@ class TenantRentedExtensionListOut(TenantExtensionListOut):
 @api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],response=List[TenantRentedExtensionListOut])
 @operation(List[TenantExtensionListOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_platform_extensions(request, tenant_id: str):
+def get_platform_extensions(request, tenant_id: str, category_id: str = None):
     """ 平台插件列表
     """
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
-    extensions = ExtensionModel.active_objects.all()
+    extensions = ExtensionModel.active_objects.filter()
+    if category_id and category_id != "" and category_id != "0":
+        extensions = extensions.filter(category_id=int(category_id))
     if settings.IS_CENTRAL_ARKID:
         return extensions
 
@@ -243,13 +245,17 @@ def get_platform_extensions(request, tenant_id: str):
 @api.get("/tenant/{tenant_id}/tenant/extensions/", tags=["租户插件"],response=List[TenantRentedExtensionListOut])
 @operation(List[TenantRentedExtensionListOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_tenant_extensions(request, tenant_id: str):
+def get_tenant_extensions(request, tenant_id: str, category_id: str = None):
     """ 租户插件列表
     """
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_rented=True).values('extension_id')
     extensions = ExtensionModel.active_objects.filter(id__in = extension_ids)
+    
+    if category_id and category_id != "" and category_id != "0":
+        extensions = extensions.filter(category_id=int(category_id))
+    
     if settings.IS_CENTRAL_ARKID:
         return extensions
 

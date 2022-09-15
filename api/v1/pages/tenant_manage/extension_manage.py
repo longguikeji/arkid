@@ -9,8 +9,10 @@ name = '插件管理'
 
 
 page = pages.TabsPage(tag=tag, name=name)
-platform_extension_page = pages.CardsPage(name=_('Platform Extensions', '插件租赁'))
-tenant_extension_rented_page = pages.CardsPage(name=_('Rented Extensions', '已租赁'))
+platform_extension_page = pages.TreePage(name=_("Platform Extensions", "插件租赁"),show_vnode=True,show_page_if_no_node=False)
+platform_extension_cascade_page = pages.CardsPage(name='')
+tenant_extension_rented_page = pages.TreePage(name=_('Rented Extensions', '已租赁'),show_vnode=True,show_page_if_no_node=False)
+tenant_extension_cascade_page = pages.CardsPage(name='')
 rent_page = pages.StepPage(name=_('Rent', '租赁'))
 setting_page = pages.FormPage(name='插件租户配置')
 config_page = pages.TablePage(name='插件运行时配置')
@@ -23,7 +25,9 @@ payment_page = pages.FormPage(name='支付')
 
 pages.register_front_pages(page)
 pages.register_front_pages(platform_extension_page)
+pages.register_front_pages(platform_extension_cascade_page)
 pages.register_front_pages(tenant_extension_rented_page)
+pages.register_front_pages(tenant_extension_cascade_page)
 pages.register_front_pages(rent_page)
 pages.register_front_pages(setting_page)
 pages.register_front_pages(config_page)
@@ -48,8 +52,38 @@ router = routers.FrontRouter(
 
 platform_extension_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/platform/extensions/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=extension',
         method=actions.FrontActionMethod.GET,
+    ),
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=extension&parent_id={id}',
+            method=actions.FrontActionMethod.GET,
+        ),
+        actions.CascadeAction(
+            page=platform_extension_cascade_page
+        )
+    ]
+    # init_action=actions.DirectAction(
+    #     path='/api/v1/tenant/{tenant_id}/platform/extensions/',
+    #     method=actions.FrontActionMethod.GET,
+    # ),
+    # local_actions={
+    #     "markdown": actions.OpenAction(
+    #         name='文档',
+    #         page=markdown_page  
+    #     ),
+    #     "rent": actions.OpenAction(
+    #         name="租赁",
+    #         page=rent_page
+    #     )
+    # },
+)
+
+platform_extension_cascade_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/platform/extensions/?category_id={category_id}',
+        method=actions.FrontActionMethod.GET
     ),
     local_actions={
         "markdown": actions.OpenAction(
@@ -110,9 +144,48 @@ payment_page.create_actions(
 )
 
 tenant_extension_rented_page.create_actions(
+
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/tenant/extensions/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=extension',
         method=actions.FrontActionMethod.GET,
+    ),
+    node_actions=[
+        actions.DirectAction(
+            path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=extension&parent_id={id}',
+            method=actions.FrontActionMethod.GET,
+        ),
+        actions.CascadeAction(
+            page=tenant_extension_cascade_page
+        )
+    ]
+    # init_action=actions.DirectAction(
+    #     path='/api/v1/tenant/{tenant_id}/tenant/extensions/',
+    #     method=actions.FrontActionMethod.GET,
+    # ),
+    # local_actions={
+    #     "active": actions.DirectAction(
+    #         path='/api/v1/tenant/{tenant_id}/tenant/extensions/{id}/active/',
+    #         method=actions.FrontActionMethod.POST,
+    #     ),
+    #     "markdown": actions.OpenAction(
+    #         name='文档',
+    #         page=markdown_page  
+    #     ),
+    #     "setting": actions.OpenAction(
+    #         name='租户配置',
+    #         page=setting_page
+    #     ),
+    #     "config": actions.OpenAction(
+    #         name='运行时配置',
+    #         page=config_page
+    #     ),
+    # },
+)
+
+tenant_extension_cascade_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/tenant/extensions/?category_id={category_id}',
+        method=actions.FrontActionMethod.GET
     ),
     local_actions={
         "active": actions.DirectAction(
