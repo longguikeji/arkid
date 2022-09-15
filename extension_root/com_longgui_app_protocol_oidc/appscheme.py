@@ -29,13 +29,13 @@ class ConfigBaseSchema(Schema):
 class Oauth2ConfigSchema(ConfigBaseSchema):
 
     # 输出的比输入的额外多了一些字段
-    client_id: str = Field(title=_('client id','客户端id'), readonly=True, default='')
-    client_secret: str = Field(title=_('client secret','客户端密钥'), readonly=True, default='')
-    authorize: str = Field(title=_('authorize','授权url'), readonly=True, default='')
-    token: str = Field(title=_('token','获取token地址'), readonly=True, default='')
-    userinfo: str = Field(title=_('userinfo','用户信息地址'), readonly=True, default='')
-    logout: str = Field(title=_('logout', '退出登录地址'), readonly=True, default='')
-    issuer_url: str = Field(title=_('issuer', 'issuer'), readonly=True, default='')
+    client_id: str = Field(title=_('Client ID','客户端id'), readonly=True, default='')
+    client_secret: str = Field(title=_('Client Secret','客户端密钥'), readonly=True, default='')
+    authorize: str = Field(title=_('Authorize','授权url'), readonly=True, default='')
+    token: str = Field(title=_('Token','获取token地址'), readonly=True, default='')
+    userinfo: str = Field(title=_('Userinfo','用户信息地址'), readonly=True, default='')
+    logout: str = Field(title=_('Logout', '退出登录地址'), readonly=True, default='')
+    issuer_url: str = Field(title=_('Issuer', 'Issuer'), readonly=True, default='')
 
 
 # class OAuth2AppSchema(AppBaseSchema):
@@ -51,11 +51,11 @@ class ALGORITHM_TYPE(str, Enum):
 
 class OIDCConfigSchema(ConfigBaseSchema):
 
-    algorithm: ALGORITHM_TYPE = Field(title=_('algorithm','加密类型'))
-    client_id: str = Field(title=_('client id','客户端id'), readonly=True, default='')
-    client_secret: str = Field(title=_('client secret','客户端密钥'), readonly=True, default='')
-    authorize: str = Field(title=_('authorize','授权url'), readonly=True, default='')
-    token: str = Field(title=_('token','获取token地址'), readonly=True, default='')
-    userinfo: str = Field(title=_('userinfo','用户信息地址'), readonly=True, default='')
-    logout: str = Field(title=_('logout', '退出登录地址'), readonly=True, default='')
+    algorithm: ALGORITHM_TYPE = Field(title=_('Algorithm','加密类型'))
+    client_id: str = Field(title=_('Client ID','客户端id'), readonly=True, default='')
+    client_secret: str = Field(title=_('Client Secret','客户端密钥'), readonly=True, default='')
+    authorize: str = Field(title=_('Authorize','授权url'), readonly=True, default='')
+    token: str = Field(title=_('Token','获取token地址'), readonly=True, default='')
+    userinfo: str = Field(title=_('Userinfo','用户信息地址'), readonly=True, default='')
+    logout: str = Field(title=_('Logout', '退出登录地址'), readonly=True, default='')
     issuer_url: str = Field(title=_('Issuer', 'Issuer'), readonly=True, default='')
