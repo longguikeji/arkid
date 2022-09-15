@@ -115,13 +115,16 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             issuer_url = oauth2_settings.OIDC_ISS_ENDPOINT
 
             if not issuer_url:
-                issuer_url = oauth2_settings.oidc_issuer(request)
-                authorization_endpoint = request.build_absolute_uri(reverse(namespace+":authorize", args=[tenant_id, app_id]))
-                token_endpoint = request.build_absolute_uri(reverse(namespace+":token", args=[tenant_id]))
-                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or request.build_absolute_uri(
-                    reverse(namespace+":oauth-user-info", args=[tenant_id])
-                )
-                jwks_uri = request.build_absolute_uri(reverse(namespace+":jwks-info", args=[tenant_id]))
+                from arkid.config import get_app_config
+                host = get_app_config().get_frontend_host()
+                issuer_url = "{}/api/v1/tenant/{}/app/{}/".format(host,tenant_id,app_id)
+                # issuer_url = oauth2_settings.oidc_issuer(request, tenant_id, app_id)
+                authorization_endpoint = host+reverse(namespace+":authorize", args=[tenant_id, app_id])
+                token_endpoint = host+reverse(namespace+":token", args=[tenant_id])
+                userinfo_endpoint = oauth2_settings.OIDC_USERINFO_ENDPOINT or (host+
+                    reverse(namespace+":oauth-user-info", args=[tenant_id]))
+                
+                jwks_uri = host+reverse(namespace+":jwks-info", args=[tenant_id])
             else:
                 parsed_url = urlparse(oauth2_settings.OIDC_ISS_ENDPOINT)
                 host = parsed_url.scheme + "://" + parsed_url.netloc
