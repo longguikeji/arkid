@@ -335,7 +335,7 @@ def list_arkstore_categorys(request, tenant_id: str, parent_id:str = None, type:
             for item in items:
                 temp_items = []
                 item.get_all_child(temp_items)
-                if App.valid_objects.filter(arkstore_app_id__in=temp_items).exists():
+                if App.valid_objects.filter(arkstore_category_id__in=temp_items).exists():
                     ids.append(item.id)
             if ids:
                 items = items.filter(id__in=ids).all()
