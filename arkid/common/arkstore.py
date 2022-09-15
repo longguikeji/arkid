@@ -305,6 +305,9 @@ def install_arkstore_extension(tenant, token, extension_id):
         url = f'{frontend_url}/api/v1/{pname}/apps/{local_app.id.hex}/arkid_form_login/'
         local_app.url = url
 
+        local_app.type = 'AutoFormFill'
+        local_app.package = 'com.longgui.auto.form.fill'
+
         local_app.save()
     elif res['type'] == 'extension':
         download_arkstore_extension(tenant, token, extension_id, res)
