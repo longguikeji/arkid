@@ -28,7 +28,7 @@ from api.v1.schema.app import *
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'])
 @operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_apps(request, tenant_id: str,order:str=None):
+def list_apps(request, tenant_id: str,order:str=None, category_id:str=None):
     '''
     app列表
     '''
@@ -38,6 +38,10 @@ def list_apps(request, tenant_id: str,order:str=None):
         is_del=False
     )
     
+    if category_id and category_id != "" and category_id != "0" and category_id != "-1":
+        apps = apps.filter(arkstore_category_id=category_id)
+    elif category_id == "-1":
+        apps = apps.filter(arkstore_category_id=None, arkstore_app_id=None)
     if order:
         apps = apps.order_by(order)
     else:
@@ -120,11 +124,13 @@ def get_app_read_secret(request, tenant_id: str, id: str):
     '''
     获取应用秘钥
     '''
-    from arkid.common.utils import generate_secret
+    from arkid.common.utils import generate_secret, generate_md5_secret
+    secret = generate_secret()
+    md5_secret = generate_md5_secret(secret)
     app = App.valid_objects.get(id=id)
-    app.secret = generate_secret()
+    app.secret = md5_secret
     app.save()
-    return {"data": {"read_secret": app.secret}}
+    return {"data": {"read_secret": secret}}
 
 @api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionDataSchemaOut, tags=['应用'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])

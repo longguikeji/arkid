@@ -220,6 +220,7 @@ class App(BaseModel, ExpandModel):
         default=None,
         on_delete=models.PROTECT
     )
+    arkstore_category_id = models.IntegerField(default=None, null=True, verbose_name=_('ArkStore分类ID'))
     arkstore_app_id = models.CharField(
         max_length=1024, blank=True, null=True, default=None, verbose_name=_('Arkstore app id', '方舟商店应用标识')
     )

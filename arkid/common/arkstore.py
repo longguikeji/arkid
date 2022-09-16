@@ -291,7 +291,10 @@ def install_arkstore_extension(tenant, token, extension_id):
         if not local_app:
             local_app = create_tenant_oidc_app(tenant, app['url'], app['name'], app['description'], app['logo'])
             local_app.arkstore_app_id = res['uuid']
-
+            category_id = res.get('category_id', None)
+            if category_id:
+                local_app.arkstore_category_id = category_id
+                local_app.save()
         local_app.name = app['name']
         local_app.description = app['description']
         local_app.logo = app['logo']
@@ -301,6 +304,9 @@ def install_arkstore_extension(tenant, token, extension_id):
         pname = "com_longgui_auto_form_fill"
         url = f'{frontend_url}/api/v1/{pname}/apps/{local_app.id.hex}/arkid_form_login/'
         local_app.url = url
+
+        local_app.type = 'AutoFormFill'
+        local_app.package = 'com.longgui.auto.form.fill'
 
         local_app.save()
     elif res['type'] == 'extension':
@@ -314,6 +320,10 @@ def install_arkstore_extension(tenant, token, extension_id):
         else:
             url = url + f'?tenant_id={saas_tenant_id}'
         local_app = create_tenant_oidc_app(tenant, url, app['name'], app['description'], app['logo'])
+        category_id = res.get('category_id', None)
+        if category_id:
+            local_app.arkstore_category_id = category_id
+            local_app.save()
         local_app.arkstore_app_id = res['uuid']
         local_app.save()
 
@@ -474,6 +484,7 @@ def create_tenant_oidc_app(tenant, url, name, description='', logo=''):
             url=url,
             defaults={"description": description, "logo": logo, 'is_del': False, 'is_active': True}
         )
+
     if app.entry_permission is None:
         from arkid.core.models import SystemPermission
         from arkid.core.perm.permission_data import PermissionData

@@ -39,6 +39,15 @@ class ArkStoreCategory(BaseModel):
         choices=TYPE_CHOICES, default="app", max_length=128, verbose_name="类别"
     )
 
+    def get_all_child(self, items):
+        items.append(self.arkstore_id)
+        categorys = ArkStoreCategory.valid_objects.filter(
+            arkstore_parent_id=self.arkstore_id
+        )
+        for category in categorys:
+            category.get_all_child(items)
+        return items
+
 class TenantExtension(BaseModel):
     class Meta(object):
         verbose_name = _("插件租户配置")
