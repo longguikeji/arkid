@@ -1,14 +1,26 @@
 DEBUG = True
 
-# Redis cache
-REDISHOST = os.getenv("REDIS_HOST", "localhost")
-REDISPASSWD = os.getenv("REDIS_PASSWD", None)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'arkid',
+        'HOST': 'arkid-db',
+        'PORT': 3306,
+        'USER': 'arkid',
+        'PASSWORD': 'arkid',
+        'OPTIONS': {
+            'autocommit': True,
+            'init_command': 'SET default_storage_engine=InnoDB',
+            'charset': 'utf8mb4',
+        },
+    }
+}
 
 REDIS_CONFIG = {
-    'HOST': REDISHOST,
+    'HOST': 'arkid-redis',
     'PORT': 6379,
     'DB': 0,
-    'PASSWORD': REDISPASSWD,
+    'PASSWORD': None,
 }
 
 REDIS_URL = 'redis://{}:{}/{}'.format(REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'],\

@@ -22,11 +22,11 @@ services:
       - net.core.somaxconn=65535
     restart: always
     working_dir: /arkid
-    entrypoint: sh -c "tail -f /dev/null"
+    entrypoint: ["/bin/bash", "/var/arkid/docker-entrypoint.sh"]
+    command: ["supervisord"]
     environment:
       - TZ=Asia/Shanghai
       - K8SORDC='true'
-      - REDIS_HOST=arkid-redis
     networks:
       - arkid
     volumes:
@@ -44,6 +44,25 @@ services:
       - arkid
     volumes:
       - ./fe.conf:/etc/nginx/conf.d/default.conf
+  db:
+    image: mysql:5.7
+    container_name: arkid-db
+    restart: always
+    networks:
+      - arkid
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=arkid
+      - MYSQL_PASSWORD=arkid
+      - MYSQL_DATABASE=arkid
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/config:/etc/mysql/conf.d
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+
 
   redis:
     image: redis:5.0.3
