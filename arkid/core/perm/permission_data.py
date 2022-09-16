@@ -2429,17 +2429,20 @@ class PermissionData(object):
         '''
         获取默认的系统权限
         '''
-        systempermission = SystemPermission.valid_objects.filter(
-            name='normal-user',
+        systempermissions = SystemPermission.valid_objects.filter(
+            Q(name='normal-user')|Q(name='platform-user'),
             category='group',
-        ).first()
-        if systempermission:
-            describe = systempermission.describe
-            sort_ids = describe.get('sort_ids', [])
-            if is_include_self:
-                sort_ids.append(systempermission.sort_id)
-            sort_ids.sort()
-            return sort_ids
+        )
+        if systempermissions:
+            last_sort_ids = []
+            for systempermission in systempermissions:
+                describe = systempermission.describe
+                sort_ids = describe.get('sort_ids', [])
+                if is_include_self and systempermission.sort_id not in sort_ids:
+                    sort_ids.append(systempermission.sort_id)
+                last_sort_ids.extend(sort_ids)
+            last_sort_ids.sort()
+            return last_sort_ids
         else:
             return []     
 
