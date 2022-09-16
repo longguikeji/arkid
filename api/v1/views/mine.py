@@ -147,7 +147,7 @@ def get_mine_approve_requests(
 ):
     """我的审批列表"""
     tenant = request.tenant
-    requests = ApproveRequest.valid_objects.filter(user=request.user)
+    requests = ApproveRequest.valid_objects.filter(user=request.user, tenant=tenant)
     if package:
         requests = requests.filter(action__extension__package=package)
     if is_approved == "true":

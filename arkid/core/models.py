@@ -609,6 +609,16 @@ class ApproveRequest(BaseModel, ExpandModel):
         related_query_name="requests",
     )
 
+    tenant = models.ForeignKey(
+        'Tenant',
+        default=None,
+        null=True,
+        on_delete=models.CASCADE,
+        verbose_name=_('Tenant', '租户'),
+        related_name="approve_request_set",
+        related_query_name="requests",
+    )
+
     action = models.ForeignKey(
         'ApproveAction',
         default=None,

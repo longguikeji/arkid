@@ -30,6 +30,7 @@ def restore_approve_request(approve_request):
 def create_approve_request(http_request, user, approve_action):
 
     environ = http_request.environ
+    tenant = http_request.tenant
     environ.pop("wsgi.input")
     environ.pop("wsgi.errors")
     environ.pop("wsgi.file_wrapper")
@@ -44,6 +45,7 @@ def create_approve_request(http_request, user, approve_action):
 
     approve_request = ApproveRequest.valid_objects.create(
         action=approve_action,
+        tenant=tenant,
         user=user,
         environ=environ,
         body=http_request.body,
