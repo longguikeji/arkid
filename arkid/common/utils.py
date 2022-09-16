@@ -260,3 +260,7 @@ def generate_secret(chars=None, length=128):
         chars= CHARS_COMMON
     rand = SystemRandom()
     return ''.join(rand.choice(chars) for x in range(length))
+
+def generate_md5_secret(secret):
+    import hashlib
+    return hashlib.md5(secret.encode('utf-8')).hexdigest()
