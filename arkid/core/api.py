@@ -108,6 +108,16 @@ class GlobalAuth(HttpBaseBearer):
                 if not token:
                     token = ExpiringToken.objects.create(user=request.user, token=generate_token())
                 tenant = request.tenant
+                # 获取操作id查询用户权限
+                operation_id = request.operation_id
+                if operation_id:
+                    from arkid.core.perm.permission_data import PermissionData
+                    permissiondata = PermissionData()
+                    if token.user and tenant:
+                        result = permissiondata.api_system_permission_check(request.tenant, token.user, operation_id)
+                        if result is False:
+                            raise HttpError(403, _('You do not have api permission','你没有这个接口的权限'))
+                return token
             else:
                 if token:
                     # 使用传统的token访问

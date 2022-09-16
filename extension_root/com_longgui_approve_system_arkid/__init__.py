@@ -54,7 +54,7 @@ class ApproveSystemArkIDExtension(ApproveSystemExtension):
     ):
         package = 'com.longgui.approve.system.arkid'
         requests = ApproveRequest.valid_objects.filter(
-            user__tenant=request.tenant, action__extension__package=package
+            tenant=request.tenant, action__extension__package=package
         )
         if is_approved == 'true':
             requests = requests.exclude(status="wait")
