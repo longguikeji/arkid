@@ -30,34 +30,6 @@ ExtensionConfigSchemaIn = Extension.create_config_schema(
 class ExtensionConfigSchemaOut(Schema):
     config_id: str
 
-
-@api.post("/extensions/{extension_id}/unload/",  tags=['平台插件'])
-@operation(roles=[PLATFORM_ADMIN])
-def unload_extension(request, extension_id: str):
-    """卸载插件
-    """
-    extension = ExtensionModel.objects.filter(id=extension_id).first()
-    if extension:
-        ext = import_extension(extension.ext_dir)
-        ext.stop()
-        return {'extension_id': ext.model.id.hex}
-    else:
-        return {}
-
-
-@api.post("/extensions/{extension_id}/load/", tags=['平台插件'])
-@operation(roles=[PLATFORM_ADMIN])
-def load_extension(request, extension_id: str):
-    """加载插件
-    """
-    extension = ExtensionModel.objects.filter(id=extension_id).first()
-    if extension:
-        ext = import_extension(extension.ext_dir)
-        ext.start()
-        return {'extension_id': ext.model.id.hex}
-    else:
-        return {}
-
 ExtensionProfileGetSchemaIn = Extension.create_profile_schema(
     'ExtensionProfileGetSchemaIn',
 )
@@ -235,15 +207,24 @@ def get_extension_markdown(request, id: str):
 
 @api.post("/extensions/{id}/toggle/", tags=["平台插件"])
 @operation(roles=[PLATFORM_ADMIN])
-def toggle_extension_status(request, id: str):
-    """ 租户插件列表
+def toggle_extension_active_status(request, id: str):
+    """ 切换插件启用状态
     """
     extension= ExtensionModel.objects.get(id=id)
-    ext = import_extension(extension.ext_dir)
+    
     if extension.is_active:
+        ext = import_extension(extension.ext_dir)
         ext.stop()
         extension.is_active = False
     else:
+        platform_tenant = Tenant.platform_tenant()
+        token = request.user.auth_token
+        from arkid.common.arkstore import check_arkstore_purcahsed_extension_expired
+        if not check_arkstore_purcahsed_extension_expired(platform_tenant, token, extension.package):
+            # 插件过期或人数超过限制，请再次购买
+            return ErrorDict(ErrorCode.CAN_NOT_ACTIVATE_EXTENSION)
+
+        ext = import_extension(extension.ext_dir)
         ext.start()
         extension.is_active = True
 
@@ -252,8 +233,8 @@ def toggle_extension_status(request, id: str):
 
 @api.post("/extensions/{id}/use_platform_config/toggle/", tags=["平台插件"])
 @operation(roles=[PLATFORM_ADMIN])
-def toggle_extension_status(request, id: str):
-    """ 租户插件列表
+def toggle_extension_allow_use_platform_config_status(request, id: str):
+    """ 切换是否允许租户使用平台配置状态
     """
     extension= ExtensionModel.objects.get(id=id)
     extension.is_allow_use_platform_config = not extension.is_allow_use_platform_config

@@ -596,12 +596,15 @@ def check_arkstore_app_purchased(tenant, token, app):
 
 
 def check_arkstore_purcahsed_extension_expired(tenant, token, package):
+    if settings.IS_CENTRAL_ARKID:
+        return True
+
     access_token = get_arkstore_access_token(tenant, token)
     ext_info = get_arkstore_extension_detail_by_package(access_token, package)
     if ext_info is None:
         return True
     extension_uuid = ext_info['uuid']
-    order_url = settings.ARKSTOER_URL + f'/arkstore/extensions/{extension_uuid}/purchased'
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_uuid}/purchased'
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
@@ -613,6 +616,9 @@ def check_arkstore_purcahsed_extension_expired(tenant, token, package):
 
 
 def check_arkstore_rented_extension_expired(tenant, token, package):
+    if settings.IS_CENTRAL_ARKID:
+        return True
+
     access_token = get_arkstore_access_token(tenant, token)
     ext_info = get_arkstore_extension_detail_by_package(access_token, package)
     if ext_info is None:
