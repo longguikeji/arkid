@@ -84,7 +84,7 @@ def list_all_apps(request, tenant_id: str):
 
 
 @api.get("/tenant/{tenant_id}/all_apps_in_arkid/", response=AppListsOut, tags=['应用'])
-@operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
     '''
     所有app列表(含arkid)
