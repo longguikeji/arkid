@@ -384,7 +384,7 @@ def get_mine_app_groups(request, tenant_id: str, parent_id=None):
 @api.get("/mine/tenant/{tenant_id}/mine_group_apps/", response=List[MineAppListItemOut], tags=["我的"])
 @operation(MineAppListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_mine_apps_with_group(request, tenant_id: str, app_group_id:str=None,order:str=None):
+def get_mine_apps_with_group(request, tenant_id: str, app_group_id:str=None, order:str=None):
     """获取我的分组应用
     """
     apps = []
@@ -397,12 +397,17 @@ def get_mine_apps_with_group(request, tenant_id: str, app_group_id:str=None,orde
             tenant =request.tenant,
             id=app_group_id
         )
-        
         apps = app_group.apps.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True))
-    
+    # 需要甄别有入口权限的应用
+    from arkid.core.perm.permission_data import PermissionData
+    pd = PermissionData()
+    app_ids = pd.get_entry_apps(request.user, tenant_id, apps)
+    if app_ids:
+        apps = apps.filter(id__in=app_ids)
+    else:
+        apps = apps.filter(id=None)
     if order:
         apps = apps.order_by(order)
-    
     apps = apps.all()
         
     return list(apps) if apps else []

@@ -168,7 +168,8 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                         items.extend(group_permission_details)
             return items
     else:
-        return []
+        permissions = SystemPermission.valid_objects.filter(category='group', is_system=True)
+        return permissions
     # tenant = request.tenant
     # if tenant.is_platform_tenant:
     #     permission = get_object_or_404(SystemPermission, id=permission_group_id, is_del=False)
