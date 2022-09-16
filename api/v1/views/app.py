@@ -124,11 +124,13 @@ def get_app_read_secret(request, tenant_id: str, id: str):
     '''
     获取应用秘钥
     '''
-    from arkid.common.utils import generate_secret
+    from arkid.common.utils import generate_secret, generate_md5_secret
+    secret = generate_secret()
+    md5_secret = generate_md5_secret(secret)
     app = App.valid_objects.get(id=id)
-    app.secret = generate_secret()
+    app.secret = md5_secret
     app.save()
-    return {"data": {"read_secret": app.secret}}
+    return {"data": {"read_secret": secret}}
 
 @api.get("/tenant/{tenant_id}/apps/{app_id}/openapi_version/", response=ConfigOpenApiVersionDataSchemaOut, tags=['应用'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
