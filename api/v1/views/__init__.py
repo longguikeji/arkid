@@ -38,5 +38,6 @@ from . import (
     path_list,
     upload,
     docs,
-    message
+    message,
+    statistics,
 )

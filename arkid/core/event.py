@@ -371,6 +371,8 @@ SET_FRONTEND_URL = 'SET_FRONTEND_URL'
 
 REQUEST_RESPONSE_LOGGGING = 'REQUEST_RESPONSE_LOGGGING'
 
+GET_STATISTICS_CHARTS = 'GET_STATISTICS_CHARTS'
+
 
 # register events
 register_event(
@@ -461,3 +463,5 @@ register_event(AUTHRULE_CHECK_AUTH_DATA, _('AUTHRULE_CHECK_AUTH_DATA', '认证�
 register_event(SET_FRONTEND_URL, _('SET_FRONTEND_URL', '设置前端链接'))
 
 register_event(REQUEST_RESPONSE_LOGGGING, _('REQUEST_RESPONSE_LOGGGING', 'Django请求日志'))
+
+register_event(GET_STATISTICS_CHARTS, _('GET_STATISTICS_CHARTS', 'Django请求日志'))
