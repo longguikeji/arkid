@@ -1907,6 +1907,20 @@ class PermissionData(object):
         else:
             return {'result': ''}
     
+    def get_entry_apps(self, user, tenant_id, apps):
+        permission_result = self.get_permission_str(user, tenant_id, None)
+        app_ids = []
+        sort_ids_dict = {}
+        for app in apps.order_by('-created'):
+            if app.entry_permission:
+                sort_ids_dict[app.entry_permission.sort_id] = app
+        permission_result_arr = list(permission_result.get('result'))
+        permission_result_arr_len = len(permission_result_arr)
+        for key,value in sort_ids_dict.items():
+            if key < permission_result_arr_len:
+                if int(permission_result_arr[key]) == 1:
+                    app_ids.append(value.id)
+        return app_ids
 
     def get_permission_str_process(self, userpermissionresult, tenant_id, is_64):
         '''
