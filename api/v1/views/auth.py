@@ -1,10 +1,11 @@
+from email import header
 from arkid.core.event import register_event, dispatch_event, Event
 from arkid.core.api import api, operation
 from arkid.core.translation import gettext_default as _
 from arkid.core.token import refresh_token
 from arkid.core.error import ErrorCode, ErrorDict
 from api.v1.schema.auth import *
-
+from django.http import HttpResponse, JsonResponse
 
 @api.post("/tenant/{tenant_id}/auth/", response=AuthOut, tags=['登录与注册'], auth=None)
 @operation(AuthOut, use_id=True)
@@ -21,8 +22,11 @@ def auth(request, tenant_id: str, event_tag: str, data: AuthIn):
 
     # 生成 token
     token = refresh_token(user)
-
-    return {'error': ErrorCode.OK.value, 'data': {'user': user, 'token': token}}
+    netloc = request.get_host().split(':')[0]
+    domain = ('.'.join(netloc.split('.')[-2:]))
+    response = JsonResponse({'error': ErrorCode.OK.value, 'data': {'user': {"id": user.id.hex, "username": user.username}, 'token': token}})
+    response.set_cookie("arkid_token", token, domain=domain, httponly=True)
+    return response
 
 @api.post("/tenant/{tenant_id}/reset_password/", response=ResetPasswordOut, tags=['登录与注册'],auth=None)
 @operation(ResetPasswordOut, use_id=True)

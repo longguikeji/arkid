@@ -1,0 +1,78 @@
+version: '3.5'
+services:
+  portal:
+    image: nginx:alpine
+    container_name: arkid-portal
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - arkid
+    ports:
+      - 8989:80
+    depends_on:
+      - be
+      - fe
+    volumes:
+      - ./portal.conf:/etc/nginx/conf.d/default.conf
+  be:
+    image: "registry.cn-zhangjiakou.aliyuncs.com/ark-releases/arkid:2.5.14"
+    container_name: arkid-be
+    sysctls:
+      - net.core.somaxconn=65535
+    restart: always
+    working_dir: /arkid
+    entrypoint: ["/bin/bash", "/var/arkid/docker-entrypoint.sh"]
+    command: ["supervisord"]
+    environment:
+      - TZ=Asia/Shanghai
+      - K8SORDC='true'
+    networks:
+      - arkid
+    volumes:
+      - ../:/arkid
+      - ./arkid.toml:/arkid/arkid.local.toml
+      - ./settings.py:/arkid/settings_local.py
+      - ./supervisor.conf:/arkid/supervisord.conf
+  fe:
+    image: "registry.cn-zhangjiakou.aliyuncs.com/ark-releases/arkid-fe:2.5.14"
+    container_name: arkid-fe
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - arkid
+    volumes:
+      - ./fe.conf:/etc/nginx/conf.d/default.conf
+  db:
+    image: mysql:5.7
+    container_name: arkid-db
+    restart: always
+    networks:
+      - arkid
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=arkid
+      - MYSQL_PASSWORD=arkid
+      - MYSQL_DATABASE=arkid
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./db/config:/etc/mysql/conf.d
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+
+
+  redis:
+    image: redis:5.0.3
+    container_name: arkid-redis
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+    networks:
+      - arkid
+networks:
+  arkid:
+    name: arkid
+    driver: bridge

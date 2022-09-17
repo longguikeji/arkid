@@ -100,13 +100,24 @@ class GlobalAuth(HttpBaseBearer):
     openapi_scheme = "token"
 
     def authenticate(self, request, token, app_id, app_secret):
-        from arkid.core.models import User  
+        from arkid.core.models import User
+        from arkid.common.utils import generate_md5_secret 
         try:
             if request.user and isinstance(request.user, User):  # restore 审批请求时，user已经存在，不需要再校验token
                 token = ExpiringToken.objects.filter(user=request.user).first()
                 if not token:
                     token = ExpiringToken.objects.create(user=request.user, token=generate_token())
                 tenant = request.tenant
+                # 获取操作id查询用户权限
+                operation_id = request.operation_id
+                if operation_id:
+                    from arkid.core.perm.permission_data import PermissionData
+                    permissiondata = PermissionData()
+                    if token.user and tenant:
+                        result = permissiondata.api_system_permission_check(request.tenant, token.user, operation_id)
+                        if result is False:
+                            raise HttpError(403, _('You do not have api permission','你没有这个接口的权限'))
+                return token
             else:
                 if token:
                     # 使用传统的token访问
@@ -137,7 +148,7 @@ class GlobalAuth(HttpBaseBearer):
                     except ValueError:
                         logger.error(_("invalid app_id", "无效的应用id"))
                         return
-                    app = App.valid_objects.get(id=app_id, secret=app_secret)
+                    app = App.valid_objects.get(id=app_id, secret=generate_md5_secret(app_secret))
                     tenant = request.tenant or Tenant.platform_tenant()
                     # 获取操作id查询用户权限
                     operation_id = request.operation_id

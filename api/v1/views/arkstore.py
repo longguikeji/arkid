@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from collections import OrderedDict
 from enum import Enum
+from ninja import ModelSchema
 from arkid.core.constants import *
 from arkid.core.models import Platform, Tenant, App
 from arkid.core.error import ErrorCode, ErrorDict
@@ -40,7 +41,7 @@ import enum
 from pydantic import Field
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination, ArstorePagination
-from arkid.extension.models import Extension, TenantExtension
+from arkid.extension.models import Extension, TenantExtension, ArkStoreCategory
 from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
 from arkid.core.schema import ResponseSchema
@@ -61,9 +62,11 @@ def get_arkstore_list(request, purchased, type, rented=False, all=False, extra_p
         limit = 1000000
         offset = 0
     saas_extensions_data = get_arkstore_extensions(access_token, purchased, rented, type, offset, limit, extra_params)
-    for ext in saas_extensions_data['items']:
-        if 'type' in ext:
-            ext['type'] = 'arkstore_' + ext['type']
+    if type != 'category':
+        # 分类不需要额外处理
+        for ext in saas_extensions_data['items']:
+            if 'type' in ext:
+                ext['type'] = 'arkstore_' + ext['type']
     return saas_extensions_data
 
 
@@ -104,6 +107,17 @@ class ArkstoreAppItemSchemaOut(ArkstoreItemSchemaOut):
 class ArkstoreExtensionItemSchemaOut(ArkstoreItemSchemaOut):
     package: Optional[str] = Field(readonly=True)
 
+class ArkstoreCategoryItemSchemaOut(Schema):
+
+    id: str = Field(alias='arkstore_id')
+    name: str = Field(alias='arkstore_name', default='')
+
+    # class Config:
+    #     model = ArkStoreCategory
+    # model_fields = []
+
+class ArkstoreCategoryListSchemaOut(ResponseSchema):
+    data: List[ArkstoreCategoryItemSchemaOut]
 
 class UserExtensionOut(Schema):
     order_type: str
@@ -238,6 +252,10 @@ class ArkstoreExtensionQueryIn(Schema):
         default="",
         title=_("插件标签")
     )
+    category_id:str = Field(
+        default="",
+        title=_("应用分类")
+    )
 
 
 class ArkstoreAppQueryIn(Schema):
@@ -248,6 +266,10 @@ class ArkstoreAppQueryIn(Schema):
     labels__contains:str = Field(
         default="",
         title=_("应用标签")
+    )
+    category_id:str = Field(
+        default="",
+        title=_("应用分类")
     )
 
 
@@ -267,18 +289,110 @@ def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Q
     return get_arkstore_list(request, None, 'app', extra_params=query_data)
 
 
+@api.get("/tenant/{tenant_id}/arkstore/categorys/", tags=['方舟商店'], response=ArkstoreCategoryListSchemaOut)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def list_arkstore_categorys(request, tenant_id: str, parent_id:str = None, type:str = 'app', show_local:int = 0):
+    '''
+    方舟商店分类列表
+    '''
+
+    items = ArkStoreCategory.valid_objects.filter()
+    if not items.exists():
+        # 如果没有商品分类信息(第一次)
+        get_arkstore_category_http()
+        items = ArkStoreCategory.valid_objects.filter()
+    items = items.filter(arkstore_type=type)
+
+    if parent_id in [None,""]:
+        # 未传则获取所有一级分组
+        items = items.filter(arkstore_parent_id=None)
+    elif parent_id in [0,"0"]:
+        # 虚拟节点返回空
+        items = []
+    else:
+        items = items.filter(arkstore_parent_id=parent_id)
+    # result = {
+    #     "data": [
+    #         {
+    #             "id": 17,
+    #             "name": "化学"
+    #         },
+    #         {
+    #             "id": 26,
+    #             "name": "历史"
+    #         }
+    #     ]
+    # }
+    # data = result.get('data', [])
+    result = []
+    if show_local == 1 and parent_id in [None,""]:
+        result.append({
+            'arkstore_id': -1,
+            'arkstore_name': '自建应用' 
+        })
+        if items:
+            ids = []
+            for item in items:
+                temp_items = []
+                item.get_all_child(temp_items)
+                if App.valid_objects.filter(arkstore_category_id__in=temp_items).exists():
+                    ids.append(item.id)
+            if ids:
+                items = items.filter(id__in=ids).all()
+                result.extend(list(items))
+            else:
+                items = []
+    else:
+        if items:
+            result.extend(list(items))
+    return {'data': result}
+
+
+def get_arkstore_category_http():
+    '''
+    同步arkstore分类(只有没分类的时候才会爬一次)
+    '''
+    from django.conf import settings
+    import requests
+    import logging
+    url = '/api/v1/arkstore/all_categories'
+    resp = requests.get(settings.ARKSTOER_URL + url)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_apps_and_extensions: {url}, {resp.status_code}')
+    resp = resp.json()
+    data = resp.get('data', [])
+    for item in data:
+        arkstore_id = item.get('id')
+        arkstore_name = item.get('name', '')
+        arkstore_type = item.get('type', '')
+        arkstore_parent_id = item.get('parent_id', None)
+
+        arkstorecategory, created = ArkStoreCategory.objects.get_or_create(arkstore_id=arkstore_id)
+        arkstorecategory.arkstore_name = arkstore_name
+        arkstorecategory.arkstore_type = arkstore_type
+        arkstorecategory.arkstore_parent_id = arkstore_parent_id
+        arkstorecategory.save()
+    logging.info('同步arkstore分类')
+
 @api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(ArstorePagination)
-def list_arkstore_purchased_extensions(request, tenant_id: str):
-    return get_arkstore_list(request, True, 'extension')
+def list_arkstore_purchased_extensions(request, tenant_id: str, category_id: str = None):
+    extra_params = {}
+    if category_id and category_id != "" and category_id != "0":
+        extra_params['category_id'] = category_id
+    return get_arkstore_list(request, True, 'extension', extra_params=extra_params)
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_arkstore_purchased_apps(request, tenant_id: str):
-    arkstore_apps = get_arkstore_list(request, None, 'app', all=True)['items']
+def list_arkstore_purchased_apps(request, tenant_id: str, category_id: str = None):
+    extra_params = {}
+    if category_id and category_id != "" and category_id != "0":
+        extra_params['category_id'] = category_id
+
+    arkstore_apps = get_arkstore_list(request, None, 'app', all=True, extra_params=extra_params)['items']
     installed_apps = App.active_objects.filter(tenant_id=tenant_id, arkstore_app_id__isnull=False)
     installed_app_ids = set(str(app.arkstore_app_id) for app in installed_apps)
     return [app for app in arkstore_apps if app['uuid'] in installed_app_ids]

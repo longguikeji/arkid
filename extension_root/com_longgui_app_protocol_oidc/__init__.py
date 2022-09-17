@@ -86,6 +86,7 @@ class OAuth2ServerExtension(AppProtocolExtension):
         config["authorize"] = host+reverse(namespace+":authorize", args=[tenant_id, obj.uuid])
         config["token"] = host+reverse(namespace+":token", args=[tenant_id])
         config["logout"] = host+reverse(namespace+":oauth-user-logout", args=[tenant_id])
+        config["issuer_url"] = "{}/api/v1/tenant/{}/app/{}/".format(host,tenant_id,obj.uuid)
         config["client_id"] = obj.client_id
         config["client_secret"] = obj.client_secret
         config["skip_authorization"] = obj.skip_authorization

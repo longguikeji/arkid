@@ -126,6 +126,8 @@ def get_arkstore_extensions(access_token, purchased=None, rented=False, type=Non
             url = '/api/v1/arkstore/extensions/purchased'
     elif type == 'app':
         url = '/api/v1/arkstore/apps/purchased'
+    elif type == 'category':
+        url = '/api/v1/arkstore/app/categories'
     else:
         url = '/api/v1/arkstore/apps_and_extensions'
     arkstore_extensions_url = settings.ARKSTOER_URL + url
@@ -285,8 +287,28 @@ def install_arkstore_extension(tenant, token, extension_id):
     res = get_arkstore_extension_detail(access_token, extension_id)
     if res['type'] == 'auto_form_fill':
         app = get_arkid_saas_app_detail(tenant, token, extension_id)
-        app['data'] = {}
-        create_tenant_app(tenant, app)
+        local_app = App.active_objects.filter(tenant=tenant, arkstore_app_id=extension_id).first()
+        if not local_app:
+            local_app = create_tenant_oidc_app(tenant, app['url'], app['name'], app['description'], app['logo'])
+            local_app.arkstore_app_id = res['uuid']
+            category_id = res.get('category_id', None)
+            if category_id:
+                local_app.arkstore_category_id = category_id
+                local_app.save()
+        local_app.name = app['name']
+        local_app.description = app['description']
+        local_app.logo = app['logo']
+
+        config = get_app_config()
+        frontend_url = config.get_frontend_host(schema=True)
+        pname = "com_longgui_auto_form_fill"
+        url = f'{frontend_url}/api/v1/{pname}/apps/{local_app.id.hex}/arkid_form_login/'
+        local_app.url = url
+
+        local_app.type = 'AutoFormFill'
+        local_app.package = 'com.longgui.auto.form.fill'
+
+        local_app.save()
     elif res['type'] == 'extension':
         download_arkstore_extension(tenant, token, extension_id, res)
     else:
@@ -298,6 +320,10 @@ def install_arkstore_extension(tenant, token, extension_id):
         else:
             url = url + f'?tenant_id={saas_tenant_id}'
         local_app = create_tenant_oidc_app(tenant, url, app['name'], app['description'], app['logo'])
+        category_id = res.get('category_id', None)
+        if category_id:
+            local_app.arkstore_category_id = category_id
+            local_app.save()
         local_app.arkstore_app_id = res['uuid']
         local_app.save()
 
@@ -331,7 +357,7 @@ def download_arkstore_extension(tenant, token, extension_id, extension_detail):
         zip_ref.extractall(extract_folder)
 
     try:
-        load_installed_extension(ext_dir)
+        load_installed_extension(ext_dir, extension_detail)
         logger.info(f'load download extension: {ext_package} scuess')
     except Exception as e:
         logger.exception(f'load download extension: {ext_package} failed: {str(e)}')
@@ -357,7 +383,7 @@ def uninstall_extension(ext_dir):
         extension.delete()
 
 
-def load_installed_extension(ext_dir):
+def load_installed_extension(ext_dir, extension_detail):
     ext = import_extension(ext_dir)
     extension, is_create = Extension.objects.update_or_create(
         defaults={
@@ -371,6 +397,10 @@ def load_installed_extension(ext_dir):
         package = ext.package,
     )
     # load_extension_apps([extension])
+    category_id = extension_detail.get('category_id', None)
+    if category_id:
+        extension.category_id = category_id
+        extension.save()
 
     platform_tenant = Tenant.platform_tenant()
     tenant_extension, is_create = TenantExtension.objects.update_or_create(
@@ -454,6 +484,7 @@ def create_tenant_oidc_app(tenant, url, name, description='', logo=''):
             url=url,
             defaults={"description": description, "logo": logo, 'is_del': False, 'is_active': True}
         )
+
     if app.entry_permission is None:
         from arkid.core.models import SystemPermission
         from arkid.core.perm.permission_data import PermissionData
@@ -565,12 +596,15 @@ def check_arkstore_app_purchased(tenant, token, app):
 
 
 def check_arkstore_purcahsed_extension_expired(tenant, token, package):
+    if settings.IS_CENTRAL_ARKID:
+        return True
+
     access_token = get_arkstore_access_token(tenant, token)
     ext_info = get_arkstore_extension_detail_by_package(access_token, package)
     if ext_info is None:
         return True
     extension_uuid = ext_info['uuid']
-    order_url = settings.ARKSTOER_URL + f'/arkstore/extensions/{extension_uuid}/purchased'
+    order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_uuid}/purchased'
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
     resp = requests.get(order_url, params=params, headers=headers, timeout=10)
@@ -582,6 +616,9 @@ def check_arkstore_purcahsed_extension_expired(tenant, token, package):
 
 
 def check_arkstore_rented_extension_expired(tenant, token, package):
+    if settings.IS_CENTRAL_ARKID:
+        return True
+
     access_token = get_arkstore_access_token(tenant, token)
     ext_info = get_arkstore_extension_detail_by_package(access_token, package)
     if ext_info is None:
@@ -678,3 +715,13 @@ def click_arkstore_app(access_token, arkstore_app_id):
         raise Exception(f'Error click_arkstore_app: {resp.status_code}')
     resp = resp.json()
     return resp
+
+def get_app_config_from_arkstore(request, arkstore_app_id):
+    token = request.user.auth_token
+    tenant = request.tenant
+    access_token = get_arkstore_access_token(tenant, token)
+    res = get_arkstore_extension_detail(access_token, arkstore_app_id)
+    if res['type'] == 'auto_form_fill':
+        app = get_arkid_saas_app_detail(tenant, token, arkstore_app_id)
+        return app.get('config', {}).get('config', {})
+    return {}

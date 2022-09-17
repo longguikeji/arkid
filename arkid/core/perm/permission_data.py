@@ -1907,6 +1907,20 @@ class PermissionData(object):
         else:
             return {'result': ''}
     
+    def get_entry_apps(self, user, tenant_id, apps):
+        permission_result = self.get_permission_str(user, tenant_id, None)
+        app_ids = []
+        sort_ids_dict = {}
+        for app in apps.order_by('-created'):
+            if app.entry_permission:
+                sort_ids_dict[app.entry_permission.sort_id] = app
+        permission_result_arr = list(permission_result.get('result'))
+        permission_result_arr_len = len(permission_result_arr)
+        for key,value in sort_ids_dict.items():
+            if key < permission_result_arr_len:
+                if int(permission_result_arr[key]) == 1:
+                    app_ids.append(value.id)
+        return app_ids
 
     def get_permission_str_process(self, userpermissionresult, tenant_id, is_64):
         '''
@@ -2415,17 +2429,20 @@ class PermissionData(object):
         '''
         获取默认的系统权限
         '''
-        systempermission = SystemPermission.valid_objects.filter(
-            name='normal-user',
+        systempermissions = SystemPermission.valid_objects.filter(
+            Q(name='normal-user')|Q(name='platform-user'),
             category='group',
-        ).first()
-        if systempermission:
-            describe = systempermission.describe
-            sort_ids = describe.get('sort_ids', [])
-            if is_include_self:
-                sort_ids.append(systempermission.sort_id)
-            sort_ids.sort()
-            return sort_ids
+        )
+        if systempermissions:
+            last_sort_ids = []
+            for systempermission in systempermissions:
+                describe = systempermission.describe
+                sort_ids = describe.get('sort_ids', [])
+                if is_include_self and systempermission.sort_id not in sort_ids:
+                    sort_ids.append(systempermission.sort_id)
+                last_sort_ids.extend(sort_ids)
+            last_sort_ids.sort()
+            return last_sort_ids
         else:
             return []     
 

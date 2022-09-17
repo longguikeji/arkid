@@ -311,6 +311,31 @@ def remove_app_permission_to_user(tenant_id, app_id, user_id, permission_id):
     )
 
 
+@app.task
+def get_arkstore_category_http():
+    from django.conf import settings
+    from arkid.extension.models import ArkStoreCategory
+    import logging
+    url = '/api/v1/arkstore/all_categories'
+    resp = requests.get(settings.ARKSTOER_URL + url)
+    if resp.status_code != 200:
+        raise Exception(f'Error get_arkstore_apps_and_extensions: {url}, {resp.status_code}')
+    resp = resp.json()
+    data = resp.get('data', [])
+    for item in data:
+        arkstore_id = item.get('id')
+        arkstore_name = item.get('name', '')
+        arkstore_type = item.get('type', '')
+        arkstore_parent_id = item.get('parent_id', None)
+
+        arkstorecategory, created = ArkStoreCategory.objects.get_or_create(arkstore_id=arkstore_id)
+        arkstorecategory.arkstore_name = arkstore_name
+        arkstorecategory.arkstore_type = arkstore_type
+        arkstorecategory.arkstore_parent_id = arkstore_parent_id
+        arkstorecategory.save()
+    logging.info('同步arkstore分类')
+
+
 class WebhookSchemes(str, Enum):
     HTTP = "http"
     HTTPS = "https"
@@ -432,7 +457,6 @@ def send_webhook_request_sync(webhook_uuid, target_url, secret, event_type, data
 
 @app.task
 def check_extensions_expired(*args, **kwargs):
-    from arkid.extension.utils import find_available_extensions
     from arkid.common.arkstore import check_arkstore_purcahsed_extension_expired
     from arkid.core.token import refresh_token
 
@@ -440,16 +464,16 @@ def check_extensions_expired(*args, **kwargs):
         logger.info("=== arkid.core.tasks.check_extensions_expired start...===")
         logger.info(f"args: {args}, kwargs: {kwargs}")
 
-        exts = find_available_extensions()
+        platform_tenant = Tenant.platform_tenant()
+        admin_user = User.objects.filter(username='admin', tenant=platform_tenant).first()
+        token = refresh_token(admin_user)
+        
+        exts = Extension.active_objects.all()
         for ext in exts:
             logger.info(
                 f"=== arkid.core.tasks.check_extensions_expired start: {ext.package}...==="
             )
-            platform_tenant = Tenant.platform_tenant()
-            admin_user = User.objects.filter(username='admin', tenant=platform_tenant)
-            token = refresh_token(admin_user)
             if not check_arkstore_purcahsed_extension_expired(platform_tenant, token, ext.package):
-                ext = Extension.active_objects.filter(package=ext.package).first()
                 if ext:
                     ext.is_active = False
                     ext.save()
@@ -472,31 +496,31 @@ def check_extensions_rent_expired(*args, **kwargs):
         logger.info("=== arkid.core.tasks.check_extensions_rent_expired start...===")
         logger.info(f"args: {args}, kwargs: {kwargs}")
 
-        exts = find_available_extensions()
-        for ext in exts:
-            logger.info(
-                f"=== arkid.core.tasks.check_extensions_rent_expired start: {ext.package}...==="
-            )
-            for tenant in Tenant.valid_objects.all():
-                if tenant.is_platform_tenant:
-                    tenant_admin_user = User.active_objects.filter(username='admin', tenant=tenant).first()
-                else:
-                    tenant_admin_user = User.active_objects.filter(is_platform_user=True, tenant=tenant).first()
-                if not tenant_admin_user:
-                    break
-                token = refresh_token(tenant_admin_user)
+        platform_tenant = Tenant.platform_tenant()
+        admin_user = User.objects.filter(username='admin', tenant=platform_tenant).first()
+        token = refresh_token(admin_user)
+
+        exts = Extension.active_objects.all()
+        for tenant in Tenant.active_objects.all():
+            if tenant.is_platform_tenant:
+                continue
+            
+            for ext in exts:
+                logger.info(
+                    f"=== arkid.core.tasks.check_extensions_rent_expired start: {ext.package} {tenant.slug} {tenant.id}...==="
+                )
+                
                 if not check_arkstore_rented_extension_expired(tenant, token, ext.package):
-                    extension = Extension.valid_objects.filter(package=ext.package).first()
                     tenant_extension = TenantExtension.valid_objects.filter(
-                        extension=extension,
+                        extension=ext,
                         tenant=tenant,
                     ).first()
-                    if ext:
-                        ext.is_rented = False
-                        ext.save()
-            logger.info(
-                f"=== arkid.core.tasks.check_extensions_rent_expired end: {ext.package}...==="
-            )
+                    if tenant_extension:
+                        tenant_extension.is_rented = False
+                        tenant_extension.save()
+                logger.info(
+                   f"=== arkid.core.tasks.check_extensions_rent_expired end: {ext.package} {tenant.slug} {tenant.id}...==="
+                )
 
     except Exception as e:
         logger.error(f"=== arkid.core.tasks.check_extensions_rent_expired failed: {e}...===")

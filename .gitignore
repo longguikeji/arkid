@@ -181,6 +181,7 @@ devops/docker-compose/be/upload
 celerybeat.pid
 
 # supervisord
+supervisord.conf
 supervisord.pid
 supervisord.log
 

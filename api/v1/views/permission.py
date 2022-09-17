@@ -349,6 +349,8 @@ def permission_batch_open(request, tenant_id: str, data: PermissionBatchSchemaIn
         # 需要检查是否是分组如果是分组，需要多加几个
         ids = []
         for system_permission in system_permissions:
+            if system_permission.category == 'group' and system_permission.is_system == True:
+                return ErrorDict(ErrorCode.SYSTEM_PERMISSION_NOT_OPERATION)
             # 普通权限
             if str(system_permission.id) not in ids:
                 ids.append(str(system_permission.id))

@@ -77,6 +77,7 @@ class ErrorCode(Enum):
     TRIAL_EXTENSION_TWICE = ('17003', _('extension can not trial twice', '试用不允许重复下单'))
     AGENT_BIND_CAN_NOT_CHANGE = ('17004', _('agent bind can not change', '代理商已绑定，无法修改'))
     PLUG_IN_NOT_HIRE = ('17005', _('plug-in not hire', '插件没有租赁，无法使用'))
+    CAN_NOT_ACTIVATE_EXTENSION = ('17006', _('extension expired or beyond max user limit', '插件已过期或操作人数限制，请再次购买'))
     
     PASSWORD_NOT_CORRECT = ('18001', _('password not correct', '密码不正确'))
 

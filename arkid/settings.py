@@ -217,9 +217,10 @@ SLPi97Rwe7OiVCHJvFxmCI9RYPbJzUO7B0sAB7AuKvMDglF8UAnbTJXDOavrbXrb
 g+gp5fQ4nmDrSNHjakzQCX2mKMsx/GLWZzoIDd7ECV9f
 -----END RSA PRIVATE KEY-----""",
     "SCOPES": {
-        "openid": "OpenID Connect scope",
+        "openid": "OpenID Connect",
         "userinfo": "UserInfo",
-        "email": "Email user"
+        "email": "Email user",
+        "profile": "Profile"
         # ... any other scopes that you use
     },
 }

@@ -106,13 +106,13 @@ class ConfigOpenApiVersionDataSchemaOut(ResponseSchema):
 
 AppProtocolConfigIn = AppProtocolExtension.create_composite_config_schema(
     'AppProtocolConfigIn',
-    exclude=["name", "type", "logo", "url", 'description', 'entry_permission', 'arkstore_app_id'],
+    exclude=["name", "type", "logo", "url", 'description', 'entry_permission', 'arkstore_app_id', 'arkstore_category_id'],
 )
 
 AppProtocolConfigItemOut = AppProtocolExtension.create_composite_config_schema(
     'AppProtocolConfigItemOut',
     id=(UUID, Field(hidden=True)),
-    exclude=["name", "type", "logo", "url", 'description', 'entry_permission', 'arkstore_app_id'],
+    exclude=["name", "type", "logo", "url", 'description', 'entry_permission', 'arkstore_app_id', 'arkstore_category_id'],
 )
 
 
