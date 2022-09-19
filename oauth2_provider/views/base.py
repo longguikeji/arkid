@@ -510,6 +510,12 @@ class TokenView(OAuthLibMixin, View):
         #     tenant = Tenant.objects.get(uuid=tenant_uuid)
         # else:
         #     tenant = None
+        code = request.POST.get('code', None)
+        grant_type = request.POST.get('grant_type', None)
+        if code is None:
+            return JsonResponse({'error': '-1', 'message': 'the api requires a parameter code'})
+        if grant_type is None:
+            return JsonResponse({'error': '-2', 'message': 'the api requires a parameter grant_type'})
         tenant = request.tenant
         url, headers, body, status = self.create_token_response(request, tenant)
         if status == 200:

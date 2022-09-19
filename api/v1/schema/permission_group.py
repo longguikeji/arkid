@@ -92,7 +92,7 @@ class PermissionGroupEditSchemaIn(Schema):
     #     model_fields = ['name']
 
 class PermissionListSchemaOut(Schema):
-    category: str = Field(title=_("分类名称"))
+    category: str = Field(title=_("分类"))
     operation_id: str = Field(default='', title=_("操作ID"))
     id: UUID = Field(title=_("id"))
     name: str = Field(title=_("名称"))

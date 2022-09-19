@@ -1338,7 +1338,7 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
     
-    def get_app_permissions_by_search(self, tenant_id, app_id):
+    def get_app_permissions_by_search(self, tenant_id, app_id, category = None, operation_id = None):
         '''
         根据应用查权限(根据应用权限字符串)
         '''
@@ -1357,15 +1357,29 @@ class PermissionData(object):
                     if int(item) == 1:
                         permission_sort_ids.append(index)
                 if apppermissionresult.app:
-                    result.extend(list(Permission.valid_objects.filter(
+                    result_items = Permission.valid_objects.filter(
                         tenant_id=tenant_id,
                         app_id=app_id,
                         sort_id__in=permission_sort_ids
-                    ).order_by('sort_id')))
+                    )
+                    if category:
+                        category = category.strip()
+                        result_items = result_items.filter(category__icontains=category)
+                    if operation_id:
+                        operation_id = operation_id.strip()
+                        result_items = result_items.filter(operation_id__icontains=operation_id)
+                    result.extend(list(result_items.order_by('sort_id')))
                 else:
-                    result.extend(list(SystemPermission.valid_objects.filter(
+                    result_items = SystemPermission.valid_objects.filter(
                         sort_id__in=permission_sort_ids
-                    ).order_by('sort_id')))
+                    )
+                    if category:
+                        category = category.strip()
+                        result_items = result_items.filter(category__icontains=category)
+                    if operation_id:
+                        operation_id = operation_id.strip()
+                        result_items = result_items.filter(operation_id__icontains=operation_id)
+                    result.extend(list(result_items.order_by('sort_id')))
 
         return result
 
@@ -1401,13 +1415,16 @@ class PermissionData(object):
             # 需要正确展现用户的id
             user_id = str(login_user.id)
         if app_name:
-            permissions = permissions.filter(app__name=app_name)
+            app_name = app_name.strip()
+            permissions = permissions.filter(app__name__icontains=app_name)
         if category:
-            permissions = permissions.filter(category=category)
-            systempermissions = systempermissions.filter(category=category)
+            category = category.strip()
+            permissions = permissions.filter(category__icontains=category)
+            systempermissions = systempermissions.filter(category__icontains=category)
         if operation_id:
-            permissions = permissions.filter(operation_id=operation_id)
-            systempermissions = systempermissions.filter(operation_id=operation_id)
+            operation_id = operation_id.strip()
+            permissions = permissions.filter(operation_id__icontains=operation_id)
+            systempermissions = systempermissions.filter(operation_id__icontains=operation_id)
         if app_id or user_id or group_id:
             if app_id:
                 app = App.valid_objects.filter(
@@ -1509,7 +1526,7 @@ class PermissionData(object):
             systempermissions = systempermissions.filter(Q(tenant__isnull=True)|Q(tenant_id=tenant_id))
         return list(systempermissions.all())+list(permissions.all())
 
-    def get_user_app_last_permissions(self, tenant_id, app_id, user_id):
+    def get_user_app_last_permissions(self, tenant_id, app_id, user_id, category=None, operation_id=None):
         '''
         获取用户指定应用的最终权限
         '''
@@ -1546,10 +1563,18 @@ class PermissionData(object):
             if app_id:
                 permissions =  Permission.valid_objects.filter(
                     app_id=app_id,
-                ).order_by('sort_id')
+                )
             else:
-                permissions = SystemPermission.valid_objects.order_by('sort_id')
-            
+                permissions = SystemPermission.valid_objects.filter()
+
+            if category:
+                category = category.strip()
+                permissions = permissions.filter(category__icontains=category)
+            if operation_id:
+                operation_id = operation_id.strip()
+                permissions = permissions.filter(operation_id__icontains=operation_id)
+
+            permissions = permissions.order_by('sort_id')
             for permission in permissions:
                 sort_id = permission.sort_id
                 if sort_id in index_list:
@@ -1560,7 +1585,7 @@ class PermissionData(object):
         else:
             return []
 
-    def get_user_group_last_permissions(self, tenant_id, usergroup_id):
+    def get_user_group_last_permissions(self, tenant_id, usergroup_id, category=None, operation_id=None):
         '''
         获取用户分组的最终权限
         '''
@@ -1571,6 +1596,16 @@ class PermissionData(object):
         systempermissions = SystemPermission.valid_objects.filter(
             Q(tenant__isnull=True)|Q(tenant_id=tenant_id)
         )
+
+        if category:
+            category = category.strip()
+            permissions = permissions.filter(category__icontains=category)
+            systempermissions = systempermissions.filter(category__icontains=category)
+        if operation_id:
+            operation_id = operation_id.strip()
+            permissions = permissions.filter(operation_id__icontains=operation_id)
+            systempermissions = systempermissions.filter(operation_id__icontains=operation_id)
+
         compress = Compress()
         usergroup = UserGroup.valid_objects.filter(
             id=usergroup_id
@@ -1669,13 +1704,16 @@ class PermissionData(object):
             # 需要正确展现用户的id
             user_id = str(login_user.id)
         if app_name:
-            permissions = permissions.filter(app__name=app_name)
+            app_name = app_name.strip()
+            permissions = permissions.filter(app__name__icontains=app_name)
         if category:
-            permissions = permissions.filter(category=category)
-            systempermissions = systempermissions.filter(category=category)
+            category = category.strip()
+            permissions = permissions.filter(category__icontains=category)
+            systempermissions = systempermissions.filter(category__icontains=category)
         if operation_id:
-            permissions = permissions.filter(operation_id=operation_id)
-            systempermissions = systempermissions.filter(operation_id=operation_id)
+            operation_id = operation_id.strip()
+            permissions = permissions.filter(operation_id__icontains=operation_id)
+            systempermissions = systempermissions.filter(operation_id__icontains=operation_id)
         if app_id or user_id or group_id:
             if app_id:
                 app = App.valid_objects.filter(
@@ -1824,7 +1862,7 @@ class PermissionData(object):
         return systempermissions
 
 
-    def get_group_permissions_by_search(self, tenant_id, select_usergroup_id, app_name, category):
+    def get_group_permissions_by_search(self, tenant_id, select_usergroup_id, app_name, category, operation_id=None):
         '''
         根据应用，用户分组，分类查权限(要根据分组身份显示正确的列表)
         '''
@@ -1837,10 +1875,16 @@ class PermissionData(object):
         )
         compress = Compress()
         if app_name:
-            permissions = permissions.filter(app__name=app_name)
+            app_name = app_name.strip()
+            permissions = permissions.filter(app__name__icontains=app_name)
         if category:
-            permissions = permissions.filter(category=category)
-            systempermissions = systempermissions.filter(category=category)
+            category = category.strip()
+            permissions = permissions.filter(category__icontains=category)
+            systempermissions = systempermissions.filter(category__icontains=category)
+        if operation_id:
+            operation_id = operation_id.strip()
+            permissions = permissions.filter(operation_id__icontains=operation_id)
+            systempermissions = systempermissions.filter(operation_id__icontains=operation_id)
         if select_usergroup_id:
             # 系统权限
             usergroup_permissionresult = GroupPermissionResult.valid_objects.filter(
