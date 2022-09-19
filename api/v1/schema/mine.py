@@ -54,7 +54,7 @@ class MinePermissionListSchemaOut(Schema):
     id: UUID = Field(hidden=True)
     operation_id: str = Field(default='', title=_("操作ID"))
     name: str
-    # app_name: str = Field(default=None, alias="app.name", title=_("应用名称"))
+    # app_name: str = Field(default=None, alias="app.name", title=_("应用"))
     category: str
     sort_id: int = Field(hidden=True)
     in_current: bool = Field(item_action={"path":"/api/v1/mine/tenant/{tenant_id}/permissions/{permission_id}/add_permisssion", "method":actions.FrontActionMethod.GET.value, "close": False})

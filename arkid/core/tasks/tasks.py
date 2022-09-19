@@ -215,6 +215,20 @@ def update_arkid_all_user_permission(tenant_id=None):
     permissiondata = PermissionData()
     permissiondata.update_arkid_all_user_permission(tenant_id)
 
+@app.task
+def create_app_add_admin_permission(tenant_id, permission_id, user_id):
+    '''
+    创建应用并添加入口权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_arkid_all_user_permission(tenant_id)
+    permissions_dict = {
+        'user_ids': [user_id],
+        'data_arr': [permission_id],
+        'tenant_id': tenant_id,
+    }
+    permissiondata.add_user_many_permission(permissions_dict)
+
 
 @app.task
 def update_single_user_system_permission(tenant_id, user_id):
