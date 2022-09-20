@@ -31,6 +31,7 @@ class FrontPageType(Enum):
     CARDS_PAGE = 'cards'
     GRID_PAGE = 'grid'
     STEP_PAGE = 'step'
+    CHART_PAGE = 'chart'
 
 class FrontPage(DeepSN):
     """ 前端页面配置类
@@ -239,6 +240,15 @@ class GridPage(FrontPage):
 
     def __init__(self, *args, **kwargs):
         super().__init__(type=FrontPageType.GRID_PAGE, *args, **kwargs)
+
+
+class ChartPage(FrontPage):
+    """图表页面
+    """
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(type=FrontPageType.CHART_PAGE, *args, **kwargs)
+
 
 class TabsPage(FrontPage):
     """网格页面

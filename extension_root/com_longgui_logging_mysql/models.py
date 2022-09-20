@@ -22,6 +22,10 @@ class Log(BaseModel):
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, verbose_name='用户')
     is_tenant_admin = models.BooleanField(blank=True, default=False, verbose_name='是否管理员日志')
     data = models.JSONField(blank=True, default=dict, verbose_name='日志数据')
+    created = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='创建时间', db_index = True)
+    username = models.CharField(max_length=128, blank=False, null=True, db_index = True)
+    request_path = models.CharField(max_length=128, blank=False, null=True, db_index = True)
+    status_code = models.IntegerField(blank=False, null=True, db_index = True)
 
 
 class TenantLogConfig(BaseModel):

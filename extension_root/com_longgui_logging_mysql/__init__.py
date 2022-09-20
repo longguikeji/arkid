@@ -3,7 +3,7 @@ from django.utils import timezone
 from datetime import datetime
 from pydantic import UUID4
 from typing import Optional, List
-from ninja import Field, Schema
+from ninja import Field, Schema, Query
 from arkid.core.api import GlobalAuth, operation
 from arkid.core.constants import *
 from arkid.core.extension import create_extension_schema
@@ -102,6 +102,26 @@ class LogConfigSchema(Schema):
 class LogConfigResponseOut(ResponseSchema):
     data: LogConfigSchema
 
+class LogItemQueryIn(Schema):
+    username: str = Field(
+        default="",
+        title=_("用户名")
+    )
+    request_path: str = Field(
+        default="",
+        title=_("HTTP请求URL")
+    )
+    status_code: int = Field(
+        default="",
+        title=_("HTTP状态码")
+    )
+    created__gte: Optional[datetime] = Field(
+        title=_("起始时间")
+    )
+    created__lte: Optional[datetime] = Field(
+        title=_("结束时间")
+    )
+
 
 def get_log_retention_date(tenant):
     import datetime
@@ -131,13 +151,27 @@ class MysqlLoggingExtension(LoggingExtension):
             is_tenant_admin = tenant.has_admin_perm(user)
         except Exception as e:
             is_tenant_admin = False
-        
-        Log.objects.create(
-            tenant=tenant,
-            user=user,
-            is_tenant_admin=is_tenant_admin,
-            data=data
-        )
+
+        request_path = request.path
+        status_code = response.status_code
+        if user:
+            username = user.username
+        else:
+            try:
+                response_body = json.loads(data["body_response"])
+                username = response_body["data"]["user"]["username"]
+            except:
+                username = None
+
+        log = Log.valid_objects.create(
+                tenant=tenant,
+                user=user,
+                is_tenant_admin=is_tenant_admin,
+                data=data,
+                username=username,
+                request_path=request_path,
+                status_code=status_code,
+            )
 
     def register_extension_api(self):
         self.log_detail_path = self.register_api(
@@ -213,31 +247,40 @@ class MysqlLoggingExtension(LoggingExtension):
 
     @operation(LogListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     @paginate(CustomPagination)
-    def list_user_logs(self, request, tenant_id:str):
+    def list_user_logs(self, request, tenant_id:str, query_data: LogItemQueryIn=Query(...)):
         """ 获取普通用户日志列表
         """
+        query_data = query_data.dict()
+        data = {k:v for k, v in query_data.items() if v}
         logs = Log.active_objects.filter(tenant=request.tenant, is_tenant_admin=False) \
             .filter(created__gt=get_log_retention_date(request.tenant)) \
+            .filter(**data) \
             .order_by("-created")
         return logs
 
     @operation(LogListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     @paginate(CustomPagination)
-    def list_manager_logs(self, request, tenant_id:str):
+    def list_manager_logs(self, request, tenant_id:str, query_data: LogItemQueryIn=Query(...)):
         """ 获取管理员日志列表
         """
+        query_data = query_data.dict()
+        data = {k:v for k, v in query_data.items() if v}
         logs = Log.active_objects.filter(tenant=request.tenant, is_tenant_admin=True) \
             .filter(created__gt=get_log_retention_date(request.tenant)) \
+            .filter(**data) \
             .order_by("-created")
         return logs
 
     @operation(LogListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
     @paginate(CustomPagination)
-    def list_logs(self, request, tenant_id:str):
+    def list_logs(self, request, tenant_id:str, query_data: LogItemQueryIn=Query(...)):
         """ 获取日志列表
         """
+        query_data = query_data.dict()
+        data = {k:v for k, v in query_data.items() if v}
         logs = Log.active_objects.filter(tenant=request.tenant) \
             .filter(created__gt=get_log_retention_date(request.tenant)) \
+            .filter(**data) \
             .order_by("-created")
         return logs
 
