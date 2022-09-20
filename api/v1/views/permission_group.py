@@ -267,6 +267,8 @@ def get_select_permissions(request, tenant_id: str, permission_group_id: str, ca
     """ 获取所有权限并附加是否在当前分组的状态
     """
     # 只允许非arkid的分组操作(如果用户直接在系统分组里加权限会有问题)
+    if permission_group_id == 'arkid':
+        return []
     permission_group = SystemPermission.valid_objects.filter(id=permission_group_id, category='group', is_system=False).first()
     if permission_group is None:
         permission_group = Permission.valid_objects.filter(id=permission_group_id, category='group').first()
