@@ -54,7 +54,7 @@ class TenantMiddleware:
         
         if not tenant:
             if tenant_not_found:
-                raise Exception('tenant not found for request: {request.path}')
+                raise Exception(f'tenant not found for request: {request.path}')
             else:
                 tenant = Tenant.platform_tenant()
 

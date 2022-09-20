@@ -17,9 +17,8 @@ class StatisticsExtension(Extension):
         super().load()
         self.listen_event(GET_STATISTICS_CHARTS, self.get_charts)
 
-    @abstractmethod
     def get_charts(self, event, **kwargs):
         """获取统计图表
         """
-        pass
+        return []
 
