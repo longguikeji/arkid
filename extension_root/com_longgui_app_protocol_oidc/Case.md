@@ -44,3 +44,192 @@ def oidc_redirect(code:str):
         }
     ).content
 ```
+
+
+## Java
+
+``` java
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.annotation.WebServlet;
+import java.io.IOException;
+
+@WebServlet(name = "OidcServlet", value = "/OidcServlet")
+public class OidcLoginServlet extends HttpServlet {
+
+    public final static String  clientId = "Y0nyNqIBsNBqYlW5ebGTRvgeNO6B0zZxvmFSCKWP";
+    public final static String clientSecret = "LZHoJu7yZ5XnKR2dff4WlnD3BWcXTol2QBQX2IwboZUJYdVKmjvvEfRe002XK4nu1ujYZMdo3X4ow9CKiyVRLFRMoNEufhAeE0OgK5tVtRPRvVYAvKlIjE4QSaw6bRSB";
+    public final static String authUrl = "http://localhost:9528/api/v1/tenant/4da114ce-e115-44a0-823b-d372114425d0/app/0b97eb6a-ee67-4e64-b59d-f4b49f3546ed/oauth/authorize/";
+    public final static String redirectUri = "http://127.0.0.1:8080/redirect";
+    public final static String getTokenUrl = "http://localhost:9528/api/v1/tenant/4da114ce-e115-44a0-823b-d372114425d0/oauth/token/";
+    public final static String getUserinfoUrl = "http://localhost:9528/api/v1/tenant/4da114ce-e115-44a0-823b-d372114425d0/oauth/userinfo/";
+
+    /**
+     * 发起授权
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append(authUrl);
+        sb.append("?client_id=");
+        sb.append(clientId);
+        sb.append("&redirect_uri=");
+        sb.append(redirectUri);
+        sb.append("&response_type=code");
+        sb.append("&scope=userinfo");
+        response.sendRedirect(sb.toString());
+    }
+}
+```
+``` java
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.http.Consts;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.servlet.annotation.*;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.codec.binary.Base64;
+import java.util.HashMap;
+import java.util.Map;
+
+@WebServlet(name = "OidcRedirectServlet", value = "/OidcRedirectServlet")
+public class OidcRedirectServlet extends HttpServlet {
+
+    /**
+     * 授权回调
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String code = request.getParameter("code");
+        // 获取accessToken
+        JSONObject accessTokenResult = requestAccessToken(code);
+//        {
+//            "access_token":"f9i0Jy0J7IDLHnZWbW3vMUSYI80fmw",
+//            "expires_in":36000,
+//            "token_type":"Bearer",
+//            "scope":"userinfo",
+//            "refresh_token":"gJclZjxoeRuq170HqgbDl6u3JdATcQ"
+//        }
+        if(accessTokenResult!=null){
+            //获取userInfo
+            JSONObject userInfoResult = requestUserInfo(accessTokenResult.getString("access_token"));
+//            {
+//                "id":"faf5aae6-3cdf-4595-8b4a-3a06b31117c8",
+//                "name":"admin",
+//                "sub":"faf5aae6-3cdf-4595-8b4a-3a06b31117c8",
+//                "sub_id":"faf5aae6-3cdf-4595-8b4a-3a06b31117c8",
+//                "preferred_username":"admin",
+//                "groups":["tenant_admin"],
+//                "tenant_id":"4da114ce-e115-44a0-823b-d372114425d0",
+//                "tenant_slug":""
+//            }
+        }else{
+            System.out.println("没有获取到access_token");
+        }
+    }
+
+    /**
+     * 获取accessToken
+     * @param code 授权码
+     * @return JsonObject
+     */
+    private JSONObject requestAccessToken(String code){
+        Map<String, String> params = new HashMap<>();
+        params.put("code",code);
+        params.put("grant_type","authorization_code");
+        //创建请求对象
+        HttpPost httpPost = new HttpPost(OidcLoginServlet.getTokenUrl);
+        // 创建auth认证对象
+        String auth = OidcLoginServlet.clientId + ":" + OidcLoginServlet.clientSecret;
+        byte[] encodedAuth = Base64.encodeBase64(
+                auth.getBytes(StandardCharsets.UTF_8));
+        String authHeader = "Basic " + new String(encodedAuth);
+        //创建httpclient对象
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        try {
+            // 将验证信息放入到 Header
+            httpPost.setHeader(HttpHeaders.AUTHORIZATION, authHeader);
+            //创建请求头对象
+            BasicResponseHandler handler = new BasicResponseHandler();
+            //设置请求格式
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            if (params != null) {
+                for (String key : params.keySet()) {
+                    builder.addPart(key,
+                            new StringBody(params.get(key), ContentType.create("text/plain", Consts.UTF_8)));
+                }
+            }
+            HttpEntity reqEntity = builder.build();
+            httpPost.setEntity(reqEntity);
+            // 执行请求
+            String result = httpClient.execute(httpPost, handler);
+            JSONObject jsonObj = JSON.parseObject(result);
+            return jsonObj;
+        }catch (Exception e) {
+            System.out.println(e);
+        }finally {
+            //释放连接
+            try {
+                httpClient.close();
+            } catch (Exception e) {
+
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取用户信息
+     * @param accessToken 请求Token
+     * @return JsonObject
+     */
+    private JSONObject requestUserInfo(String accessToken){
+        //创建请求对象
+        HttpGet httpGet = new HttpGet(OidcLoginServlet.getUserinfoUrl);
+        //创建httpclient对象
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+        try {
+            //创建请求头对象
+            BasicResponseHandler handler = new BasicResponseHandler();
+            //设置请求头
+            httpGet.setHeader(HttpHeaders.AUTHORIZATION, "Bearer "+accessToken);
+            // 执行请求
+            String result = httpClient.execute(httpGet, handler);
+            System.out.println(result);
+            JSONObject jsonObj = JSON.parseObject(result);
+            return jsonObj;
+        }catch (Exception e) {
+            System.out.println(e);
+        }finally {
+            //释放连接
+            try {
+                httpClient.close();
+            } catch (Exception e) {
+
+            }
+        }
+        return null;
+    }
+}
+```
