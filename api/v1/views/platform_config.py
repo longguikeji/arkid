@@ -103,8 +103,9 @@ def set_frontend_url(request, data:FrontendUrlSchemaIn):
     )
 
 
-@api.get("/version/",response=VersionOut, tags=["平台配置"], auth=None)
-def get_version(request):
+@api.get("/version/",response=VersionOut, tags=["平台配置"])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_version(request, local_version=None):
     """ 获取ArkId版本
     """
     version = os.environ.get('ARKID_VERSION', '')
@@ -116,7 +117,10 @@ def get_version(request):
     else:
         try:
             arkid_saas_version_url = settings.ARKID_SAAS_URL + '/api/v1/version/'
-            resp = requests.get(arkid_saas_version_url, timeout=5).json()
+            params = {}
+            if local_version:
+                params['local_version'] = local_version
+            resp = requests.get(arkid_saas_version_url, params=params, timeout=5).json()
             new_version = resp.get('data', {}).get('version', '')
             if version and new_version and version < new_version:
                 update_available = True
