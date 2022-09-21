@@ -8,7 +8,7 @@ from arkid.core.translation import gettext_default as _
 from api.v1.schema.platform_config import *
 from arkid.core.models import Platform
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
-from arkid.core.event import Event, dispatch_event, SET_FRONTEND_URL
+from arkid.core.event import Event, dispatch_event, SET_FRONTEND_URL, UPDATE_LOCAL_ARKID_VERSION
 
 
 @api.get("/platform_config/",response=PlatformConfigOut, tags=["平台配置"])
@@ -103,20 +103,36 @@ def set_frontend_url(request, data:FrontendUrlSchemaIn):
     )
 
 
-@api.get("/version/",response=VersionOut, tags=["平台配置"], auth=None)
-def get_version(request):
+@api.get("/version/",response=VersionOut, tags=["平台配置"])
+@operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_version(request, local_version=None):
     """ 获取ArkId版本
     """
     version = os.environ.get('ARKID_VERSION', '')
     update_url = settings.UPDATE_URL
 
     if settings.IS_CENTRAL_ARKID:
+        if local_version:
+            dispatch_event(
+                Event(
+                    tag=UPDATE_LOCAL_ARKID_VERSION,
+                    tenant=request.tenant,
+                    request=request,
+                    data = {"local_version": local_version}
+                )
+            )
         new_version = ''
         update_available = False
     else:
         try:
+            from arkid.common.arkstore import get_saas_token
+            token = request.user.auth_token
+            tenant = request.tenant
+            saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
             arkid_saas_version_url = settings.ARKID_SAAS_URL + '/api/v1/version/'
-            resp = requests.get(arkid_saas_version_url, timeout=5).json()
+            headers = {'Authorization': f'Token {saas_token}'}
+            params = {"local_version": version}
+            resp = requests.get(arkid_saas_version_url, params=params, headers=headers, timeout=5).json()
             new_version = resp.get('data', {}).get('version', '')
             if version and new_version and version < new_version:
                 update_available = True
