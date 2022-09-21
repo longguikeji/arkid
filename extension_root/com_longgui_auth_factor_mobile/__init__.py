@@ -82,7 +82,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
             return self.auth_failed(event, data=self.error(ErrorCode.CONTACT_MANAGER))
         if user:
             user = user[0]
-            if check_sms_code(mobile, sms_code):
+            if check_sms_code(tenant, mobile, sms_code):
                 user = User.active_objects.get(id=user.get("id"))
                 return self.auth_success(user,event)
             else:
@@ -111,7 +111,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         if not ret:
             return self.error(message)
         
-        if not check_sms_code(mobile, sms_code):
+        if not check_sms_code(tenant, mobile, sms_code):
             return self.error(ErrorCode.SMS_CODE_MISMATCH)
         
         ret, message = self.check_username_exists(username, tenant)
@@ -148,7 +148,7 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         if password != checkpassword:
             return self.error(ErrorCode.PASSWORD_IS_INCONSISTENT)
                 
-        if not check_sms_code(mobile, sms_code):
+        if not check_sms_code(tenant, mobile, sms_code):
             return self.error(ErrorCode.SMS_CODE_MISMATCH)
         
         user = User.expand_objects.filter(tenant=tenant,mobile=mobile)
