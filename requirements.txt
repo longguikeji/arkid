@@ -24,7 +24,7 @@ ghp-import==2.1.0
 idna==3.3
 importlib-metadata==4.12.0
 jinja2==3.1.2
-jwcrypto==1.3.1
+jwcrypto==1.4
 kombu==5.2.4
 markdown==3.3.7
 markupsafe==2.1.1
