@@ -207,6 +207,7 @@ class EventListener(object):
     def create_app(self, event, **kwargs):
         app = event.data
         tenant = event.tenant
+        request = event.request
         permission = SystemPermission()
         permission.name = app.name
         permission.code = 'entry_{}'.format(uuid.uuid4())
@@ -217,8 +218,8 @@ class EventListener(object):
         # 把应用增加一个权限
         app.entry_permission = permission
         app.save()
-        from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay(tenant.id)
+        from arkid.core.tasks.tasks import create_app_add_admin_permission
+        create_app_add_admin_permission.delay(str(tenant.id), str(permission.id), str(request.user.id))
         return True
     
     def delete_app(self, event, **kwargs):

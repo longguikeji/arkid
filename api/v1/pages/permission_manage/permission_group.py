@@ -47,7 +47,7 @@ page.create_actions(
     },
     node_actions=[
         actions.DirectAction(
-            path='/api/v1/tenant/{tenant_id}/permission_groups/?parent_id={id}',
+            path='/api/v1/tenant/{tenant_id}/permission_groups/?page_size=1000&parent_id={id}',
             method=actions.FrontActionMethod.GET,
         ),
         actions.CascadeAction(
