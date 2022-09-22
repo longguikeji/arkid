@@ -25,6 +25,15 @@ def check_extensions_expired():
                 'kwargs': json.dumps({}),
             },
         )
+        PeriodicTask.objects.update_or_create(
+            name='check_extension_expired',
+            defaults={
+                'crontab': schedule,
+                'task': 'arkid.core.tasks.check_extensions_rent_expired',
+                'args': json.dumps([]),
+                'kwargs': json.dumps({}),
+            },
+        )
     except OperationalError:
         pass
     except Exception as e:
