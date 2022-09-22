@@ -591,21 +591,25 @@ def permission_toggle_other_user_open(request, tenant_id: str, permission_id: st
             # 多加几个结束
             permissions.update(is_open_other_user=False)
             if isinstance(permission, SystemPermission):
-                system_permissions_info = []
+                system_permissions_info = {
+                    'tenant_id': tenant_id,
+                    'self_user_id': str(request.user.id)
+                }
+                sort_ids = []
                 for permission in permissions:
-                    system_permissions_info.append({
-                        'sort_id': permission.sort_id,
-                        'tenant_id': tenant_id,
-                    })
+                    sort_ids.append(permission.sort_id)
+                system_permissions_info['sort_ids'] = sort_ids
                 dispatch_event(Event(tag=CLOSE_OTHER_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=system_permissions_info))
             else:
-                app_permissions_info = []
+                app_permissions_info = {
+                    'app_id': permission.app_id,
+                    'tenant_id': tenant_id,
+                    'self_user_id': str(request.user.id),
+                }
+                sort_ids = []
                 for permission in permissions:
-                    app_permissions_info.append({
-                        'app_id': permission.app_id,
-                        'sort_id': permission.sort_id,
-                        'tenant_id': tenant_id,
-                    })
+                    sort_ids.append(permission.sort_id)
+                app_permissions_info['sort_ids'] = sort_ids
                 dispatch_event(Event(tag=CLOSE_OTHER_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
         else:
             # 原来是关闭，现在是打开
@@ -617,18 +621,17 @@ def permission_toggle_other_user_open(request, tenant_id: str, permission_id: st
                 for item in permission.container.all():
                     if str(item.id) not in ids:
                         ids.append(str(item.id))
-            if isinstance(permission, SystemPermission):
-                permissions = SystemPermission.valid_objects.filter(id__in=ids)
-            else:
-                permissions = Permission.valid_objects.filter(id__in=ids)
-            for permission in permissions:
-                pass
-            # 多加几个结束
-            permissions.update(is_open_other_user=True)
             data = {
                 'ids': ids,
                 'tenant_id': tenant_id
             }
+            if isinstance(permission, SystemPermission):
+                permissions = SystemPermission.valid_objects.filter(id__in=ids)
+            else:
+                permissions = Permission.valid_objects.filter(id__in=ids)
+                data['app_id'] = str(permission.app.id)
+            # 多加几个结束
+            permissions.update(is_open_other_user=True)
             if isinstance(permission, SystemPermission):
                 dispatch_event(Event(tag=OPEN_OTHER_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=data))
             else:

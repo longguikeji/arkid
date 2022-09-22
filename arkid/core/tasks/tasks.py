@@ -187,6 +187,9 @@ def create_tenant_init_manager(tenant_id, user_id):
     permissiondata.create_tenant_user_admin_permission(tenant, user)
     permissiondata.update_open_system_permission_admin()
     permissiondata.update_open_app_permission_admin()
+    apps = App.valid_objects.filter(tenant=tenant)
+    for app in apps:
+        permissiondata.add_system_permission_to_user(str(tenant.id), str(user.id), str(app.entry_permission.id))
 
 @app.task
 def init_core_code():

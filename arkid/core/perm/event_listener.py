@@ -125,8 +125,8 @@ class EventListener(object):
 
         core_event.listen_event(OPEN_OTHER_USER_APP_PERMISSION, self.update_open_other_user_app_permission)
         core_event.listen_event(OPEN_OTHER_USER_SYSTEM_PERMISSION, self.update_open_other_user_system_permission)
-        core_event.listen_event(CLOSE_OTHER_USER_SYSTEM_PERMISSION, self.update_close_other_user_app_permission)
-        core_event.listen_event(CLOSE_OTHER_USER_APP_PERMISSION, self.update_close_other_user_system_permission)
+        core_event.listen_event(CLOSE_OTHER_USER_SYSTEM_PERMISSION, self.update_close_other_user_system_permission)
+        core_event.listen_event(CLOSE_OTHER_USER_APP_PERMISSION, self.update_close_other_user_app_permission)
 
     # def register(self, event, **kwargs):
     #     from arkid.core.tasks.tasks import update_single_user_system_permission_and_app_permisssion
@@ -137,10 +137,9 @@ class EventListener(object):
     def create_tenant(self, event, **kwargs):
         tenant = event.tenant
         user = event.data
+        # 创建管理员权限和初始化各种权限
         from arkid.core.tasks.tasks import create_tenant_init_manager
         create_tenant_init_manager.delay(tenant.id, user.id)
-        # permissiondata = PermissionData()
-        # permissiondata.create_tenant_user_admin_permission(tenant, user)
 
     def app_start(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_system_permission
