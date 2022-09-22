@@ -306,6 +306,10 @@ class PermissionAbstract(BaseModel, ExpandModel):
     is_open = models.BooleanField(
         default=False, verbose_name=_('is open', '是否开放给其它租户访问'),
     )
+    is_open_other_user = models.BooleanField(
+        default=False, verbose_name=_('is open other user', '是否开放给本租户其它用户访问'),
+    )
+
 
     def __str__(self):
         return '%s' % (self.name)

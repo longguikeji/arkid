@@ -138,6 +138,37 @@ def update_close_app_permission_user(items):
     permissiondata = PermissionData()
     permissiondata.update_close_app_permission_user(items)
 
+@app.task
+def update_open_other_user_app_permission(data):
+    '''
+    开放应用权限给本租户内的其他人
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_open_other_user_app_permission(data)
+
+@app.task
+def update_open_other_user_system_permission(data):
+    '''
+    开放系统权限给本租户内的其他人
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_open_other_user_system_permission(data)
+
+@app.task
+def update_close_other_user_app_permission(items):
+    '''
+    关闭本租户内的其他人应用权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_close_other_user_app_permission(items)
+
+@app.task
+def update_close_other_user_system_permission(items):
+    '''
+    关闭本租户内的其他人系统权限
+    '''
+    permissiondata = PermissionData()
+    permissiondata.update_close_other_user_system_permission(items)
 
 @app.task
 def update_system_permission():
@@ -180,7 +211,6 @@ def init_core_code():
     from django.conf import settings
     if not settings.IS_CENTRAL_ARKID:
         bind_arkid_saas_all_tenants()
-    
 
 
 @app.task

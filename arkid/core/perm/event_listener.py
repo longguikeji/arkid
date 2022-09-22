@@ -18,6 +18,8 @@ from arkid.core.event import (
     UPDATE_ADMIN_ALL_PERMISSION, ADD_USER_MANY_PERMISSION, ADD_USERGROUP_MANY_PERMISSION,
     REMOVE_USERGROUP_SYSTEM_PERMISSION, REMOVE_USERGROUP_APP_PERMISSION,
     UPDATE_GROUP_PERMISSION, CREATE_TENANT, APP_SYNC_PERMISSION,
+    OPEN_OTHER_USER_APP_PERMISSION, OPEN_OTHER_USER_SYSTEM_PERMISSION, CLOSE_OTHER_USER_SYSTEM_PERMISSION,
+    CLOSE_OTHER_USER_APP_PERMISSION,
 )
 import uuid
 
@@ -115,10 +117,16 @@ class EventListener(object):
         core_event.listen_event(REMOVE_USER_APP_PERMISSION, self.remove_user_app_permission)
         core_event.listen_event(REMOVE_USERGROUP_SYSTEM_PERMISSION, self.remove_system_permission_to_usergroup)
         core_event.listen_event(REMOVE_USERGROUP_APP_PERMISSION, self.remove_app_permission_to_usergroup)
+
         core_event.listen_event(OPEN_APP_PERMISSION, self.update_open_app_permission_admin)
         core_event.listen_event(OPEN_SYSTEM_PERMISSION, self.update_open_system_permission_admin)
         core_event.listen_event(CLOSE_APP_PERMISSION, self.update_close_app_permission_user)
         core_event.listen_event(CLOSE_SYSTEM_PERMISSION, self.update_close_system_permission_user)
+
+        core_event.listen_event(OPEN_OTHER_USER_APP_PERMISSION, self.update_open_other_user_app_permission)
+        core_event.listen_event(OPEN_OTHER_USER_SYSTEM_PERMISSION, self.update_open_other_user_system_permission)
+        core_event.listen_event(CLOSE_OTHER_USER_SYSTEM_PERMISSION, self.update_close_other_user_app_permission)
+        core_event.listen_event(CLOSE_OTHER_USER_APP_PERMISSION, self.update_close_other_user_system_permission)
 
     # def register(self, event, **kwargs):
     #     from arkid.core.tasks.tasks import update_single_user_system_permission_and_app_permisssion
@@ -294,6 +302,30 @@ class EventListener(object):
     def update_open_system_app_permission_admin(self, event, **kwargs):
         from arkid.core.tasks.tasks import update_open_system_app_permission_admin
         update_open_system_app_permission_admin.delay()
+        return True
+
+    def update_open_other_user_app_permission(self, event, **kwargs):
+        data = event.data
+        from arkid.core.tasks.tasks import update_open_other_user_app_permission
+        update_open_other_user_app_permission.delay(data)
+        return True
+
+    def update_open_other_user_system_permission(self, event, **kwargs):
+        data = event.data
+        from arkid.core.tasks.tasks import update_open_other_user_system_permission
+        update_open_other_user_system_permission.delay(data)
+        return True
+
+    def update_close_other_user_app_permission(self, event, **kwargs):
+        data = event.data
+        from arkid.core.tasks.tasks import update_close_other_user_app_permission
+        update_close_other_user_app_permission.delay(data)
+        return True
+
+    def update_close_other_user_system_permission(self, event, **kwargs):
+        data = event.data
+        from arkid.core.tasks.tasks import update_close_other_user_system_permission
+        update_close_other_user_system_permission.delay(data)
         return True
 
     def update_group_permission_permission(self, event, **kwargs):
