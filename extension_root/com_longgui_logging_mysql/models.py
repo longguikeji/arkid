@@ -24,7 +24,7 @@ class Log(BaseModel):
     data = models.JSONField(blank=True, default=dict, verbose_name='日志数据')
     created = models.DateTimeField(auto_now_add=True, blank=True, null=True, verbose_name='创建时间', db_index = True)
     username = models.CharField(max_length=128, blank=False, null=True, db_index = True)
-    request_path = models.CharField(max_length=2048, blank=False, null=True, db_index = True)
+    request_path = models.CharField(max_length=760, blank=False, null=True, db_index = True)
     status_code = models.IntegerField(blank=False, null=True, db_index = True)
 
 
