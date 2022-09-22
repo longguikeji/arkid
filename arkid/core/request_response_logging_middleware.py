@@ -62,8 +62,7 @@ class LoggingMiddleware:
         # Assign user to log if it's not an anonymous user
         # if not request.user.is_anonymous:
         #     request_log.user = request.user
-
-        dispatch_event(Event(tag=REQUEST_RESPONSE_LOGGGING, tenant=request.tenant, request=request, response=response, data=request_log))
+        dispatch_event(Event(tag=REQUEST_RESPONSE_LOGGGING, tenant=Tenant.platform_tenant(), request=request, response=response, data=request_log))
         return response
 
     def get_client_ip(self, request):
