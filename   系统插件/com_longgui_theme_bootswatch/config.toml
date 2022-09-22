@@ -1,0 +1,7 @@
+package = "com.longgui.theme.bootswatch"
+name='Bootswatch主题'
+version='1.0'
+labels=['bootswatch','materia','darkly','yeti']
+homepage='https://bootswatch.com/'
+logo=''
+author='wely@longguikeji.com'

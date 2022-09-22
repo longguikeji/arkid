@@ -1,0 +1,7 @@
+package = "com.longgui.language.zh"
+name='中文语言包'
+version='1.0'
+labels='chinese'
+homepage='http://longguikeji.gitee.io/arkid/%20%20%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_language_zh/'
+logo=''
+author='guancyxx@guancyxx.cn'
