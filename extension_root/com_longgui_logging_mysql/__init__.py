@@ -138,9 +138,9 @@ class MysqlLoggingExtension(LoggingExtension):
         super().load()
 
     def save(self, event, **kwargs):
-        tenant = event.tenant
         request = event.request
         response = event.response
+        tenant = request.tenant
         user = request.user
         # AnonymousUser
         if not isinstance(user, User):

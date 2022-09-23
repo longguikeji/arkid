@@ -1,3 +1,6 @@
+## 前言
+为了方便配置开发环境，ArkID仅支持用容器化的方式开发。
+
 ## 一、所需工具
 - vscode 最新版
 - Docker Desktop 最新版并安装插件 remote-containers、python
