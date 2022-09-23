@@ -14,7 +14,8 @@ from arkid.core.event import(
     REMOVE_USER_SYSTEM_PERMISSION, REMOVE_USER_APP_PERMISSION, OPEN_APP_PERMISSION,
     OPEN_SYSTEM_PERMISSION, CLOSE_SYSTEM_PERMISSION, CLOSE_APP_PERMISSION,
     ADD_USER_MANY_PERMISSION, ADD_USERGROUP_MANY_PERMISSION, REMOVE_USERGROUP_SYSTEM_PERMISSION,
-    REMOVE_USERGROUP_APP_PERMISSION,
+    REMOVE_USERGROUP_APP_PERMISSION, OPEN_OTHER_USER_APP_PERMISSION, OPEN_OTHER_USER_SYSTEM_PERMISSION,
+    CLOSE_OTHER_USER_SYSTEM_PERMISSION, CLOSE_OTHER_USER_APP_PERMISSION,
 )
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from api.v1.schema.permission import *
@@ -553,6 +554,88 @@ def permission_toggle_open(request, tenant_id: str, permission_id: str):
                 dispatch_event(Event(tag=OPEN_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=None))
             else:
                 dispatch_event(Event(tag=OPEN_APP_PERMISSION, tenant=request.tenant, request=request, data=None))
+        return {'error': ErrorCode.OK.value}
+    else:
+        return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)
+
+
+@api.post("/tenant/{tenant_id}/permission/{permission_id}/toggle_other_user_open", tags=['权限'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def permission_toggle_other_user_open(request, tenant_id: str, permission_id: str):
+    '''
+    切换权限是否开放给本租户其它用户
+    '''
+    permission = SystemPermission.valid_objects.filter(
+        id=permission_id
+    ).first()
+    if permission and permission.tenant is None:
+        return ErrorDict(ErrorCode.SYSTEM_PERMISSION_NOT_OPERATION)
+    if permission is None:
+        permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=permission_id).first()
+    if permission:
+        is_open_other_user = permission.is_open_other_user
+        if is_open_other_user:
+            # 原来是打开，现在是关闭
+            # 需要检查是否是分组如果是分组，需要多加几个
+            ids = []
+            if str(permission.id) not in ids:
+                ids.append(str(permission.id))
+            if permission.category == 'group' and permission.container.all():
+                for item in permission.container.all():
+                    if str(item.id) not in ids:
+                        ids.append(str(item.id))
+            if isinstance(permission, SystemPermission):
+                permissions = SystemPermission.valid_objects.filter(id__in=ids)
+            else:
+                permissions = Permission.valid_objects.filter(id__in=ids)
+            # 多加几个结束
+            permissions.update(is_open_other_user=False)
+            if isinstance(permission, SystemPermission):
+                system_permissions_info = {
+                    'tenant_id': tenant_id,
+                    'self_user_id': str(request.user.id)
+                }
+                sort_ids = []
+                for permission in permissions:
+                    sort_ids.append(permission.sort_id)
+                system_permissions_info['sort_ids'] = sort_ids
+                dispatch_event(Event(tag=CLOSE_OTHER_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=system_permissions_info))
+            else:
+                app_permissions_info = {
+                    'app_id': permission.app_id,
+                    'tenant_id': tenant_id,
+                    'self_user_id': str(request.user.id),
+                }
+                sort_ids = []
+                for permission in permissions:
+                    sort_ids.append(permission.sort_id)
+                app_permissions_info['sort_ids'] = sort_ids
+                dispatch_event(Event(tag=CLOSE_OTHER_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
+        else:
+            # 原来是关闭，现在是打开
+            # 需要检查是否是分组如果是分组，需要多加几个
+            ids = []
+            if str(permission.id) not in ids:
+                ids.append(str(permission.id))
+            if permission.category == 'group' and permission.container.all():
+                for item in permission.container.all():
+                    if str(item.id) not in ids:
+                        ids.append(str(item.id))
+            data = {
+                'ids': ids,
+                'tenant_id': tenant_id
+            }
+            if isinstance(permission, SystemPermission):
+                permissions = SystemPermission.valid_objects.filter(id__in=ids)
+            else:
+                permissions = Permission.valid_objects.filter(id__in=ids)
+                data['app_id'] = str(permission.app.id)
+            # 多加几个结束
+            permissions.update(is_open_other_user=True)
+            if isinstance(permission, SystemPermission):
+                dispatch_event(Event(tag=OPEN_OTHER_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=data))
+            else:
+                dispatch_event(Event(tag=OPEN_OTHER_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=data))
         return {'error': ErrorCode.OK.value}
     else:
         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)

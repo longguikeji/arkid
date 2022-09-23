@@ -321,10 +321,17 @@ REMOVE_USER_SYSTEM_PERMISSION = 'REMOVE_USER_SYSTEM_PERMISSION'
 REMOVE_USER_APP_PERMISSION = 'REMOVE_USER_APP_PERMISSION'
 REMOVE_USERGROUP_SYSTEM_PERMISSION = 'REMOVE_USERGROUP_SYSTEM_PERMISSION'
 REMOVE_USERGROUP_APP_PERMISSION = 'REMOVE_USERGROUP_APP_PERMISSION'
+
 OPEN_APP_PERMISSION = 'OPEN_APP_PERMISSION'
 OPEN_SYSTEM_PERMISSION = 'OPEN_SYSTEM_PERMISSION'
 CLOSE_SYSTEM_PERMISSION = 'CLOSE_SYSTEM_PERMISSION'
 CLOSE_APP_PERMISSION = 'CLOSE_APP_PERMISSION'
+
+OPEN_OTHER_USER_APP_PERMISSION = 'OPEN_OTHER_USER_APP_PERMISSION'
+OPEN_OTHER_USER_SYSTEM_PERMISSION = 'OPEN_OTHER_USER_SYSTEM_PERMISSION'
+CLOSE_OTHER_USER_SYSTEM_PERMISSION = 'CLOSE_OTHER_USER_SYSTEM_PERMISSION'
+CLOSE_OTHER_USER_APP_PERMISSION = 'CLOSE_OTHER_USER_APP_PERMISSION'
+
 UPDATE_ADMIN_ALL_PERMISSION = 'UPDATE_ADMIN_ALL_PERMISSION'
 APP_SYNC_PERMISSION = 'APP_SYNC_PERMISSION'
 
@@ -440,10 +447,17 @@ register_event(AUTO_LOGIN, _('Auto Login', '开始自动登录'))
 register_event(CREATE_AUTO_AUTH_CONFIG, _('Create Auto Auth', '添加自动登录'))
 register_event(UPDATE_AUTO_AUTH_CONFIG, _('Update Auto Auth', '更新自动登录'))
 register_event(DELETE_AUTO_AUTH_CONFIG, _('Delete Auto Auth', '删除自动登录'))
+
 register_event(OPEN_APP_PERMISSION, _('open app permission', '开放应用权限'))
 register_event(OPEN_SYSTEM_PERMISSION, _('open system permission', '开放系统权限'))
 register_event(CLOSE_SYSTEM_PERMISSION, _('close system permission', '关闭系统权限'))
 register_event(CLOSE_APP_PERMISSION, _('close app permission', '关闭应用权限'))
+
+register_event(OPEN_OTHER_USER_APP_PERMISSION, _('open other user app permission', '开放本租户其它用户应用权限'))
+register_event(OPEN_OTHER_USER_SYSTEM_PERMISSION, _('open other user system permission', '开放本租户其它用户系统权限'))
+register_event(CLOSE_OTHER_USER_SYSTEM_PERMISSION, _('close other user system permission', '关闭本租户其它用户系统权限'))
+register_event(CLOSE_OTHER_USER_APP_PERMISSION, _('close other user app permission', '关闭本租户其它用户应用权限'))
+
 register_event(UPDATE_ADMIN_ALL_PERMISSION, _('update admin all permission', '更新所有管理员权限'))
 register_event(CREATE_TENANT, _('create tenant', '创建租户'))
 register_event(GET_AUTH_RESULT, _('get auth result', '获得权限鉴定结果'))

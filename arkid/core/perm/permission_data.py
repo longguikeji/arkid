@@ -671,6 +671,14 @@ class PermissionData(object):
                     if container:
                         for item in container:
                             data_dict.get(item).is_pass = 1
+                elif data_item.is_open_other_user is True and data_item.tenant == auth_user.tenant:
+                    data_item.is_pass = 1
+                    describe = data_item.describe
+                    if describe:
+                        container = describe.get('sort_ids', [])
+                        if container:
+                            for item in container:
+                                data_dict.get(item).is_pass = 1
                 elif hasattr(data_item, 'is_pass') is False:
                     data_item.is_pass = 0
                 else:
@@ -1161,6 +1169,14 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
+                    elif data_item.is_open_other_user is True and data_item.tenant == auth_user.tenant:
+                        data_item.is_pass = 1
+                        describe = data_item.describe
+                        if describe:
+                            container = describe.get('sort_ids', [])
+                            if container:
+                                for item in container:
+                                    data_dict.get(item).is_pass = 1
                     elif hasattr(data_item, 'is_pass') is False:
                         data_item.is_pass = 0
                     else:
@@ -1417,6 +1433,7 @@ class PermissionData(object):
         if app_name:
             app_name = app_name.strip()
             permissions = permissions.filter(app__name__icontains=app_name)
+            systempermissions = systempermissions.filter(id__isnull=True)
         if category:
             category = category.strip()
             permissions = permissions.filter(category__icontains=category)
@@ -1706,6 +1723,7 @@ class PermissionData(object):
         if app_name:
             app_name = app_name.strip()
             permissions = permissions.filter(app__name__icontains=app_name)
+            systempermissions = systempermissions.filter(id__isnull=True)
         if category:
             category = category.strip()
             permissions = permissions.filter(category__icontains=category)
@@ -1877,6 +1895,7 @@ class PermissionData(object):
         if app_name:
             app_name = app_name.strip()
             permissions = permissions.filter(app__name__icontains=app_name)
+            systempermissions = systempermissions.filter(id__isnull=True)
         if category:
             category = category.strip()
             permissions = permissions.filter(category__icontains=category)
@@ -2647,6 +2666,205 @@ class PermissionData(object):
         userpermissionresult.save()
         return True
 
+    def update_open_other_user_app_permission(self, data):
+        '''
+        开放应用权限给本租户内的其他人
+        data = {
+            'ids': ids,
+            'tenant_id': tenant_id,
+            'app_id': app_id
+        }
+        '''
+        tenant_id = data.get('tenant_id', None)
+        ids = data.get('ids', [])
+        app_id = data.get('app_id')
+        # 人员信息
+        users = User.valid_objects.filter(tenant_id=tenant_id)
+        # 应用
+        app = App.valid_objects.filter(id=app_id).first()
+        # 权限内容
+        sort_ids = []
+        permissions = Permission.objects.filter(app_id=app_id, id__in=ids).order_by('-sort_id')
+        max_sort_id = -1
+        for permission in permissions:
+            sort_id = permission.sort_id
+            sort_ids.append(sort_id)
+            if sort_id > max_sort_id:
+                max_sort_id = sort_id
+        last_len = max_sort_id+1
+        # 从小到大排序
+        sort_ids.sort()
+        # 拿到所有的结果字符串
+        userpermissionresults = UserPermissionResult.valid_objects.filter(app_id=app_id, tenant_id=tenant_id, user__in=users)
+        
+        if len(userpermissionresults) != len(users):
+            # 如果记录条数和用户数不一致，就证明需要新建几条有效记录
+            temp_user_ids = []
+            temp_userpermissionresults = []
+            for user in users:
+                temp_user_ids.append(str(user.id))
+            tenant = None
+            for userpermissionresult in userpermissionresults:
+                temp_user_ids.remove(str(userpermissionresult.user.id))
+                ## 复制下有的记录
+                temp_userpermissionresults.append(userpermissionresult)
+                tenant = userpermissionresult.tenant
+            if temp_user_ids:
+                temp_users = users.filter(id__in=temp_user_ids)
+                compress = Compress()
+                for temp_user in temp_users:
+                    temp_userpermissionresult = UserPermissionResult()
+                    temp_userpermissionresult.user = temp_user
+                    temp_userpermissionresult.tenant = tenant
+                    temp_userpermissionresult.app = app
+                    ### 值只是临时存下
+                    temp_userpermissionresult.result = compress.encrypt("".join(map(str, [00000])))
+                    #### 放在值数组里
+                    temp_userpermissionresults.append(temp_userpermissionresult)
+            userpermissionresults = temp_userpermissionresults
+
+        compress = Compress()
+        for userpermissionresult in userpermissionresults:
+            permission_result = compress.decrypt(userpermissionresult.result)
+            permission_result_arr = list(permission_result)
+            if len(permission_result_arr) < last_len:
+                diff = last_len - len(permission_result_arr)
+                for i in range(diff):
+                    permission_result_arr.append(0)
+            for index,value in enumerate(permission_result_arr):
+                if index in sort_ids:
+                    permission_result_arr[index] = 1
+            # 拼接结果
+            permission_result = "".join(map(str, permission_result_arr))
+            compress_str_result = compress.encrypt(permission_result)
+            userpermissionresult.result = compress_str_result
+            userpermissionresult.save()
+
+    def update_open_other_user_system_permission(self, data):
+        '''
+        开放系统权限给本租户内的其他人
+        data = {
+            'ids': ids,
+            'tenant_id': tenant_id
+        }
+        '''
+        tenant_id = data.get('tenant_id', None)
+        ids = data.get('ids', [])
+        # 人员信息
+        users = User.valid_objects.filter(tenant_id=tenant_id)
+        sort_ids = []
+        permissions = SystemPermission.objects.filter(id__in=ids).order_by('-sort_id')
+        max_sort_id = -1
+        for permission in permissions:
+            sort_id = permission.sort_id
+            sort_ids.append(sort_id)
+            if sort_id > max_sort_id:
+                max_sort_id = sort_id
+        last_len = max_sort_id+1
+        # 从小到大排序
+        sort_ids.sort()
+        # 拿到所有的结果字符串
+        userpermissionresults = UserPermissionResult.valid_objects.filter(tenant_id=tenant_id, user__in=users, app=None)
+        compress = Compress()
+        for userpermissionresult in userpermissionresults:
+            permission_result = compress.decrypt(userpermissionresult.result)
+            permission_result_arr = list(permission_result)
+            if len(permission_result_arr) < last_len:
+                diff = last_len - len(permission_result_arr)
+                for i in range(diff):
+                    permission_result_arr.append(0)
+            for index,value in enumerate(permission_result_arr):
+                if index in sort_ids:
+                    permission_result_arr[index] = 1
+            # 拼接结果
+            permission_result = "".join(map(str, permission_result_arr))
+            compress_str_result = compress.encrypt(permission_result)
+            userpermissionresult.result = compress_str_result
+            userpermissionresult.save()
+
+    def update_close_other_user_app_permission(self, app_permissions_info):
+        '''
+        关闭本租户内的其他人应用权限
+        app_permissions_info = {
+            'app_id': permission.app_id,
+            'tenant_id': tenant_id,
+            'sort_ids': sort_ids,
+            'self_user_id': self_user_id
+        }
+        '''
+        sort_ids = app_permissions_info.get('sort_ids', [])
+        tenant_id = app_permissions_info.get('tenant_id', None)
+        app_id = app_permissions_info.get('app_id')
+        self_user_id = app_permissions_info.get('self_user_id')
+        # 人员信息
+        users = User.valid_objects.filter(tenant_id=tenant_id).exclude(id=self_user_id)
+        # 权限内容
+        max_sort_id = -1
+        for sort_id in sort_ids:
+            if sort_id > max_sort_id:
+                max_sort_id = sort_id
+        last_len = max_sort_id+1
+        # 从小到大排序
+        sort_ids.sort()
+        # 拿到所有的结果字符串
+        userpermissionresults = UserPermissionResult.valid_objects.filter(app_id=app_id, tenant_id=tenant_id, user__in=users)
+        compress = Compress()
+        for userpermissionresult in userpermissionresults:
+            permission_result = compress.decrypt(userpermissionresult.result)
+            permission_result_arr = list(permission_result)
+            if len(permission_result_arr) < last_len:
+                diff = last_len - len(permission_result_arr)
+                for i in range(diff):
+                    permission_result_arr.append(0)
+            for index,value in enumerate(permission_result_arr):
+                if index in sort_ids:
+                    permission_result_arr[index] = 0
+            # 拼接结果
+            permission_result = "".join(map(str, permission_result_arr))
+            compress_str_result = compress.encrypt(permission_result)
+            userpermissionresult.result = compress_str_result
+            userpermissionresult.save()
+
+    def update_close_other_user_system_permission(self, system_permissions_info):
+        '''
+        关闭本租户内的其他人系统权限
+        system_permissions_info = {
+            'tenant_id': tenant_id,
+            'sort_ids': sort_ids,
+            'self_user_id': self_user_id
+        }
+        '''
+        sort_ids = system_permissions_info.get('sort_ids', [])
+        tenant_id = system_permissions_info.get('tenant_id', None)
+        self_user_id = system_permissions_info.get('self_user_id')
+        # 人员信息
+        users = User.valid_objects.filter(tenant_id=tenant_id).exclude(id=self_user_id)
+        # 权限内容
+        max_sort_id = -1
+        for sort_id in sort_ids:
+            if sort_id > max_sort_id:
+                max_sort_id = sort_id
+        last_len = max_sort_id+1
+        # 从小到大排序
+        sort_ids.sort()
+        # 拿到所有的结果字符串
+        userpermissionresults = UserPermissionResult.valid_objects.filter(app=None, tenant_id=tenant_id, user__in=users)
+        compress = Compress()
+        for userpermissionresult in userpermissionresults:
+            permission_result = compress.decrypt(userpermissionresult.result)
+            permission_result_arr = list(permission_result)
+            if len(permission_result_arr) < last_len:
+                diff = last_len - len(permission_result_arr)
+                for i in range(diff):
+                    permission_result_arr.append(0)
+            for index,value in enumerate(permission_result_arr):
+                if index in sort_ids:
+                    permission_result_arr[index] = 0
+            # 拼接结果
+            permission_result = "".join(map(str, permission_result_arr))
+            compress_str_result = compress.encrypt(permission_result)
+            userpermissionresult.result = compress_str_result
+            userpermissionresult.save()
 
     def update_close_system_permission_user(self, system_permissions_info):
         '''
@@ -2924,7 +3142,8 @@ class PermissionData(object):
         '''
         uprs = UserPermissionResult.valid_objects.filter(
             tenant_id=tenant_id,
-            app__isnull=False
+            app__isnull=False,
+            app__is_del=False
         )
         items = []
         for upr in uprs:
