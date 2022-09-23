@@ -338,13 +338,13 @@ def list_arkstore_categorys(request, tenant_id: str, parent_id:str = None, type:
                 if App.valid_objects.filter(arkstore_category_id__in=temp_items).exists():
                     ids.append(item.id)
             if ids:
-                items = items.filter(id__in=ids).all()
-                result.extend(list(items))
+                items = items.filter(id__in=ids)
+                result.extend(list(items.order_by('arkstore_id')))
             else:
                 items = []
     else:
         if items:
-            result.extend(list(items))
+            result.extend(list(items.order_by('arkstore_id')))
     return {'data': result}
 
 
