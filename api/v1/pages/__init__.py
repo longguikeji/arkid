@@ -1,3 +1,4 @@
+from api.v1.pages import extension_manage
 from . import (
     user_manage,
     desktop,
@@ -12,7 +13,8 @@ from . import (
     permission_manage,
     platform_admin,
     tenant_manage,
-    message
+    message,
+    extension_manage
 )
 from arkid.core import routers
 
@@ -33,5 +35,6 @@ routers.register_front_routers(
         charts_manage.router,
         tenant_manage.router,
         platform_admin.router,
+        extension_manage.router,
     ]
 )
