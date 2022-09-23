@@ -4,6 +4,7 @@ from ninja import Query, Schema, ModelSchema
 from arkid.core.api import api, operation
 from typing import List,Optional
 from pydantic import Field
+from arkid.core import actions
 from arkid.core.extension import Extension
 from arkid.core.models import Tenant
 from arkid.extension.models import TenantExtensionConfig, TenantExtension, Extension as ExtensionModel
@@ -194,7 +195,7 @@ class TenantExtensionListOut(ModelSchema):
     labels:Optional[List[str]]
 
 
-class TenantRentedExtensionListOut(TenantExtensionListOut):
+class TenantPlatformExtensionListOut(TenantExtensionListOut):
     # lease_records: List[ExtensionRentRecordOut] = Field(
     #     default=[], title=_("Rent Records", "租赁记录")
     # )
@@ -202,7 +203,17 @@ class TenantRentedExtensionListOut(TenantExtensionListOut):
     lease_useful_life: Optional[List[str]] = Field(title=_('Lease Useful Life', '有效期'))
 
 
-@api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],response=List[TenantRentedExtensionListOut])
+class TenantRentedExtensionListOut(TenantPlatformExtensionListOut):
+    is_active: bool = Field(
+        title='是否使用',
+        item_action={
+            "path":"/api/v1/tenant/{tenant_id}/tenant/extensions/{id}/active/",
+            "method":actions.FrontActionMethod.POST.value
+        }
+    )
+
+
+@api.get("/tenant/{tenant_id}/platform/extensions/", tags=["租户插件"],response=List[TenantPlatformExtensionListOut])
 @operation(List[TenantExtensionListOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def get_platform_extensions(request, tenant_id: str, category_id: str = None):
@@ -255,6 +266,12 @@ def get_tenant_extensions(request, tenant_id: str, category_id: str = None):
     
     if category_id and category_id != "" and category_id != "0":
         extensions = extensions.filter(category_id=int(category_id))
+
+    # 使用TenantExtension的is_active覆盖ExtensionModel的is_active
+    extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_active=True).values('extension_id')
+    active_extension_ids_set = {x['extension_id'] for x in extension_ids}
+    for ext in extensions:
+        ext.is_active = True if ext.id in active_extension_ids_set else False
     
     if settings.IS_CENTRAL_ARKID:
         return extensions
@@ -290,9 +307,10 @@ def get_tenant_extensions(request, tenant_id: str, category_id: str = None):
 def toggle_tenant_extension_status(request, tenant_id: str, id: str):
     """ 租户插件列表
     """
-    extension= TenantExtension.objects.get(id=id)
-    extension.is_active = True if extension.is_active is False else False
-    extension.save()
+    extension= ExtensionModel.active_objects.get(id=id)
+    tenant_extension = TenantExtension.valid_objects.get(extension=extension)
+    tenant_extension.is_active = True if tenant_extension.is_active is False else False
+    tenant_extension.save()
     return ErrorDict(ErrorCode.OK)
 
 
