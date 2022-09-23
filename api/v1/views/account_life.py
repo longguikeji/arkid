@@ -200,8 +200,10 @@ def update_or_create_periodic_task(account_life_crontab):
                 name=account_life_crontab.id,
                 defaults={
                     'crontab': schedule,
-                    'task': 'arkid.core.tasks.tasks.account_life_periodic_task',
-                    'args': json.dumps([account_life_crontab.id.hex]),
+                    'task': 'arkid.core.tasks.celery.dispatch_task',
+                    'args': json.dumps(
+                        ['account_life_periodic_task', account_life_crontab.id.hex]
+                    ),
                     'kwargs': json.dumps(account_life_crontab.config),
                 },
             )

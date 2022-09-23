@@ -22,6 +22,7 @@ from arkid.core.event import (
 import uuid
 
 from arkid.extension.models import Extension, TenantExtension
+from arkid.core.tasks.celery import dispatch_task
 
 def user_saved(sender, instance: User, created: bool, **kwargs):
     if created:
@@ -129,34 +130,29 @@ class EventListener(object):
     def create_tenant(self, event, **kwargs):
         tenant = event.tenant
         user = event.data
-        from arkid.core.tasks.tasks import create_tenant_init_manager
-        create_tenant_init_manager.delay(tenant.id, user.id)
+        dispatch_task.delay('create_tenant_init_manager', tenant.id, user.id)
         # permissiondata = PermissionData()
         # permissiondata.create_tenant_user_admin_permission(tenant, user)
 
     def app_start(self, event, **kwargs):
-        from arkid.core.tasks.tasks import update_system_permission
-        update_system_permission.delay()
+        dispatch_task.delay('update_system_permission')
     
     def app_sync_permission(self, event, **kwargs):
         app_id = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import app_sync_permission
-        app_sync_permission.delay(str(tenant.id), app_id)
+        dispatch_task.delay('app_sync_permission', str(tenant.id), app_id)
 
     def set_app_openapi_version(self, event, **kwargs):
-        from arkid.core.tasks.tasks import update_app_permission
         app = event.data
         tenant = event.tenant
-        update_app_permission.delay(tenant.id, app.id)
+        dispatch_task.delay('update_app_permission', tenant.id, app.id)
     
     def update_app_user_api_permission(self, event, **kwargs):
-        from arkid.core.tasks.tasks import update_single_user_app_permission
         app = event.data
         # 把用户赋在app上给过来
         user = app.user
         tenant = event.tenant
-        update_single_user_app_permission.delay(tenant.id, user.id, app.id)
+        dispatch_task.delay('update_single_user_app_permission', tenant.id, user.id, app.id)
 
     def create_group(self, event, **kwargs):
         group = event.data
@@ -174,8 +170,7 @@ class EventListener(object):
         group.permission = systempermission
         group.save()
         # 需要更新系统的全部用户权限
-        from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay(tenant.id)
+        dispatch_task.delay('update_arkid_all_user_permission', tenant.id)
         return True
     
     def delete_group(self, event, **kwargs):
@@ -188,20 +183,17 @@ class EventListener(object):
         group.permission = None
         group.save()
         # 需要更新系统的全部用户权限
-        from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay(tenant.id)
+        dispatch_task.delay('update_arkid_all_user_permission', tenant.id)
         return True
     
     def group_add_user(self, event, **kwargs):
         tenant = event.tenant
-        from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay(tenant.id)
+        dispatch_task.delay('update_arkid_all_user_permission', tenant.id)
         return True
 
     def group_remove_user(self, event, **kwargs):
         tenant = event.tenant
-        from arkid.core.tasks.tasks import update_arkid_all_user_permission
-        update_arkid_all_user_permission.delay(tenant.id)
+        dispatch_task.delay('update_arkid_all_user_permission', tenant.id)
         return True
 
     def create_app(self, event, **kwargs):
@@ -218,8 +210,7 @@ class EventListener(object):
         # 把应用增加一个权限
         app.entry_permission = permission
         app.save()
-        from arkid.core.tasks.tasks import create_app_add_admin_permission
-        create_app_add_admin_permission.delay(str(tenant.id), str(permission.id), str(request.user.id))
+        dispatch_task.delay('create_app_add_admin_permission', str(tenant.id), str(permission.id), str(request.user.id))
         return True
     
     def delete_app(self, event, **kwargs):
@@ -228,110 +219,95 @@ class EventListener(object):
         permission = app.entry_permission
         if permission:
             permission.delete()
-            from arkid.core.tasks.tasks import update_arkid_all_user_permission
-            update_arkid_all_user_permission.delay()
+            dispatch_task.delay('update_arkid_all_user_permission')
         return True
     
     def create_group_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import update_only_user_app_permission, update_arkid_all_user_permission
         if isinstance(permission, SystemPermission):
-            update_arkid_all_user_permission.delay(tenant.id)
+            dispatch_task.delay('update_arkid_all_user_permission', tenant.id)
         else:
-            update_only_user_app_permission.delay(tenant.id, permission.app.id)
+            dispatch_task.delay('update_only_user_app_permission', tenant.id, permission.app.id)
         return True
 
     def edit_group_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import update_only_user_app_permission, update_arkid_all_user_permission
         if isinstance(permission, SystemPermission):
-            update_arkid_all_user_permission.delay(tenant.id)
+            dispatch_task.delay('update_arkid_all_user_permission', tenant.id)
         else:
-            update_only_user_app_permission.delay(tenant.id, permission.app.id)
+            dispatch_task.delay('update_only_user_app_permission', tenant.id, permission.app.id)
         return True
 
     def delete_group_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import update_only_user_app_permission, update_arkid_all_user_permission
         if isinstance(permission, SystemPermission):
-            update_arkid_all_user_permission.delay(tenant.id)
+            dispatch_task.delay('update_arkid_all_user_permission', tenant.id)
         else:
-            update_only_user_app_permission.delay(tenant.id, permission.app.id)
+            dispatch_task.delay('update_only_user_app_permission', tenant.id, permission.app.id)
         return True
 
     def remove_group_permission_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import update_only_user_app_permission
-        update_only_user_app_permission.delay(tenant.id, permission.app.id)
+        dispatch_task.delay('update_only_user_app_permission', tenant.id, permission.app.id)
         return True
 
     def update_open_system_permission_admin(self, event, **kwargs):
-        from arkid.core.tasks.tasks import update_open_system_permission_admin
-        update_open_system_permission_admin.delay()
+        dispatch_task.delay('update_open_system_permission_admin')
         return True
 
     def update_close_system_permission_user(self, event, **kwargs):
         items = event.data
-        from arkid.core.tasks.tasks import update_close_system_permission_user
-        update_close_system_permission_user.delay(items)
+        dispatch_task.delay('update_close_system_permission_user', items)
         return True
 
     def update_close_app_permission_user(self, event, **kwargs):
         items = event.data
-        from arkid.core.tasks.tasks import update_close_app_permission_user
-        update_close_app_permission_user.delay(items)
+        dispatch_task.delay('update_close_app_permission_user', items)
         return True
 
     def update_open_app_permission_admin(self, event, **kwargs):
-        from arkid.core.tasks.tasks import update_open_app_permission_admin
-        update_open_app_permission_admin.delay()
+        dispatch_task.delay('update_open_app_permission_admin')
         return True
 
     def update_open_system_app_permission_admin(self, event, **kwargs):
-        from arkid.core.tasks.tasks import update_open_system_app_permission_admin
-        update_open_system_app_permission_admin.delay()
+        dispatch_task.delay('update_open_system_app_permission_admin')
         return True
 
     def update_group_permission_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import update_only_user_app_permission, update_arkid_all_user_permission
         if isinstance(permission, SystemPermission):
-            update_arkid_all_user_permission.delay(tenant.id)
+            dispatch_task.delay('update_arkid_all_user_permission', tenant.id)
         else:
-            update_only_user_app_permission.delay(tenant.id, permission.app.id)
+            dispatch_task.delay('update_only_user_app_permission', tenant.id, permission.app.id)
         return True
 
     def create_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import update_only_user_app_permission
-        update_only_user_app_permission.delay(tenant.id, permission.app.id)
+        dispatch_task.delay('update_only_user_app_permission', tenant.id, permission.app.id)
         return True
 
     def update_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import update_only_user_app_permission
-        update_only_user_app_permission.delay(tenant.id, permission.app.id)
+        dispatch_task.delay('update_only_user_app_permission', tenant.id, permission.app.id)
         return True
 
     def delete_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import update_only_user_app_permission
-        update_only_user_app_permission.delay(tenant.id, permission.app.id)
+        dispatch_task.delay('update_only_user_app_permission', tenant.id, permission.app.id)
         return True
 
     def add_user_system_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import add_system_permission_to_user, update_single_user_app_permission
-        add_system_permission_to_user.delay(tenant.id, permission.user_id, permission.id)
+        dispatch_task.delay('add_system_permission_to_user', tenant.id, permission.user_id, permission.id)
         # if permission.category == 'entry' and permission.is_open and permission.tenant != tenant:
         #     app = App.valid_objects.filter(
         #         entry_permission=permission
@@ -346,47 +322,40 @@ class EventListener(object):
 
     def add_user_many_permission(self, event, **kwars):
         permissions_dict = event.data
-        from arkid.core.tasks.tasks import add_user_many_permission
-        add_user_many_permission.delay(permissions_dict)
+        dispatch_task.delay('add_user_many_permission', permissions_dict)
 
     def add_usergroup_many_permission(self, event, **kwars):
         permissions_dict = event.data
-        from arkid.core.tasks.tasks import add_usergroup_many_permission
-        add_usergroup_many_permission.delay(permissions_dict)
+        dispatch_task.delay('add_usergroup_many_permission', permissions_dict)
 
     def add_user_app_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import add_app_permission_to_user
-        add_app_permission_to_user.delay(tenant.id, permission.app_id, permission.user_id, permission.id)
+        dispatch_task.delay('add_app_permission_to_user', tenant.id, permission.app_id, permission.user_id, permission.id)
         return True
 
     def remove_user_system_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import remove_system_permission_to_user
-        remove_system_permission_to_user.delay(tenant.id, permission.user_id, permission.id)
+        dispatch_task.delay('remove_system_permission_to_user', tenant.id, permission.user_id, permission.id)
         return True
 
     def remove_user_app_permission(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import remove_app_permission_to_user
-        remove_app_permission_to_user.delay(tenant.id, permission.app_id, permission.user_id, permission.id)
+        dispatch_task.delay('remove_app_permission_to_user', tenant.id, permission.app_id, permission.user_id, permission.id)
         return True
 
     def remove_system_permission_to_usergroup(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import remove_system_permission_to_usergroup
-        remove_system_permission_to_usergroup.delay(tenant.id, permission.usergroup_id, permission.id)
+        dispatch_task.delay('remove_system_permission_to_usergroup', tenant.id, permission.usergroup_id, permission.id)
         return True
 
     def remove_app_permission_to_usergroup(self, event, **kwargs):
         permission = event.data
         tenant = event.tenant
-        from arkid.core.tasks.tasks import remove_app_permission_to_usergroup
-        remove_app_permission_to_usergroup.delay(tenant.id, permission.app_id, permission.usergroup_id, permission.id)
+        dispatch_task.delay('remove_app_permission_to_usergroup', tenant.id, permission.app_id, permission.usergroup_id, permission.id)
         return True
 
 EventListener()

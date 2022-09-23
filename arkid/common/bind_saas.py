@@ -159,9 +159,9 @@ def bind_saas(tenant_id, data=None):
 
 
 def trigger_bind_saas(event, **kwargs):
-    from arkid.core.tasks.tasks import bind_arkid_saas_all_tenants
+    from arkid.core.tasks.celery import dispatch_task
     from django.conf import settings
     if not settings.IS_CENTRAL_ARKID:
-        bind_arkid_saas_all_tenants.delay()
+        dispatch_task.delay('bind_arkid_saas_all_tenants')
 
 listen_event(SET_FRONTEND_URL, trigger_bind_saas)

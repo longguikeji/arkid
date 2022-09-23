@@ -19,12 +19,12 @@ event_id_map = {}
 
 def send_event_through_webhook(event):
 
-    from arkid.core.tasks.tasks import trigger_webhooks_for_event
+    from arkid.core.tasks.celery import dispatch_task
 
     tenant = event.tenant
     payload = get_event_payload(event)
     # logger.info(f"Webhook is handling event: {payload}")
-    trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
+    dispatch_task.delay('trigger_webhooks_for_event', tenant.id.hex, event.tag, payload)
 
 
 def get_event_payload(event):
