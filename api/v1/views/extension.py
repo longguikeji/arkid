@@ -84,13 +84,14 @@ class ExtensionListOut(ModelSchema):
             "method":actions.FrontActionMethod.POST.value
         }
     )
-    # is_allow_use_platform_config: bool = Field(
-    #     title='是否允许租户使用平台配置',
-    #     item_action={
-    #         "path":"/api/v1/extensions/{id}/use_platform_config/toggle/",
-    #         "method":actions.FrontActionMethod.POST.value
-    #     }
-    # )
+    is_allow_use_platform_config: bool = Field(
+        title='是否允许租户使用平台配置',
+        hidden=True,
+        item_action={
+            "path":"/api/v1/extensions/{id}/use_platform_config/toggle/",
+            "method":actions.FrontActionMethod.POST.value
+        }
+    )
     # purchase_records: List[ExtensionPurchaseRecordOut] = Field(
     #     default=[], title=_("Purchase Records", "购买记录")
     # )
