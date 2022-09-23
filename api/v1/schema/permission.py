@@ -25,7 +25,7 @@ class PermissionsListSchemaOut(ModelSchema):
     app_name: str = Field(default=None, alias="app.name", title=_("应用"))
     sort_id: int = Field(hidden=True)
     # is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value}, title=_("是否授权给其它租户"))
-    category: str = Field(title=_("分类"))
+    category: str = Field(title=_("分类"),notranslation=True)
     operation_id: str = Field(default='', title=_("操作ID"))
 
     class Config:
@@ -40,7 +40,7 @@ class AppPermissionsItemSchemaOut(Schema):
     name: str = Field(title=_("名称"))
     app_name: str = Field(default=None, alias='app.name', title=_("应用"))
     sort_id: int = Field(hidden=True)
-    category: str = Field(title=_("分类"))
+    category: str = Field(title=_("分类"),notranslation=True)
 
 
 class AppPermissionsListSchemaOut(ResponseSchema):

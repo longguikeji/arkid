@@ -125,3 +125,9 @@ class UserGroupExcludeUsersItemOut(Schema):
     id: UUID = Field(default=None)
     username: str
     avatar: str = Field(default=None)
+
+class UserGroupExcludeUsersFilter(Schema):
+    
+    username:Optional[str] = Field(
+        title=_("用户名")
+    )
