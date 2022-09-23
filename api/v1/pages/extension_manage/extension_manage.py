@@ -5,7 +5,7 @@ from arkid.core.translation import gettext_default as _
 from .extension_admin import markdown_page
 
 tag = 'tenant_extension_manage'
-name = '插件管理'
+name = '租户插件管理'
 
 
 page = pages.TabsPage(tag=tag, name=name)
