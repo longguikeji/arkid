@@ -86,6 +86,7 @@ class ExtensionListOut(ModelSchema):
     )
     is_allow_use_platform_config: bool = Field(
         title='是否允许租户使用平台配置',
+        hidden=True,
         item_action={
             "path":"/api/v1/extensions/{id}/use_platform_config/toggle/",
             "method":actions.FrontActionMethod.POST.value
