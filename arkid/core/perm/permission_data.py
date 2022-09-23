@@ -671,6 +671,14 @@ class PermissionData(object):
                     if container:
                         for item in container:
                             data_dict.get(item).is_pass = 1
+                elif data_item.is_open_other_user is True and data_item.tenant == auth_user.tenant:
+                    data_item.is_pass = 1
+                    describe = data_item.describe
+                    if describe:
+                        container = describe.get('sort_ids', [])
+                        if container:
+                            for item in container:
+                                data_dict.get(item).is_pass = 1
                 elif hasattr(data_item, 'is_pass') is False:
                     data_item.is_pass = 0
                 else:
@@ -1161,6 +1169,14 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
+                    elif data_item.is_open_other_user is True and data_item.tenant == auth_user.tenant:
+                        data_item.is_pass = 1
+                        describe = data_item.describe
+                        if describe:
+                            container = describe.get('sort_ids', [])
+                            if container:
+                                for item in container:
+                                    data_dict.get(item).is_pass = 1
                     elif hasattr(data_item, 'is_pass') is False:
                         data_item.is_pass = 0
                     else:
@@ -1417,6 +1433,7 @@ class PermissionData(object):
         if app_name:
             app_name = app_name.strip()
             permissions = permissions.filter(app__name__icontains=app_name)
+            systempermissions = systempermissions.filter(id__isnull=True)
         if category:
             category = category.strip()
             permissions = permissions.filter(category__icontains=category)
@@ -1706,6 +1723,7 @@ class PermissionData(object):
         if app_name:
             app_name = app_name.strip()
             permissions = permissions.filter(app__name__icontains=app_name)
+            systempermissions = systempermissions.filter(id__isnull=True)
         if category:
             category = category.strip()
             permissions = permissions.filter(category__icontains=category)
@@ -1877,6 +1895,7 @@ class PermissionData(object):
         if app_name:
             app_name = app_name.strip()
             permissions = permissions.filter(app__name__icontains=app_name)
+            systempermissions = systempermissions.filter(id__isnull=True)
         if category:
             category = category.strip()
             permissions = permissions.filter(category__icontains=category)
@@ -3123,7 +3142,8 @@ class PermissionData(object):
         '''
         uprs = UserPermissionResult.valid_objects.filter(
             tenant_id=tenant_id,
-            app__isnull=False
+            app__isnull=False,
+            app__is_del=False
         )
         items = []
         for upr in uprs:
