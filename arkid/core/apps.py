@@ -11,7 +11,6 @@ class CoreConfig(AppConfig):
         if run_once is not None:
             return
         os.environ['CMDLINERUNNER_RUN_ONCE'] = 'True'
-
         try:
             from arkid.core.models import Tenant, User
             tenant = Tenant.objects.filter(
