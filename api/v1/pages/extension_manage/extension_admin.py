@@ -2,7 +2,7 @@ from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
 tag = 'extension_admin'
-name = '平台插件'
+name = '平台插件管理'
 
 
 page = pages.TabsPage(tag=tag, name=name)

@@ -2,7 +2,7 @@ from arkid.core.translation import gettext_default as _
 from arkid.core import actions, pages, routers
 
 tag = "mine_switch_tenant"
-name = _("切换租户")
+name = _("Switch Tenant", "切换租户")
 
 page = pages.CardsPage(
     tag=tag,

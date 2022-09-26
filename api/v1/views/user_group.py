@@ -1,6 +1,6 @@
 
 from ninja import Field
-from ninja import Schema
+from ninja import Schema,Query
 from ninja import ModelSchema
 from arkid.core.api import api, operation
 from typing import List, Optional
@@ -188,10 +188,12 @@ def group_users_remove(request, tenant_id: str, user_group_id: str, id: str):
     # 分发事件结束
     return ErrorDict(ErrorCode.OK)
 
+
+
 @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/exclude_users/", response=List[UserGroupExcludeUsersItemOut], tags=["用户分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_exclude_users(request, tenant_id: str, user_group_id: str):
+def get_exclude_users(request, tenant_id: str, user_group_id: str,query_data:UserGroupExcludeUsersFilter=Query(...)):
     """ 获取所有未添加到分组的用户
     """
     tenant = request.tenant
@@ -200,7 +202,10 @@ def get_exclude_users(request, tenant_id: str, user_group_id: str):
     group_users = group.users.all()
     super_user_id = User.valid_objects.order_by('created').first().id
     users = users.exclude(id__in=group_users).exclude(id=super_user_id).all()
-    users = User.expand_objects.filter(id__in=users).all()
+    if query_data.username:
+        users = User.expand_objects.filter(id__in=users,username__contains=query_data.username).all()
+    else:
+        users = User.expand_objects.filter(id__in=users).all()
     return users
 
 @api.get("/tenant/{tenant_id}/user_groups/{user_group_id}/all_permissions/", response=List[UserGroupPermissionListSelectSchemaOut], tags=["用户分组"])
