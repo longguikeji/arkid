@@ -286,26 +286,22 @@ class EventListener(object):
 
     def update_open_other_user_app_permission(self, event, **kwargs):
         data = event.data
-        from arkid.core.tasks.tasks import update_open_other_user_app_permission
-        update_open_other_user_app_permission.delay(data)
+        dispatch_task.delay('update_open_other_user_app_permission', data)
         return True
 
     def update_open_other_user_system_permission(self, event, **kwargs):
         data = event.data
-        from arkid.core.tasks.tasks import update_open_other_user_system_permission
-        update_open_other_user_system_permission.delay(data)
+        dispatch_task.delay('update_open_other_user_system_permission', data)
         return True
 
     def update_close_other_user_app_permission(self, event, **kwargs):
         data = event.data
-        from arkid.core.tasks.tasks import update_close_other_user_app_permission
-        update_close_other_user_app_permission.delay(data)
+        dispatch_task.delay('update_close_other_user_app_permission', data)
         return True
 
     def update_close_other_user_system_permission(self, event, **kwargs):
         data = event.data
-        from arkid.core.tasks.tasks import update_close_other_user_system_permission
-        update_close_other_user_system_permission.delay(data)
+        dispatch_task.delay('update_close_other_user_system_permission', data)
         return True
 
     def update_group_permission_permission(self, event, **kwargs):
