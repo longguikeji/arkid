@@ -2,10 +2,10 @@
 from platform import platform
 from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
-from ..platform_admin.extension_admin import markdown_page
+from .extension_admin import markdown_page
 
 tag = 'tenant_extension_manage'
-name = '插件管理'
+name = '租户插件管理'
 
 
 page = pages.TabsPage(tag=tag, name=name)
@@ -47,7 +47,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='list',
+    icon='extension',
 )
 
 platform_extension_page.create_actions(
