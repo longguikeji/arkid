@@ -93,7 +93,13 @@ DATABASES = {
         'OPTIONS': {
             'timeout': 20,
         },
-    }
+        'TEST': {
+            # 镜像数据库
+            'MIRROR': 'default',
+            # 不会自动migrate(如果去掉该选项，测试不通过)
+            'MIGRATE': False,
+        },
+    },
 }
 
 
