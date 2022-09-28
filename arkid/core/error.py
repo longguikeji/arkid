@@ -90,6 +90,8 @@ class ErrorCode(Enum):
     CAN_NOT_SET_FRONTEND_URL = ('18006', _('can not set frontend url', '链接已设置或禁止设置'))
 
     PLUG_IN_NOT_START = ('18007', _('plug-in not start', '这个插件没有配置'))
+
+    NEED_APP_COFIG = ('18008', _('need app config', '需要先配置应用协议'))
     
 class ErrorDict(dict):
 
