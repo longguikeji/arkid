@@ -1,4 +1,5 @@
 import datetime
+from email.policy import default
 from django.db import models
 from django.utils import timezone
 from arkid.common.model import BaseModel
@@ -845,3 +846,18 @@ class MessageExpandAbstract(BaseModel):
         on_delete=models.PROTECT,
         related_name="%(app_label)s_%(class)s",
     )
+    
+class UserPersonalSettings(BaseModel, ExpandModel):
+    class Meta(object):
+        verbose_name = _("UserPersonalSettings", "用户个人设置")
+        verbose_name_plural = _("UserPersonalSettings", "用户个人设置")
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
+    tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
+    settings = models.JSONField(
+        default={},
+        verbose_name=_("用户个人设置")
+    )
+
+    def __str__(self) -> str:
+        return f'User: {self.user.username}'

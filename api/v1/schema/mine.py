@@ -282,3 +282,29 @@ class MineUnreadedMessageCountItemOut(Schema):
     
 class MineUnreadedMessageCountOut(ResponseSchema):
     data:MineUnreadedMessageCountItemOut
+    
+class MinePersonalSettingsItemOut(Schema):
+    desktop:dict = Field(
+        default={},
+        title=_("桌面设置")
+    )
+    
+    mobile:dict = Field(
+        default={},
+        title=_("移动设备设置")
+    )
+    
+class MinePersonalSettingsOut(ResponseSchema):
+    data:MinePersonalSettingsItemOut
+    
+class MinePersonalSettingsIn(Schema):
+    desktop:Optional[dict] = Field(
+        default={},
+        title=_("桌面设置")
+    )
+    
+    mobile:Optional[dict] = Field(
+        default={},
+        title=_("移动设备设置")
+    )
+    
