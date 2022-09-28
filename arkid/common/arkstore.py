@@ -411,8 +411,8 @@ def load_installed_extension(ext_dir, extension_detail):
         extension = extension,
     )
     # 插件安装完成需要更新权限开始
-    from arkid.core.tasks.tasks import update_system_permission
-    update_system_permission.delay()
+    from arkid.core.tasks.celery import dispatch_task
+    dispatch_task.delay('update_system_permission')
     # 插件安装完成需要更新权限结束
     # 如果新安装的插件有models需重启django
     extension_models= Path(ext_dir) / 'models.py'

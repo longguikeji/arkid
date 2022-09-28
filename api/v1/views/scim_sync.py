@@ -50,8 +50,8 @@ def update_or_create_periodic_task(extension_config):
                 name=extension_config.id,
                 defaults={
                     'crontab': schedule,
-                    'task': 'arkid.core.tasks.tasks.sync',
-                    'args': json.dumps([extension_config.id.hex]),
+                    'task': 'arkid.core.tasks.celery.dispatch_task',
+                    'args': json.dumps(['scim_sync', extension_config.id.hex]),
                     'kwargs': json.dumps(extension_config.config),
                 },
             )
