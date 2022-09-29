@@ -7,7 +7,7 @@ from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from arkid.core.event import ACCOUNT_UNBIND, dispatch_event, Event
-from arkid.core.models import App, AppGroup, Message, Tenant, ApproveRequest, User
+from arkid.core.models import App, AppGroup, Message, Tenant, ApproveRequest, User, UserPersonalSettings
 from arkid.core.constants import *
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
@@ -479,4 +479,43 @@ def get_unreaded_message_count(request):
         data={
             "count":Message.active_objects.filter(user=request.user,readed_status=False).count()
         }
+    )
+    
+@api.get("/mine/tenant/{tenant_id}/personal_settings/",response=MinePersonalSettingsOut,tags=["我的"],auth=GlobalAuth())
+@operation(MinePersonalSettingsOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_personal_settings(request,tenant_id:str):
+    """获取个人设置信息
+    """
+    setting, _ = UserPersonalSettings.active_objects.get_or_create(
+        tenant=request.tenant,
+        user=request.user
+    )
+    
+    if not setting.settings:
+        setting.settings = {
+            "desktop":{
+                
+            }
+        }
+        setting.save()
+    
+    return SuccessDict(
+        data=setting.settings
+    )
+    
+@api.post("/mine/tenant/{tenant_id}/personal_settings/",response=MinePersonalSettingsOut,tags=["我的"],auth=GlobalAuth())
+@operation(MinePersonalSettingsOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def post_personal_settings(request,tenant_id:str,data:MinePersonalSettingsIn):
+    """获取个人设置信息
+    """
+    setting, _ = UserPersonalSettings.active_objects.get_or_create(
+        tenant=request.tenant,
+        user=request.user
+    )
+    
+    setting.settings.update(data.dict())
+    setting.save()
+    
+    return SuccessDict(
+        data=setting.settings
     )
