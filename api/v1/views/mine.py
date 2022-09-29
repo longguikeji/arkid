@@ -505,7 +505,7 @@ def get_personal_settings(request,tenant_id:str):
     
 @api.post("/mine/tenant/{tenant_id}/personal_settings/",response=MinePersonalSettingsOut,tags=["我的"],auth=GlobalAuth())
 @operation(MinePersonalSettingsOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def get_personal_settings(request,tenant_id:str,data:MinePersonalSettingsIn):
+def post_personal_settings(request,tenant_id:str,data:MinePersonalSettingsIn):
     """获取个人设置信息
     """
     setting, _ = UserPersonalSettings.active_objects.get_or_create(
