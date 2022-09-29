@@ -81,3 +81,75 @@ class TestCase(django_TestCase):
             },
             type="approve_system_arkid"
         )
+        # 认证因素
+        config = TenantExtensionConfig()
+        config.tenant = self.tenant
+        config.extension = Extension.active_objects.get(package='com.longgui.auth.factor.password')
+        config.config = {
+            "login_enabled_field_names":[
+                {
+                    "key":"username"
+                }
+            ],
+            "register_enabled_field_names":[
+                {
+                    "key":"username"
+                }
+            ],
+            "is_apply":False,
+            "regular":"",
+            "title":""
+        }
+        config.name = "default"
+        config.type = "password"
+        config.save()
+        self.auth_factor = config
+        # 认证规则
+        config = TenantExtensionConfig()
+        config.tenant = self.tenant
+        config.extension = Extension.active_objects.get(package='com.longgui.authrule.retrytimes')
+        config.config = {
+            "main_auth_factor":{
+                "id":"70f8d39e30cc40de8a70ec6495c21e84",
+                "name":"default",
+                "package":"com.longgui.auth.factor.password"
+            },
+            "try_times":3,
+            "second_auth_factor":{
+                "id":"7316fc337547450aa4d4038567949ec2",
+                "name":"图形验证码",
+                "package":"com.longgui.auth.factor.authcode"
+            },
+            "expired":30
+        }
+        config.name = '认证规则:登录失败三次启用图形验证码'
+        config.type = 'retry_times'
+        config.save()
+        self.auth_rules = config
+        # 自动认证
+        config = TenantExtensionConfig()
+        config.tenant = self.tenant
+        config.extension = Extension.active_objects.get(package='com.longgui.auto.auth.kerberos')
+        config.config = {
+            "service_principal":"http://localhost:8001"
+        }
+        config.name = 'test认证'
+        config.type = 'kerberos'
+        config.save()
+        self.auto_auth = config
+        # 一个插件
+        self.extension = Extension.active_objects.first()
+        # 主题
+        config = TenantExtensionConfig()
+        config.tenant = self.tenant
+        config.extension = Extension.active_objects.filter(package = 'com.longgui.theme.bootswatch').first()
+        config.config = {
+            "priority":1,
+            "css_url":"https://bootswatch.com/5/materia/bootstrap.min.css"
+        }
+        config.name = 'test'
+        config.type = 'materia'
+        config.save()
+        self.front_theme = config
+        # 语言
+        self.language_data = LanguageData.objects.create(name='语言包')
