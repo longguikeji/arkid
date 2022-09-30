@@ -200,3 +200,7 @@ class TestCase(django_TestCase):
         permission.is_system = False
         permission.save()
         self.permission = permission
+        # 用户分组
+        self.user_group = UserGroup.valid_objects.filter(tenant=self.tenant).first()
+
+        self.register_config = TenantExtensionConfig.valid_objects.filter(extension__package='com.longgui.auth.factor.password', tenant=self.tenant).first()
