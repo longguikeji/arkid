@@ -102,6 +102,7 @@ def user_fields(request, tenant_id: str):
     from arkid.core.expand import field_expand_map
     table_name = User._meta.db_table
     items = []
+    verbose_names = []
     if table_name in field_expand_map:
         field_expands = field_expand_map.get(table_name,{})
         for table, field,extension_name,extension_model_cls,extension_table,extension_field  in field_expands:
@@ -109,10 +110,12 @@ def user_fields(request, tenant_id: str):
                 verbose_name = field_item.verbose_name
                 field_name = field_item.name
                 if field_name == field:
-                    items.append({
-                        'id': field,
-                        'name': verbose_name,
-                    })
+                    if verbose_name not in verbose_names:
+                        items.append({
+                            'id': field,
+                            'name': verbose_name,
+                        })
+                        verbose_names.append(verbose_name)
                     break
     return {"data":items}
 # ------------- 获取用户接口 --------------

@@ -160,3 +160,43 @@ class TestCase(django_TestCase):
         self.github = Extension.valid_objects.filter(package='com.longgui.external.idp.github').first()
         # 一个系统权限
         self.system_permission = SystemPermission.valid_objects.filter(tenant__isnull=True).order_by('-created').first()
+        # 权限分组
+        self.system_permission_group = SystemPermission.valid_objects.filter(category='group').first()
+        # 授权规则
+        config = TenantExtensionConfig()
+        config.tenant = self.tenant
+        config.extension = Extension.active_objects.get(package='com.longgui.impower.rule')
+        config.config = {
+            "matchfield":{
+                "id":"mobile",
+                "name":"Mobile"
+            },
+            "matchsymbol":"等于",
+            "matchvalue":"15291584671",
+            "app":{
+                "id":"arkid",
+                "name":"arkid"
+            },
+            "permissions":[
+                {
+                    "id":"f547ce72-a230-41f6-b3d0-4d68fcc5dff4",
+                    "sort_id":9,
+                    "name":"公开app列表"
+                }
+            ]
+        }
+        config.name = 'test'
+        config.type = 'DefaultImpowerRule'
+        config.save()
+        self.permission_rule = config
+        # 权限
+        permission = Permission()
+        permission.tenant = self.tenant
+        permission.name = '自建权限'
+        permission.category = 'other'
+        permission.code = 'other_{}'.format(uuid.uuid4())
+        permission.parent = None
+        permission.app = self.app
+        permission.is_system = False
+        permission.save()
+        self.permission = permission

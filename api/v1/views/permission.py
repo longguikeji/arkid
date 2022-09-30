@@ -192,7 +192,7 @@ def user_add_permission(request, tenant_id: str, select_user_id: str, data: Perm
 
 @api.post("/tenant/{tenant_id}/permission/app/{select_app_id}/add_permission", tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def user_add_permission(request, tenant_id: str, select_app_id: str, data: PermissionBatchSchemaIn):
+def user_add_app_permission(request, tenant_id: str, select_app_id: str, data: PermissionBatchSchemaIn):
     '''
     添加应用权限
     '''
