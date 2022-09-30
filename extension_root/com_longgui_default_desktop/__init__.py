@@ -17,7 +17,7 @@ class DefaultDesktopExtension(extension.Extension):
             TenantItemOut,
             DefaultTenantItemOut,
             LoginPageTenantSchema,
-            default_desktop=(Optional[str],Field(title=_("默认桌面路径"),default="/desktop"))
+            default_desktop=(Optional[str],Field(title=_("默认桌面路径")))
         )
     
 extension = DefaultDesktopExtension()
