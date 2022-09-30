@@ -200,11 +200,11 @@ class MineMessageListItemOut(ModelSchema):
     
     @staticmethod
     def resolve_sender_avatar(obj):
-        return obj.sender.avatar if obj.sender else ""
+        return obj.sender.avatar if obj.sender and obj.sender.avatar else ""
     
     @staticmethod
     def resolve_user_avatar(obj):
-        return obj.user.avatar
+        return obj.user.avatar if obj.user and obj.user.avatar else ""
     
     @staticmethod
     def resolve_created(obj):

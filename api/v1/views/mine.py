@@ -449,7 +449,7 @@ def get_mine_message_senders(request):
         {
             "id": sender.id.hex if sender else 0,
             "name": sender.username if sender else _("系统消息"),
-            "avatar": sender.avatar if sender else ""
+            "avatar": sender.avatar if sender and sender.avatar else ""
         }
         for sender in senders
     ])

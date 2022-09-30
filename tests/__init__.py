@@ -17,7 +17,8 @@ class TestCase(django_TestCase):
         self.tenant = Tenant.valid_objects.filter(slug='').first()
         # 用户
         self.user = User.valid_objects.filter(username='admin').first()
-
+        # self.user.avatar = "https://img-blog.csdnimg.cn/20211011132942637.png"
+        # self.user.save()
         # token
         token_obj, _ = ExpiringToken.objects.get_or_create(user=self.user, defaults={"token": generate_token()})
         if token_obj.expired(self.tenant) is True:
@@ -153,3 +154,9 @@ class TestCase(django_TestCase):
         self.front_theme = config
         # 语言
         self.language_data = LanguageData.objects.create(name='语言包')
+        # 消息
+        self.message = Message.objects.create(title='测试消息', sender=self.user ,user=self.user, content='消息内容', url='http://localhost:8000')
+        # github
+        self.github = Extension.valid_objects.filter(package='com.longgui.external.idp.github').first()
+        # 一个系统权限
+        self.system_permission = SystemPermission.valid_objects.filter(tenant__isnull=True).order_by('-created').first()
