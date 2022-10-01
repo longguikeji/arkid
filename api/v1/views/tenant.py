@@ -112,7 +112,9 @@ def default_tenant(request):
     """ 获取当前域名下的默认租户(如无slug则为平台租户)
     """
     tenant = Tenant.platform_tenant()
-    return {"data":tenant}
+    tenant_expanded = Tenant.expand_objects.get(id=tenant.id)
+    tenant_expanded["is_platform_tenant"] = tenant.is_platform_tenant
+    return {"data":tenant_expanded}
 
 @api.post("/tenants/{tenant_id}/logout/", response=TenantLogoutOut,tags=["租户管理"])
 @operation(TenantLogoutOut,roles=[TENANT_ADMIN])

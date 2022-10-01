@@ -188,7 +188,9 @@ def login_page(request, tenant_id: str):
         }
         data[AuthFactorExtension.RESET_PASSWORD]['bottoms'].insert(0, bottom)
 
+    tenant_expanded = Tenant.expand_objects.get(id=tenant.id)
+    tenant_expanded["is_platform_tenant"] = tenant.is_platform_tenant
     return {
-        'tenant': tenant,
+        'tenant': tenant_expanded,
         'data': data,
     }
