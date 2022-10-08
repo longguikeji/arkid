@@ -118,8 +118,8 @@ def user_fields(request, tenant_id: str):
                         verbose_names.append(verbose_name)
                     break
     return {"data":items}
-# ------------- 获取用户接口 --------------
-        
+
+# ------------- 获取用户接口 --------------        
 @api.get("/tenant/{tenant_id}/users/{id}/",response=UserOut, tags=['用户'])
 @operation(UserOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_user(request, tenant_id: str,id:str):
