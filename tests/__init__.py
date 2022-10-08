@@ -221,7 +221,11 @@ class TestCase(django_TestCase):
         # 飞书可能会没有
         self.feishu = TenantExtensionConfig.valid_objects.filter(extension__package='com.longgui.external.idp.feishu', tenant=self.tenant).first()
         # 新租户
-        self.create_tenant = Tenant.objects.create(name='testttt', slug='testttt', icon='')
+        # only_name = uuid.uuid4().hex
+        # self.create_tenant = Tenant.objects.create(name=only_name, slug=only_name, icon='')
+        self.create_tenant = Tenant.valid_objects.exclude(slug='').order_by('-created').first()
+        if self.create_tenant is None:
+            self.create_tenant = self.tenant
         # 第三方认证
         config = TenantExtensionConfig()
         config.tenant = self.tenant
