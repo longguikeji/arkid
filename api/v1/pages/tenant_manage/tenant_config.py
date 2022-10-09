@@ -13,7 +13,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='settings',
+    icon='tenant_config',
 )
 
 page.create_actions(

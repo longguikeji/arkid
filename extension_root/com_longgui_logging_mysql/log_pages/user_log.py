@@ -14,7 +14,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='list',
+    icon='user_log',
 )
 
 page.create_actions(

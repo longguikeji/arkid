@@ -13,7 +13,7 @@ pages.register_front_pages(page)
 router = routers.FrontRouter(
     path=tag,
     name=name,
-    icon='app',
+    icon='mine_approve_request',
     page=page,
 )
 

@@ -20,5 +20,5 @@ router = routers.FrontRouter(
     path='grant_manage',
     name=_('授权管理'),
     page=page,
-    icon='grant',
+    icon='grant_manage',
 )

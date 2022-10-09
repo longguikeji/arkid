@@ -11,7 +11,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='message',
+    icon='message_manage',
 )
 
 page.create_actions(

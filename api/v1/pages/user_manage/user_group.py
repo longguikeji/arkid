@@ -22,7 +22,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='user',
+    icon='user_group',
 )
 
 page.create_actions(

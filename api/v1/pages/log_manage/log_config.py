@@ -11,7 +11,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='settings',
+    icon='log_config',
 )
 
 page.create_actions(

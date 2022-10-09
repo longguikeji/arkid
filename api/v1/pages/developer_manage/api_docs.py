@@ -9,5 +9,5 @@ router = FrontRouter(
     path=tag,
     name=name,
     url='/api/v1/tenant/{tenant_id}/docs/redoc/',
-    icon='api'
+    icon='api_doc'
 )
