@@ -24,7 +24,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=router_page,
-    icon='list',
+    icon='default_approve_requests',
 )
 
 package = 'com.longgui.approve.system.arkid'.replace('.', '_')
