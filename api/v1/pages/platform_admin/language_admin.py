@@ -14,7 +14,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='language',
+    icon='language_admin',
 )
 
 page.create_actions(

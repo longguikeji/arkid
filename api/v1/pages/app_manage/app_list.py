@@ -52,7 +52,7 @@ pages.register_front_pages(store_group_apps_page)
 router = routers.FrontRouter(
     path=tag,
     name=name,
-    icon='list',
+    icon='app_list',
     page=page,
 )
 

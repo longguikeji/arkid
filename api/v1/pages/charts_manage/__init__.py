@@ -3,7 +3,7 @@ from arkid.core import routers
 from . import bi_systems,charts
 
 router = routers.FrontRouter(
-    path='charts',
+    path='charts_manage',
     name='图表分析',
     icon='charts',
     children=[

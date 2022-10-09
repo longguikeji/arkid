@@ -6,7 +6,7 @@ from . import language_admin,tenant_admin, platform_config
 router = routers.FrontRouter(
     path='platform_admin',
     name=_('平台管理'),
-    icon='platform',
+    icon='platform_admin',
     children=[
         language_admin.router,
         tenant_admin.router,

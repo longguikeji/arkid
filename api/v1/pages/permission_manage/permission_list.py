@@ -17,7 +17,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='list',
+    icon='permission_list',
 )
 
 page.create_actions(

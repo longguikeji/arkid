@@ -51,7 +51,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='child',
+    icon='child_manager',
 )
 
 page.create_actions(

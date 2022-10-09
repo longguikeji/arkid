@@ -14,7 +14,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='app',
+    icon='app_group_list',
 )
 
 page.create_actions(
