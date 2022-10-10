@@ -78,6 +78,7 @@ class ITEM_TYPE(str, Enum):
     arkstore_auto_form_fill =  _("arkstore_auto_form_fill", "表单代填应用")
     arkstore_url =  _("arkstore_url", "推广链接")
     arkstore_custom =  _("arkstore_custom", "自定义")
+    arkstore_saas =  _("arkstore_saas", "SAAS应用")
 
 
 class PAYMENT_TYPE(str, Enum):
@@ -312,6 +313,14 @@ def list_arkstore_extensions(request, tenant_id: str, query_data: ArkstoreExtens
 def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
     query_data = query_data.dict()
     return get_arkstore_list(request, None, 'app', extra_params=query_data)
+
+
+@api.get("/tenant/{tenant_id}/arkstore/private_apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(ArstorePagination)
+def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
+    query_data = query_data.dict()
+    return get_arkstore_list(request, None, 'private_app', extra_params=query_data)
 
 
 @api.get("/tenant/{tenant_id}/arkstore/categorys/", tags=['方舟商店'], response=ArkstoreCategoryListSchemaOut)
@@ -738,6 +747,16 @@ def update_arkstore_extension(request, tenant_id: str, package: str):
     if ext_info is None:
         return ErrorDict(ErrorCode.UPDATE_EXTENSION_SUCCESS)
     result = install_arkstore_extension(tenant, token, ext_info['uuid'])
+    resp = {'error': ErrorCode.OK.value, 'data': {}}
+    return resp
+
+
+@api.post("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['方舟商店'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def install_saas_app_from_arkstore(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    result = install_arkstore_saas_app(tenant, token, uuid)
     resp = {'error': ErrorCode.OK.value, 'data': {}}
     return resp
 
