@@ -49,6 +49,9 @@ class MineTenantListItemOut(ModelSchema):
         model = Tenant
         model_fields = ["id", "name", "slug", "icon"]
 
+class MineTenantAllOut(ResponseSchema):
+    data:List[MineTenantListItemOut]
+
 class MinePermissionListSchemaOut(Schema):
 
     id: UUID = Field(hidden=True)
