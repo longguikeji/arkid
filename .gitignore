@@ -201,3 +201,6 @@ arkid_celery_tasks
 .devcontainer/
 storage/
 results.sqlite
+
+tasks
+~
