@@ -8,7 +8,7 @@ from arkid.core.constants import *
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
 from arkid.core.schema import ResponseSchema
-from arkid.core.error import ErrorCode, ErrorDict
+from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from api.v1.schema.tenant import *
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination

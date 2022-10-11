@@ -194,6 +194,18 @@ def get_mine_tenants(request):
     return tenants
 
 
+@api.get("/mine/tenants/all/", response=MineTenantAllOut, tags=["我的"])
+@operation(roles=[PLATFORM_USER, PLATFORM_ADMIN])
+def get_mine_tenants_all(request):
+    """获取我的租户"""
+    tenants = list(Tenant.active_objects.filter(users=request.user).all())
+    for tenant in tenants:
+        if tenant.has_admin_perm(request.user):
+            tenant.role = '管理员'
+        else:
+            tenant.role = '普通用户'
+    return SuccessDict(data=tenants)
+
 @api.get("/mine/tenant/{tenant_id}/accounts/", tags=["我的"], response=List[MineBindAccountItem])
 @operation(MineBindAccountOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)

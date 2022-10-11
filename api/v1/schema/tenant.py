@@ -18,7 +18,7 @@ class TenantListItemOut(ModelSchema):
         model_fields = ["id","name", "slug", "icon"]
         
 class TenantListOut(ResponseSchema):
-    data: List[TenantListItemOut]
+    items: List[TenantListItemOut]
     
 class TenantItemOut(ModelSchema):
 
