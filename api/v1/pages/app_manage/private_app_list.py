@@ -7,25 +7,19 @@ name = '私有化应用'
 
 page = pages.TabsPage(tag=tag, name=name)
 
-# store_page = pages.CardsPage(name='插件商店')
 store_page = pages.TreePage(name=_("Extension Store", "私有化应用商店"),show_vnode=True,show_page_if_no_node=False)
 store_cascade_page = pages.CardsPage(name='')
 
-# installed_page = pages.CardsPage(name='已安装')
 # installed_page = pages.TreePage(name=_("Installed", "已安装"),show_vnode=True,show_page_if_no_node=False)
 # installed_cascade_page = pages.CardsPage(name='')
 
-arkstore_markdown_page = pages.FormPage(name=_("文档"))
+default_values_page = pages.FormPage(name=_("默认配置"))
 order_page = pages.StepPage(name=_('Order', '购买'))
 trial_page = pages.FormPage(name=_('Trial', '试用'))
 
-# purchased_page = pages.CardsPage(name='已购买')
 purchased_page = pages.TreePage(name=_("Purchased", "已购买"),show_vnode=True,show_page_if_no_node=False)
 purchased_cascade_page = pages.CardsPage(name='')
 
-history_page = pages.TablePage(name='插件历史版本')
-markdown_page = pages.FormPage(name=_("文档"))
-profile_page = pages.FormPage(name='插件配置')
 price_page = pages.CardsPage(name='选择价格')
 copies_page = pages.FormPage(name='人天份数')
 payment_page = pages.FormPage(name='支付')
@@ -38,17 +32,15 @@ pages.register_front_pages(page)
 # pages.register_front_pages(installed_cascade_page)
 pages.register_front_pages(store_page)
 pages.register_front_pages(store_cascade_page)
-pages.register_front_pages(arkstore_markdown_page)
+pages.register_front_pages(default_values_page)
 pages.register_front_pages(order_page)
 pages.register_front_pages(trial_page)
 pages.register_front_pages(purchased_page)
 pages.register_front_pages(purchased_cascade_page)
-pages.register_front_pages(history_page)
-pages.register_front_pages(markdown_page)
-pages.register_front_pages(profile_page)
 pages.register_front_pages(price_page)
 pages.register_front_pages(copies_page)
 pages.register_front_pages(payment_page)
+pages.register_front_pages(install_page)
 
 
 router = routers.FrontRouter(
@@ -79,47 +71,12 @@ page.add_pages([
 #             page=installed_cascade_page
 #         )
 #     ]
-
-#     # init_action=actions.DirectAction(
-#     #     path='/api/v1/extensions/',
-#     #     method=actions.FrontActionMethod.GET,
-#     # ),
-#     # local_actions={
-#     #     "markdown": actions.OpenAction(
-#     #         name='文档',
-#     #         page=markdown_page
-#     #     ),
-#     #     "update": actions.DirectAction(
-#     #         name='更新',
-#     #         path='/api/v1/tenant/{tenant_id}/arkstore/update/{package}/',
-#     #         method=actions.FrontActionMethod.POST,
-#     #     ),
-#     #     "profile": actions.OpenAction(
-#     #         name='插件配置',
-#     #         page=profile_page
-#     #     ),
-#     # },
 # )
 # installed_cascade_page.create_actions(
 #     init_action=actions.DirectAction(
 #         path='/api/v1/extensions/?category_id={category_id}',
 #         method=actions.FrontActionMethod.GET,
 #     ),
-#     local_actions={
-#         "markdown": actions.OpenAction(
-#             name='文档',
-#             page=markdown_page
-#         ),
-#         "update": actions.DirectAction(
-#             name='更新',
-#             path='/api/v1/tenant/{tenant_id}/arkstore/update/{package}/',
-#             method=actions.FrontActionMethod.POST,
-#         ),
-#         "profile": actions.OpenAction(
-#             name='插件配置',
-#             page=profile_page
-#         ),
-#     },
 # )
 
 
@@ -137,47 +94,13 @@ store_page.create_actions(
             page=store_cascade_page
         )
     ]
-    # init_action=actions.DirectAction(
-    #     path='/api/v1/tenant/{tenant_id}/arkstore/extensions/',
-    #     method=actions.FrontActionMethod.GET,
-    # ),
-    # global_actions={
-    #    'bind_agent': actions.OpenAction(
-    #         name='绑定代理商',
-    #         page=bind_agent_page
-    #     ),
-    # },
-    # local_actions={
-    #     "markdown": actions.OpenAction(
-    #         name='文档',
-    #         page=arkstore_markdown_page
-    #     ),
-    #     "order": actions.OpenAction(
-    #         name='购买',
-    #         page=order_page
-    #     ),
-    #     "trial": actions.OpenAction(
-    #         name='试用',
-    #         page=trial_page
-    #     )
-    # },
 )
 store_cascade_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/arkstore/private_apps/?category_id={category_id}',
         method=actions.FrontActionMethod.GET
     ),
-    # global_actions={
-    #    'bind_agent': actions.OpenAction(
-    #         name='绑定代理商',
-    #         page=bind_agent_page
-    #     ),
-    # },
     local_actions={
-        # "markdown": actions.OpenAction(
-        #     name='文档',
-        #     page=arkstore_markdown_page
-        # ),
         "order": actions.OpenAction(
             name='购买',
             page=order_page
@@ -204,26 +127,6 @@ purchased_page.create_actions(
             page=purchased_cascade_page
         )
     ]
-
-    # init_action=actions.DirectAction(
-    #     path='/api/v1/tenant/{tenant_id}/arkstore/purchased/extensions/',
-    #     method=actions.FrontActionMethod.GET,
-    # ),
-    # local_actions={
-    #     "markdown": actions.OpenAction(
-    #         name='文档',
-    #         page=arkstore_markdown_page
-    #     ),
-    #     "history": actions.OpenAction(
-    #         name='历史版本',
-    #         page=history_page
-    #     ),
-    #     "install": actions.DirectAction(
-    #         name='安装',
-    #         path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
-    #         method=actions.FrontActionMethod.POST,
-    #     ),
-    # },
 )
 purchased_cascade_page.create_actions(
     init_action=actions.DirectAction(
@@ -231,48 +134,23 @@ purchased_cascade_page.create_actions(
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
-        # "markdown": actions.OpenAction(
-        #     name='文档',
-        #     page=arkstore_markdown_page
-        # ),
-        "history": actions.OpenAction(
-            name='历史版本',
-            page=history_page
+        "config": actions.OpenAction(
+            name='默认配置',
+            page=default_values_page
         ),
-        "install": actions.DirectAction(
+        "install": actions.OpenAction(
             name='安装',
-            path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
-            method=actions.FrontActionMethod.POST,
+            page=install_page
         ),
     },
 )
 
-markdown_page.create_actions(
+
+default_values_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/extensions/{id}/markdown/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/private_app/{uuid}/default_values/',
         method=actions.FrontActionMethod.GET
     )
-)
-
-arkstore_markdown_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/arkstore/extensions/{uuid}/markdown/',
-        method=actions.FrontActionMethod.GET
-    )
-)
-
-history_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/arkstore/extensions/{package}/history/',
-        method=actions.FrontActionMethod.GET,
-    ),
-    local_actions={
-        "install": actions.DirectAction(
-            name='安装',
-            path='/api/v1/tenant/{tenant_id}/arkstore/install/{uuid}/',
-            method=actions.FrontActionMethod.POST,
-        ),
-    }
 )
 
 order_page.add_pages([
@@ -321,38 +199,6 @@ payment_page.create_actions(
     }
 )
 
-profile_page.create_actions(
-    init_action=actions.DirectAction(
-        path='/api/v1/extensions/{id}/profile/',
-        method=actions.FrontActionMethod.GET
-    ),
-    global_actions={
-       'confirm': actions.ConfirmAction(
-            path="/api/v1/extensions/{id}/profile/"
-        ),
-    }
-)
-
-# bind_agent_page.create_actions(
-#     init_action=actions.DirectAction(
-#         path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
-#         method=actions.FrontActionMethod.GET,
-#     ),
-#     global_actions={
-#         "confirm": actions.DirectAction(
-#             name='确定',
-#             path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
-#             method=actions.FrontActionMethod.POST
-#         ),
-#         # "delete": actions.DirectAction(
-#         #     name='删除',
-#         #     path='/api/v1/tenant/{tenant_id}/arkstore/bind_agent/',
-#         #     method=actions.FrontActionMethod.DELETE
-#         # ),
-#     },
-# )
-
-
 trial_page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/',
@@ -362,6 +208,20 @@ trial_page.create_actions(
         "confirm": actions.DirectAction(
             name='试用',
             path='/api/v1/tenant/{tenant_id}/arkstore/trial/extensions/{uuid}/',
+            method=actions.FrontActionMethod.POST
+        ),
+    },
+)
+
+install_page.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/arkstore/install/priate_app/{uuid}/',
+        method=actions.FrontActionMethod.GET,
+    ),
+    global_actions={
+        "confirm": actions.DirectAction(
+            name='安装',
+            path='/api/v1/tenant/{tenant_id}/arkstore/install/priate_app/{uuid}/',
             method=actions.FrontActionMethod.POST
         ),
     },

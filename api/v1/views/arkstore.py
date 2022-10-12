@@ -32,11 +32,13 @@ from arkid.common.arkstore import (
     get_arkstore_extension_markdown,
     get_arkstore_extension_history_by_package,
     click_arkstore_app,
+    install_arkstore_private_app,
+    get_arkstore_private_app_data,
 )
 from arkid.common.bind_saas import get_bind_info
 from arkid.core.api import api, operation
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any
 from ninja import Schema, Query
 import enum
 from pydantic import Field
@@ -739,7 +741,7 @@ def create_order_arkstore_extension_trial(request, tenant_id: str, uuid: str):
 
 @api.post("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['方舟商店'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def download_arkstore_extension(request, tenant_id: str, uuid: str):
+def install_arkstore_extension_from_arkstore(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     result = install_arkstore_extension(tenant, token, uuid)
@@ -749,7 +751,7 @@ def download_arkstore_extension(request, tenant_id: str, uuid: str):
 
 @api.post("/tenant/{tenant_id}/arkstore/update/{package}/", tags=['方舟商店'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_arkstore_extension(request, tenant_id: str, package: str):
+def update_arkstore_extension_from_arkstore(request, tenant_id: str, package: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
@@ -761,14 +763,46 @@ def update_arkstore_extension(request, tenant_id: str, package: str):
     return resp
 
 
-@api.post("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['方舟商店'])
+class CutomValuesData(Schema):
+    values_data: Optional[str] = Field(
+        default="",
+        format='textarea',
+        title=_('Values Data', '配置')
+    )
+
+class CustomAppValuesOut(ResponseSchema):
+    data: CutomValuesData
+
+@api.get("/tenant/{tenant_id}/arkstore/install/priate_app/{uuid}/", tags=['方舟商店'], response=CustomAppValuesOut)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def install_saas_app_from_arkstore(request, tenant_id: str, uuid: str):
+def get_private_app_custom_values(request, tenant_id: str, uuid: str):
+    return {"data": {"values_data": ""}}
+
+
+@api.post("/tenant/{tenant_id}/arkstore/install/priate_app/{uuid}/", tags=['方舟商店'])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def install_private_app_from_arkstore(request, tenant_id: str, uuid: str, data: CutomValuesData):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
-    result = install_arkstore_saas_app(tenant, token, uuid)
-    resp = {'error': ErrorCode.OK.value, 'data': {}}
-    return resp
+    result = install_arkstore_private_app(tenant, token, uuid, data.values_data)
+    if result['code'] == 0:
+        return {'error': ErrorCode.OK.value, 'data': {}}
+    return ErrorDict(ErrorCode.PRIVATE_APP_INSTALL_FAILED, message=result['message'])
+
+
+class AppValuesSchema(Schema):
+    values_data: str = Field(format='textarea', readonly=True)
+
+class AppValuesOut(ResponseSchema):
+    data: AppValuesSchema
+
+@api.get("/tenant/{tenant_id}/arkstore/private_app/{uuid}/default_values/", tags=['方舟商店'], response=AppValuesOut)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_private_app_default_values(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    resp = get_arkstore_private_app_data(tenant, token, uuid)
+    return {"data": resp}
 
 
 @api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchemaOut)

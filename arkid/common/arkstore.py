@@ -319,7 +319,7 @@ def install_arkstore_extension(tenant, token, extension_id):
     elif res['type'] == 'extension':
         download_arkstore_extension(tenant, token, extension_id, res)
     elif res['type'] == 'private':
-        get_arkstore_saas_app_values(tenant, token, extension_id, res)
+        pass
     else:
         # res['type'] in ('url', 'oidc') or else
         app = get_arkid_saas_app_detail(tenant, token, extension_id)
@@ -437,9 +437,9 @@ def load_installed_extension(ext_dir, extension_detail):
     ext.start()
 
 
-def get_arkstore_saas_app_values(tenant, token, extension_id, extension_detail):
+def get_arkstore_private_app_data(tenant, token, app_id):
     access_token = get_arkstore_access_token(tenant, token)
-    url = settings.ARKSTOER_URL + f'/api/v1/arkstore/saas_apps/{extension_id}/download'
+    url = settings.ARKSTOER_URL + f'/api/v1/arkstore/saas_apps/{app_id}/download'
     headers = {'Authorization': f'Token {access_token}'}
     resp = requests.get(url, headers=headers)
     if resp.status_code == 402:
@@ -449,28 +449,39 @@ def get_arkstore_saas_app_values(tenant, token, extension_id, extension_detail):
         raise Exception('error: download failed')
 
     resp = resp.json()
-    # download_url = resp["download_url"]
-    values_data = resp["values_data"]
-    return {"values_data": values_data}
+    return resp
 
 
-def install_arkstore_saas_app_to_k8s(tenant, app, download_url, values_data=""):
-    app_name = f"{tenant.id.hex[-8:]}-{app['name']}"[:63]
+def install_arkstore_private_app(tenant, token, app_id, values_data=""):
+    data = get_arkstore_private_app_data(tenant, token, app_id)
+    download_url = data["download_url"]
+
+    saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
+    access_token = get_arkstore_access_token(tenant, token)
+    res = get_arkstore_extension_detail(access_token, app_id)
+    app_name = f"{tenant.id.hex[-8:]}-{res['name']}"[:63]
     k8s_url = settings.K8S_INSTALL_APP_URL + '/' + app_name
+
     data = {
         "chart": download_url,
         "targetNamespace": app_name,
         "valuesContent": values_data,
     }
-    resp = requests.post(k8s_url, json=data)
-    if resp.status_code != 200:
-        raise Exception(f'Error purcharse_arkstore_extension: {resp.status_code}')
-    resp = resp.json()
-    if resp['code'] != 0:
-        raise Exception(f"Install app to k8s failed: {resp['message']}")
+    try:
+        resp = requests.post(k8s_url, json=data, timeout=30)
+        if resp.status_code != 200:
+            logger.error(f'Install app to k8s failed: {resp.status_code}')
+            return {'code': resp.status_code, 'message': resp.content.decode()}
+        resp = resp.json()
+        if resp['code'] != 0:
+            logger.error(f"Install app to k8s failed: {resp['message']}")
+        return resp
+    except Exception as e:
+        logger.error(f"Install app to k8s failed: {e}")
+        return {'code': -1, 'message': str(e)}
 
 
-def check_k8s_app_install_status():
+def check_private_app_install_status():
     k8s_url = settings.K8S_INSTALL_APP_URL + '/' + app_name
     resp = requests.get(k8s_url, headers=headers)
     if resp.status_code != 200:
