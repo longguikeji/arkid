@@ -260,8 +260,8 @@ ARKSTOER_URL = 'https://arkstore.longguikeji.com' # 插件商店链接
 # update_url
 UPDATE_URL = "http://longguikeji.gitee.io/arkid/%20%20%20%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7/"
 
-# k8s_install_app_url
-K8S_INSTALL_APP_URL = 'http://localhost:8080/crd/chart' # k8s安装应用接口
+# k8s_url
+K8S_URL = 'http://localhost:8080' # k8s私有化应用安装链接
 
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):

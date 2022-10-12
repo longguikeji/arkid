@@ -460,7 +460,7 @@ def install_arkstore_private_app(tenant, token, app_id, values_data=""):
     access_token = get_arkstore_access_token(tenant, token)
     res = get_arkstore_extension_detail(access_token, app_id)
     app_name = f"{tenant.id.hex[-8:]}-{res['name']}"[:63]
-    k8s_url = settings.K8S_INSTALL_APP_URL + '/' + app_name
+    k8s_url = settings.K8S_INSTALL_APP_URL + '/crd/chart/' + app_name
 
     data = {
         "chart": download_url,
@@ -481,15 +481,21 @@ def install_arkstore_private_app(tenant, token, app_id, values_data=""):
         return {'code': -1, 'message': str(e)}
 
 
-def check_private_app_install_status():
-    k8s_url = settings.K8S_INSTALL_APP_URL + '/' + app_name
-    resp = requests.get(k8s_url, headers=headers)
-    if resp.status_code != 200:
-        raise Exception(f'Error purcharse_arkstore_extension: {resp.status_code}')
-    resp = resp.json()
-    if resp['code'] != 0:
-        raise Exception(f"Install app to k8s failed: {resp['message']}")
-    return resp
+def check_private_app_install_status(app_name):
+    k8s_url = settings.K8S_INSTALL_APP_URL + '/ahc/crdjob/' + app_name
+
+    try:
+        resp = requests.get(k8s_url, timeout=15)
+        if resp.status_code != 200:
+            logger.error(f'Install app to k8s failed: {resp.status_code}')
+            return {'code': resp.status_code, 'message': resp.content.decode()}
+        resp = resp.json()
+        if resp['code'] != 0:
+            logger.error(f"Install app to k8s failed: {resp['message']}")
+        return resp
+    except Exception as e:
+        logger.error(f"Install app to k8s failed: {e}")
+        return {'code': -1, 'message': str(e)}
 
 
 def get_bind_arkstore_agent(access_token):
