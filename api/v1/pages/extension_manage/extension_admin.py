@@ -55,7 +55,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='extension',
+    icon='extension_admin',
 )
 
 page.add_pages([

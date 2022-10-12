@@ -53,6 +53,6 @@ page.add_pages([
 router = routers.FrontRouter(
     path=tag,
     name=name,
-    icon='auth',
+    icon='mine_auth_manage',
     page=page
 )

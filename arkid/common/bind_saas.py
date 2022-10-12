@@ -20,6 +20,9 @@ def get_bind_info(tenant_id):
     if resp.status_code != 200:
         raise Exception(f'Error get_bind_info: {resp.status_code}')
     resp = resp.json()
+    tenant = Tenant.objects.get(id=tenant_id)
+    create_arkidstore_login_app(tenant, resp['saas_tenant_id'])
+    create_arkid_saas_login_app(tenant, resp['saas_tenant_id'], resp.get('saas_login_url'))
     return resp
 
 
@@ -101,15 +104,23 @@ def set_saas_bind_slug(tenant, data):
 
 
 def create_arkidstore_login_app(tenant, saas_tenant_id):
+    from arkid.core.models import App
     url = f"{settings.ARKSTOER_URL}/api/v1/login?tenant_id={saas_tenant_id}"
-    create_tenant_oidc_app(tenant, url, 'ArkStore', '方舟商店，包含插件与应用',
+    app = App.objects.filter(tenant=tenant, name="ArkStore", url=url)
+    if app:
+        app.delete()
+    create_tenant_oidc_app(tenant, url, '开发与代理', '开发商与代理商的管理后台',
         'https://s1.ax1x.com/2022/07/04/jJrVxg.png')
 
 
 def create_arkid_saas_login_app(tenant, saas_tenant_id, saas_login_url=None):
+    from arkid.core.models import App
     url = saas_login_url or f"{settings.ARKID_SAAS_URL}/login?tenant_id={saas_tenant_id}"
-    create_tenant_oidc_app(tenant, url, 'Central ArkID', '中心ArkID', 
-        'https://s1.ax1x.com/2022/07/04/jJDh2F.png')
+    app = App.objects.filter(tenant=tenant, name="Central ArkID", url=url)
+    if app:
+        app.delete()
+    # create_tenant_oidc_app(tenant, url, 'Central ArkID', '中心ArkID', 
+    #     'https://s1.ax1x.com/2022/07/04/jJDh2F.png')
 
 
 def bind_saas(tenant_id, data=None):
@@ -159,9 +170,9 @@ def bind_saas(tenant_id, data=None):
 
 
 def trigger_bind_saas(event, **kwargs):
-    from arkid.core.tasks.tasks import bind_arkid_saas_all_tenants
+    from arkid.core.tasks.celery import dispatch_task
     from django.conf import settings
     if not settings.IS_CENTRAL_ARKID:
-        bind_arkid_saas_all_tenants.delay()
+        dispatch_task.delay('bind_arkid_saas_all_tenants')
 
 listen_event(SET_FRONTEND_URL, trigger_bind_saas)

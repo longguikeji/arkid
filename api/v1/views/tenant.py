@@ -8,7 +8,7 @@ from arkid.core.constants import *
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
 from arkid.core.schema import ResponseSchema
-from arkid.core.error import ErrorCode, ErrorDict
+from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from api.v1.schema.tenant import *
 from ninja.pagination import paginate
 from arkid.core.pagenation import CustomPagination
@@ -68,7 +68,7 @@ def create_tenant(request, data:TenantCreateIn):
 def update_tenant(request, id: str, data:TenantUpdateIn):
     """ 编辑租户
     """
-    tenant = get_object_or_404(Tenant.expand_objects,id=id)
+    tenant = get_object_or_404(Tenant.valid_objects,id=id)
     for attr, value in data.dict().items():
         setattr(tenant, attr, value)
     tenant.save()
@@ -112,7 +112,9 @@ def default_tenant(request):
     """ 获取当前域名下的默认租户(如无slug则为平台租户)
     """
     tenant = Tenant.platform_tenant()
-    return {"data":tenant}
+    tenant_expanded = Tenant.expand_objects.get(id=tenant.id)
+    tenant_expanded["is_platform_tenant"] = tenant.is_platform_tenant
+    return {"data":tenant_expanded}
 
 @api.post("/tenants/{tenant_id}/logout/", response=TenantLogoutOut,tags=["租户管理"])
 @operation(TenantLogoutOut,roles=[TENANT_ADMIN])

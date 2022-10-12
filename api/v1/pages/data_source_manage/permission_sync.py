@@ -17,7 +17,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='sync',
+    icon='permission_sync',
 )
 
 page.create_actions(

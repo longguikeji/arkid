@@ -19,12 +19,12 @@ event_id_map = {}
 
 def send_event_through_webhook(event):
 
-    from arkid.core.tasks.tasks import trigger_webhooks_for_event
+    from arkid.core.tasks.celery import dispatch_task
 
     tenant = event.tenant
     payload = get_event_payload(event)
     # logger.info(f"Webhook is handling event: {payload}")
-    trigger_webhooks_for_event.delay(tenant.id.hex, event.tag, payload)
+    dispatch_task.delay('trigger_webhooks_for_event', tenant.id.hex, event.tag, payload)
 
 
 def get_event_payload(event):
@@ -382,6 +382,7 @@ GET_STATISTICS_CHARTS = 'GET_STATISTICS_CHARTS'
 
 UPDATE_LOCAL_ARKID_VERSION = 'UPDATE_LOCAL_ARKID_VERSION'
 
+EXCLUDE_PATHS = 'EXCLUDE_PATHS'
 
 # register events
 register_event(
@@ -483,3 +484,5 @@ register_event(REQUEST_RESPONSE_LOGGGING, _('REQUEST_RESPONSE_LOGGGING', 'Django
 register_event(GET_STATISTICS_CHARTS, _('GET_STATISTICS_CHARTS', 'Django请求日志'))
 
 register_event(UPDATE_LOCAL_ARKID_VERSION, _('UPDATE_LOCAL_ARKID_VERSION', '更新本地ArkID版本'))
+
+register_event(EXCLUDE_PATHS, _('EXCLUDE_PATHS', '排除的路径'))

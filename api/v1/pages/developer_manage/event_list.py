@@ -13,7 +13,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='list',
+    icon='event_list',
 )
 
 page.create_actions(

@@ -18,7 +18,7 @@ class TenantListItemOut(ModelSchema):
         model_fields = ["id","name", "slug", "icon"]
         
 class TenantListOut(ResponseSchema):
-    data: List[TenantListItemOut]
+    items: List[TenantListItemOut]
     
 class TenantItemOut(ModelSchema):
 
@@ -105,7 +105,7 @@ class DefaultTenantItemOut(ModelSchema):
     
     class Config:
         model = Tenant
-        model_fields = ["id", "name"]
+        model_fields = ["id", "name", "icon", "slug"]
         
     is_platform_tenant:bool = Field(
         title=_("是否是平台租户")

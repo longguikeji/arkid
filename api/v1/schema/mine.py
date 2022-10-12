@@ -49,6 +49,9 @@ class MineTenantListItemOut(ModelSchema):
         model = Tenant
         model_fields = ["id", "name", "slug", "icon"]
 
+class MineTenantAllOut(ResponseSchema):
+    data:List[MineTenantListItemOut]
+
 class MinePermissionListSchemaOut(Schema):
 
     id: UUID = Field(hidden=True)
@@ -200,11 +203,11 @@ class MineMessageListItemOut(ModelSchema):
     
     @staticmethod
     def resolve_sender_avatar(obj):
-        return obj.sender.avatar if obj.sender else ""
+        return obj.sender.avatar if obj.sender and obj.sender.avatar else ""
     
     @staticmethod
     def resolve_user_avatar(obj):
-        return obj.user.avatar
+        return obj.user.avatar if obj.user and obj.user.avatar else ""
     
     @staticmethod
     def resolve_created(obj):
@@ -282,3 +285,29 @@ class MineUnreadedMessageCountItemOut(Schema):
     
 class MineUnreadedMessageCountOut(ResponseSchema):
     data:MineUnreadedMessageCountItemOut
+    
+class MinePersonalSettingsItemOut(Schema):
+    desktop:dict = Field(
+        default={},
+        title=_("桌面设置")
+    )
+    
+    mobile:dict = Field(
+        default={},
+        title=_("移动设备设置")
+    )
+    
+class MinePersonalSettingsOut(ResponseSchema):
+    data:MinePersonalSettingsItemOut
+    
+class MinePersonalSettingsIn(Schema):
+    desktop:Optional[dict] = Field(
+        default={},
+        title=_("桌面设置")
+    )
+    
+    mobile:Optional[dict] = Field(
+        default={},
+        title=_("移动设备设置")
+    )
+    

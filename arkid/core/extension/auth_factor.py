@@ -197,7 +197,7 @@ class AuthFactorExtension(Extension):
 
         items.append({"type": "hidden", "name": "config_id", "value": config.id})
         config_data[page_name]['forms'].append({
-            'label': label,
+            'label': config.name or label,
             'items': items,
             'submit': {'label': submit_label, 'title':submit_label,'http': {'url': submit_url, 'method': "post"}}
         })

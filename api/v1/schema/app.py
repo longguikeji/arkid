@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 from pydantic import Field
 from ninja import ModelSchema, Schema
 from arkid.core.translation import gettext_default as _
@@ -96,12 +96,12 @@ class ConfigOpenApiVersionSchemaOut(Schema):
 
     version: str = Field(title=_('version', '应用版本'), default='')
     openapi_uris: str = Field(title=_('openapi uris', '接口文档地址'), default='')
-    sync_permission_uri: str = Field(title=_('sync permission uri', '主动触发权限更新地址'), readonly=True)
+    sync_permission_uri: Optional[str] = Field(title=_('sync permission uri', '主动触发权限更新地址'), readonly=True)
 
 
 class ConfigOpenApiVersionDataSchemaOut(ResponseSchema):
 
-    data: ConfigOpenApiVersionSchemaOut
+    data: Optional[ConfigOpenApiVersionSchemaOut]
 
 
 AppProtocolConfigIn = AppProtocolExtension.create_composite_config_schema(

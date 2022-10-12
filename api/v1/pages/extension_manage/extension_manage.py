@@ -47,7 +47,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='extension',
+    icon='tenant_extension_manage',
 )
 
 platform_extension_page.create_actions(

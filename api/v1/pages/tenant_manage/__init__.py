@@ -5,7 +5,7 @@ from . import center_arkid,child_manager,tenant_config,front_theme
 router = routers.FrontRouter(
     path='tenant_manage',
     name=_('租户管理'),
-    icon='tenant',
+    icon='tenant_manage',
     children=[
         tenant_config.router,
         child_manager.router,

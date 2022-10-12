@@ -51,7 +51,7 @@ def create_language(request, tenant_id: str,data:LanguageCreateIn):
 )
 @operation(LanguageDeleteOut, roles=[PLATFORM_ADMIN])
 def delete_language(request, tenant_id: str,id:str):
-    """ 创建自定义语言包
+    """ 删除自定义语言包
     """
     language_data = get_object_or_404(
         LanguageData.valid_objects,

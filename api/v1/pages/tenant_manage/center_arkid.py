@@ -17,7 +17,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='center',
+    icon='center_arkid',
 )
 
 page.create_actions(

@@ -288,7 +288,7 @@ class Extension(ABC):
     @property
     def model(self):
         """插件对应数据库model"""
-        extension = ExtensionModel.valid_objects.filter(package=self.package).first()
+        extension = ExtensionModel.objects.filter(package=self.package).first()
         if not extension:
             raise Exception(f'cannot find {self.package} in database')
         else:
@@ -452,7 +452,7 @@ class Extension(ABC):
         """
         def signal_func(event, **kwargs2):
             # 判断租户是否启用该插件
-            if not self.model.is_active:
+            if not self.model.is_active or self.model.is_del:
                 return
             tenant_extension = TenantExtension.active_objects.filter(is_rented=True, extension=self.model, tenant=event.tenant).first()
             if not event.tenant.is_platform_tenant and not tenant_extension:

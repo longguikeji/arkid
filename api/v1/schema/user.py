@@ -57,7 +57,7 @@ class UserUpdateOut(ResponseSchema):
 class UserFieldsItemOut(Schema):
     
     id: str = Field(title=_("id"), hidden=True)
-    name: str = Field(title=_("名称"))
+    name: str = Field(title=_("名称"), notranslation=True)
 
 class UserFieldsOut(ResponseSchema):
     

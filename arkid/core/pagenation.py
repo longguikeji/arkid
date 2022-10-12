@@ -36,7 +36,7 @@ class CustomPagination(PaginationBase):
         return {
             'items': items,
             'count': len(list(queryset)),
-            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page > 2 else "",
+            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page >= 2 else "",
             "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < len(list(queryset)) else ""
         }
 

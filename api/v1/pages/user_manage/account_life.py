@@ -19,7 +19,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='life',
+    icon='account_life',
 )
 
 page.create_actions(

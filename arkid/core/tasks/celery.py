@@ -5,6 +5,7 @@ import os
 from celery import Celery, bootsteps
 from click import Option
 from datetime import timedelta
+from arkid.common.logger import logger
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'arkid.settings')
@@ -17,39 +18,39 @@ app = Celery('arkid')
 #   should have a `CELERY_` prefix.
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
-# app.user_options['worker'].add(Option(('--is-init-permission',), is_flag=False, help='init permission option.'))
 
 class MyBootstep(bootsteps.Step):
-
     def __init__(self, parent, **options):
         super().__init__(parent, **options)
-        from arkid.core.tasks.tasks import init_core_code
-        init_core_code.delay()
+        # from arkid.core.tasks.tasks import init_core_code
 
-# class BindTenantBootstep(bootsteps.Step):
+        dispatch_task.delay('init_core_code')
 
-#     def __init__(self, parent, **options):
-#         super().__init__(parent, **options)
-#         from django.conf import settings
-#         if not settings.IS_CENTRAL_ARKID:
-#             from arkid.core.tasks.tasks import bind_arkid_saas_all_tenants
-#             bind_arkid_saas_all_tenants.delay()
-#             pass
 
 app.steps['worker'].add(MyBootstep)
-# app.steps['worker'].add(BindTenantBootstep)
 
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
 
-app.conf.update( 
-    CELERYBEAT_SCHEDULE = {
+app.conf.update(
+    CELERYBEAT_SCHEDULE={
         'add-arkstore-3-hours': {
-            'task': 'arkid.core.tasks.tasks.get_arkstore_category_http',
+            'task': 'arkid.core.tasks.celery.dispatch_task',
             'schedule': timedelta(hours=3),
-            'args': ()
+            'args': ('get_arkstore_category_http',),
         },
     }
 )
 
-from arkid.core.tasks import tasks
+
+@app.task(bind=True)
+def dispatch_task(self, task_name, *args, **kwargs):
+    logger.info(f'=== Dispatch task：{task_name}, args: {args}, kwargs: {kwargs}')
+    for name, task in app.tasks.items():
+        func_name = name.split('.')[-1]
+        if func_name == task_name:
+            logger.info(f"Ready to delay funtion {name}")
+            task.delay(*args, **kwargs)
+            break
+    else:
+        logger.info(f"*** Warning! No task found for name {task_name} ***")

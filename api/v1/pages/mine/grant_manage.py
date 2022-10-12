@@ -25,7 +25,7 @@ pages.register_front_pages(app_permission_page)
 router = routers.FrontRouter(
     path=tag,
     name=name,
-    icon='app',
+    icon='mine_grant_manage',
     page=page,
 )
 

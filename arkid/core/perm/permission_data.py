@@ -29,9 +29,9 @@ class PermissionData(object):
         更新系统权限
         '''
         # 取得所有的系统权限
-        self.update_arkid_system_permission()
+        return_change_group_info, return_change_sort_ids = self.update_arkid_system_permission()
         # 更新所有用户的系统权限
-        self.update_arkid_all_user_permission()
+        self.update_arkid_all_user_permission(change_sort_ids=return_change_sort_ids)
     
     def update_app_permission(self, tenant_id, app_id):
         '''
@@ -44,7 +44,7 @@ class PermissionData(object):
             openapi_uris = app_config.get('openapi_uris', None)
             if openapi_uris:
                 # 取得应用所有的权限
-                self.update_app_all_permission(tenant, app)
+                return_change_group_info, return_change_sort_ids = self.update_app_all_permission(tenant, app)
                 # 更新应用所有用户权限
                 uprs = UserPermissionResult.valid_objects.filter(
                     app=app
@@ -57,7 +57,7 @@ class PermissionData(object):
                         tenants.append(tenant)
                 for tenant in tenants:
                     # 需要更新对应租户的所有用户
-                    self.update_app_all_user_permission(tenant, app)
+                    self.update_app_all_user_permission(tenant, app, change_sort_ids=return_change_sort_ids)
     
     def update_only_user_app_permission(self, tenant_id, app_id):
         '''
@@ -312,15 +312,19 @@ class PermissionData(object):
                 systempermission.save()
             else:
                 api_data.append(permissions_item)
-
-                systempermission, is_create = SystemPermission.objects.get_or_create(
+                systempermission = SystemPermission.valid_objects.filter(
+                    tenant=None,
                     category='api',
                     is_system=True,
-                    is_del=False,
                     operation_id=operation_id,
-                )
-                if is_create is True:
+                ).first()
+                if not systempermission:
+                    systempermission = SystemPermission()
+                    systempermission.category = 'api'
+                    systempermission.is_system = True
                     systempermission.code = 'api_{}'.format(uuid.uuid4())
+                    systempermission.tenant = None
+                    systempermission.operation_id = operation_id
                 systempermission.name = name
                 systempermission.describe = {
                     'method': method,
@@ -331,10 +335,23 @@ class PermissionData(object):
             permissions_item['sort_real_id'] = systempermission.sort_id
             permissions_item['systempermission'] = systempermission
         # 单独处理分组问题
+        change_group_infos = {}
         for group_item in group_data:
             container = group_item.get('container', [])
             group_systempermission = group_item.get('systempermission', None)
             group_sort_ids = []
+            # 判断是否是新分组(用于解决分组更新的问题>旧)
+            if group_systempermission.container.exists():
+                change_group_info = {}
+
+                change_group_info_list = []
+                for item_system_obj in group_systempermission.container.all():
+                    change_group_info_list.append(item_system_obj.sort_id)
+                if change_group_info_list:
+                    change_group_info_list.sort()
+                change_group_info['source'] = change_group_info_list
+
+                change_group_infos[str(group_systempermission.id)] = change_group_info
             # 需要先清理在添加
             group_systempermission.container.clear()
             for api_item in api_data:
@@ -345,6 +362,18 @@ class PermissionData(object):
                 if sort_id in container and api_systempermission:
                     group_systempermission.container.add(api_systempermission)
                     group_sort_ids.append(sort_real_id)
+            # 判断是否是新分组(用于解决分组更新的问题>新)
+            if str(group_systempermission.id) in change_group_infos:
+                change_group_info = change_group_infos.get(str(group_systempermission.id))
+
+                change_group_info_list = []
+                for item_system_obj in group_systempermission.container.all():
+                    change_group_info_list.append(item_system_obj.sort_id)
+                if change_group_info_list:
+                    change_group_info_list.sort()
+                change_group_info['new'] = change_group_info_list
+
+                change_group_infos[str(group_systempermission.id)] = change_group_info
             # parent
             parent = group_item.get('parent', -1)
             describe = {'sort_ids': group_sort_ids}
@@ -369,11 +398,25 @@ class PermissionData(object):
             is_system=True,
             is_update=False
         ).update(is_del=0)
+        # 返回是旧的分组比对结果有差异的
+        return_change_group_info = {}
+        return_change_sort_ids = []
+        for key, value in change_group_infos.items():
+            source_values = value.get('source', [])
+            new_values = value.get('new', [])
+            temp_values = []
+            for source_item in source_values:
+                if source_item not in new_values:
+                    temp_values.append(source_item)
+                    return_change_sort_ids.append(source_item)
+            if temp_values:
+                return_change_group_info[key] = temp_values
+        return return_change_group_info, return_change_sort_ids
 
     # from django.db import transaction
 
     # @transaction.atomic
-    def update_arkid_all_user_permission(self, tenant_id=None):
+    def update_arkid_all_user_permission(self, tenant_id=None, change_sort_ids=None):
         '''
         更新系统所有用户权限
         '''
@@ -476,12 +519,17 @@ class PermissionData(object):
             for data_item in data_dict.values():
                 # 如果是通过就不查验
                 if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
-                    if data_item.category == 'group' and data_item.container.all():
-                        for data_item_child_api in data_item.container.all():
-                            temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
-                            if temp_data_item:
-                                temp_data_item.is_pass = 1
-                    continue
+                    # 如果直接通过的有一部分是需要更新的，要去更新
+                    if change_sort_ids and data_item.sort_id in change_sort_ids:
+                        # 存在需要更新的自动重置为0
+                        data_item.is_pass = 0
+                    else:
+                        if data_item.category == 'group' and data_item.container.all():
+                            for data_item_child_api in data_item.container.all():
+                                temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                                if temp_data_item:
+                                    temp_data_item.is_pass = 1
+                        continue
                 # 如果是超级管理员直接就通过
                 if auth_user.id == superuser_id:
                     data_item.is_pass = 1
@@ -791,27 +839,45 @@ class PermissionData(object):
                     permission.save()
                 else:
                     api_data.append(permissions_item)
-                    permission, is_create = Permission.objects.get_or_create(
+                    permission = Permission.valid_objects.filter(
                         tenant=tenant,
                         app=app,
                         category='api',
                         is_system=True,
-                        is_del=False,
                         operation_id=operation_id,
-                    )
-                    if is_create is True:
+                    ).first()
+                    if not permission:
+                        permission = Permission()
+                        permission.app = app
+                        permission.category = 'group'
+                        permission.is_system = True
                         permission.code = 'api_{}'.format(uuid.uuid4())
+                        permission.tenant = tenant
+                        permission.operation_id = operation_id
+                        permission.describe = {}
                     permission.name = name
-                    permission.describe = {}
                     permission.is_update = True
                     permission.save()
                 permissions_item['sort_real_id'] = permission.sort_id
                 permissions_item['permission'] = permission
             # 单独处理分组问题
+            change_group_infos = {}
             for group_item in group_data:
                 container = group_item.get('container', [])
                 group_permission = group_item.get('permission', None)
                 group_sort_ids = []
+                # 判断是否是新分组(用于解决分组更新的问题>旧)
+                if group_permission.container.exists():
+                    change_group_info = {}
+
+                    change_group_info_list = []
+                    for item_system_obj in group_permission.container.all():
+                        change_group_info_list.append(item_system_obj.sort_id)
+                    if change_group_info_list:
+                        change_group_info_list.sort()
+                    change_group_info['source'] = change_group_info_list
+
+                    change_group_infos[str(group_permission.id)] = change_group_info
                 # 需要先清理在添加
                 group_permission.container.clear()
                 for api_item in api_data:
@@ -826,6 +892,18 @@ class PermissionData(object):
                             api_permission.save()
                         group_permission.container.add(api_permission)
                         group_sort_ids.append(sort_real_id)
+                # 判断是否是新分组(用于解决分组更新的问题>新)
+                if str(group_permission.id) in change_group_infos:
+                    change_group_info = change_group_infos.get(str(group_permission.id))
+
+                    change_group_info_list = []
+                    for item_system_obj in group_permission.container.all():
+                        change_group_info_list.append(item_system_obj.sort_id)
+                    if change_group_info_list:
+                        change_group_info_list.sort()
+                    change_group_info['new'] = change_group_info_list
+
+                    change_group_infos[str(group_permission.id)] = change_group_info
                 # parent
                 parent = group_item.get('parent', -1)
                 describe = {'sort_ids': group_sort_ids}
@@ -851,8 +929,22 @@ class PermissionData(object):
                 is_system=True,
                 is_update=False
             ).update(is_del=0)
+            # 返回是旧的分组比对结果有差异的
+            return_change_group_info = {}
+            return_change_sort_ids = []
+            for key, value in change_group_infos.items():
+                source_values = value.get('source', [])
+                new_values = value.get('new', [])
+                temp_values = []
+                for source_item in source_values:
+                    if source_item not in new_values:
+                        temp_values.append(source_item)
+                        return_change_sort_ids.append(source_item)
+                if temp_values:
+                    return_change_group_info[key] = temp_values
+            return return_change_group_info, return_change_sort_ids
 
-    def update_app_all_user_permission(self, tenant, app):
+    def update_app_all_user_permission(self, tenant, app, change_sort_ids=None):
         '''
         更新应用所有用户权限
         '''
@@ -958,12 +1050,17 @@ class PermissionData(object):
             for data_item in data_dict.values():
                 # 如果是通过就不查验
                 if hasattr(data_item, 'is_pass') == True and data_item.is_pass == 1:
-                    if data_item.category == 'group' and data_item.container.all():
-                        for data_item_child_api in data_item.container.all():
-                            temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
-                            if temp_data_item:
-                                temp_data_item.is_pass = 1
-                    continue
+                    # 如果直接通过的有一部分是需要更新的，要去更新
+                    if change_sort_ids and data_item.sort_id in change_sort_ids:
+                        # 存在需要更新的自动重置为0
+                        data_item.is_pass = 0
+                    else:
+                        if data_item.category == 'group' and data_item.container.all():
+                            for data_item_child_api in data_item.container.all():
+                                temp_data_item = data_dict.get(data_item_child_api.sort_id, None)
+                                if temp_data_item:
+                                    temp_data_item.is_pass = 1
+                        continue
                 # 如果是超级管理员直接就通过
                 if auth_user.id == superuser_id:
                     data_item.is_pass = 1

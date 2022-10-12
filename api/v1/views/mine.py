@@ -7,7 +7,7 @@ from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from arkid.core.event import ACCOUNT_UNBIND, dispatch_event, Event
-from arkid.core.models import App, AppGroup, Message, Tenant, ApproveRequest, User
+from arkid.core.models import App, AppGroup, Message, Tenant, ApproveRequest, User, UserPersonalSettings
 from arkid.core.constants import *
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
@@ -193,6 +193,18 @@ def get_mine_tenants(request):
             tenant.role = '普通用户'
     return tenants
 
+
+@api.get("/mine/tenants/all/", response=MineTenantAllOut, tags=["我的"])
+@operation(roles=[PLATFORM_USER, PLATFORM_ADMIN])
+def get_mine_tenants_all(request):
+    """获取我的租户"""
+    tenants = list(Tenant.active_objects.filter(users=request.user).all())
+    for tenant in tenants:
+        if tenant.has_admin_perm(request.user):
+            tenant.role = '管理员'
+        else:
+            tenant.role = '普通用户'
+    return SuccessDict(data=tenants)
 
 @api.get("/mine/tenant/{tenant_id}/accounts/", tags=["我的"], response=List[MineBindAccountItem])
 @operation(MineBindAccountOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
@@ -449,7 +461,7 @@ def get_mine_message_senders(request):
         {
             "id": sender.id.hex if sender else 0,
             "name": sender.username if sender else _("系统消息"),
-            "avatar": sender.avatar if sender else ""
+            "avatar": sender.avatar if sender and sender.avatar else ""
         }
         for sender in senders
     ])
@@ -479,4 +491,43 @@ def get_unreaded_message_count(request):
         data={
             "count":Message.active_objects.filter(user=request.user,readed_status=False).count()
         }
+    )
+    
+@api.get("/mine/tenant/{tenant_id}/personal_settings/",response=MinePersonalSettingsOut,tags=["我的"],auth=GlobalAuth())
+@operation(MinePersonalSettingsOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_personal_settings(request,tenant_id:str):
+    """获取个人设置信息
+    """
+    setting, _ = UserPersonalSettings.active_objects.get_or_create(
+        tenant=request.tenant,
+        user=request.user
+    )
+    
+    if not setting.settings:
+        setting.settings = {
+            "desktop":{
+                
+            }
+        }
+        setting.save()
+    
+    return SuccessDict(
+        data=setting.settings
+    )
+    
+@api.post("/mine/tenant/{tenant_id}/personal_settings/",response=MinePersonalSettingsOut,tags=["我的"],auth=GlobalAuth())
+@operation(MinePersonalSettingsOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def post_personal_settings(request,tenant_id:str,data:MinePersonalSettingsIn):
+    """获取个人设置信息
+    """
+    setting, _ = UserPersonalSettings.active_objects.get_or_create(
+        tenant=request.tenant,
+        user=request.user
+    )
+    
+    setting.settings.update(data.dict())
+    setting.save()
+    
+    return SuccessDict(
+        data=setting.settings
     )

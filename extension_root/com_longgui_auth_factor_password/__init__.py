@@ -141,7 +141,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
                 'regular': '',
                 'title': '',
             }
-            self.create_tenant_config(tenant, config, "default", "password")
+            self.create_tenant_config(tenant, config, "账密登录", "password")
         try:
             admin_user = User.active_objects.filter(username='admin').first()
             if admin_user:

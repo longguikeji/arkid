@@ -153,7 +153,7 @@ def group_users_add(request, tenant_id: str, user_group_id: str, data: UserGroup
     return ErrorDict(ErrorCode.OK)
 
 
-@api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/users/", tags=['用户分组'])
+@api.post("/tenant/{tenant_id}/user_groups/{user_group_id}/batch_users/", tags=['用户分组'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def group_batch_users_remove(request, tenant_id: str, user_group_id: str, data: UserGroupUserIn):
     '''

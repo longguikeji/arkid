@@ -63,7 +63,7 @@ def get_frontend_url(request):
 
 @api.post("/frontend_url/",response=FrontendUrlOut, tags=["平台配置"],auth=None)
 def set_frontend_url(request, data:FrontendUrlSchemaIn):
-    """ 获取ArkId访问地址
+    """ 设置ArkId访问地址
     """
     config = Platform.get_config()
     if not os.environ.get('K8SORDC') or config.frontend_url is not None:

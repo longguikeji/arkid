@@ -24,7 +24,7 @@ def get_messages(request, tenant_id: str):
 def create_message(request, tenant_id: str, data: MessageCreateIn):
     """ 创建消息
     """
-    item = Message.expand_objects.create(tenant=request.tenant,**data)
+    # item = Message.expand_objects.create(tenant=request.tenant,**data)
 
     return ErrorDict(ErrorCode.OK)
 
