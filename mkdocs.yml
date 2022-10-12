@@ -26,6 +26,7 @@ docs_dir: "docs/"
 
 plugins:
   - search
+  - pdf-export
   - mkdocstrings:
       handlers:
         python:
