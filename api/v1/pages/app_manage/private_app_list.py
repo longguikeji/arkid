@@ -8,7 +8,7 @@ name = '私有化应用'
 page = pages.TabsPage(tag=tag, name=name)
 
 # store_page = pages.CardsPage(name='插件商店')
-store_page = pages.TreePage(name=_("Extension Store", "插件商店"),show_vnode=True,show_page_if_no_node=False)
+store_page = pages.TreePage(name=_("Extension Store", "私有化应用商店"),show_vnode=True,show_page_if_no_node=False)
 store_cascade_page = pages.CardsPage(name='')
 
 # installed_page = pages.CardsPage(name='已安装')
@@ -29,6 +29,8 @@ profile_page = pages.FormPage(name='插件配置')
 price_page = pages.CardsPage(name='选择价格')
 copies_page = pages.FormPage(name='人天份数')
 payment_page = pages.FormPage(name='支付')
+
+install_page = pages.FormPage(name=_("安装"))
 
 
 pages.register_front_pages(page)
@@ -172,10 +174,10 @@ store_cascade_page.create_actions(
     #     ),
     # },
     local_actions={
-        "markdown": actions.OpenAction(
-            name='文档',
-            page=arkstore_markdown_page
-        ),
+        # "markdown": actions.OpenAction(
+        #     name='文档',
+        #     page=arkstore_markdown_page
+        # ),
         "order": actions.OpenAction(
             name='购买',
             page=order_page
@@ -225,14 +227,14 @@ purchased_page.create_actions(
 )
 purchased_cascade_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/arkstore/purchased/extensions/?category_id={category_id}',
+        path='/api/v1/tenant/{tenant_id}/arkstore/purchased/private_apps/?category_id={category_id}',
         method=actions.FrontActionMethod.GET,
     ),
     local_actions={
-        "markdown": actions.OpenAction(
-            name='文档',
-            page=arkstore_markdown_page
-        ),
+        # "markdown": actions.OpenAction(
+        #     name='文档',
+        #     page=arkstore_markdown_page
+        # ),
         "history": actions.OpenAction(
             name='历史版本',
             page=history_page

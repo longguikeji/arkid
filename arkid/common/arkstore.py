@@ -132,7 +132,7 @@ def get_arkstore_extensions(access_token, purchased=None, rented=False, type=Non
     elif type == 'app':
         url = '/api/v1/arkstore/apps/purchased'
     elif type == 'private_app':
-        url = '/api/v1/arkstore/apps/purchased'
+        url = '/api/v1/arkstore/private_apps/purchased'
     elif type == 'category':
         url = '/api/v1/arkstore/app/categories'
     else:
@@ -318,7 +318,7 @@ def install_arkstore_extension(tenant, token, extension_id):
         local_app.save()
     elif res['type'] == 'extension':
         download_arkstore_extension(tenant, token, extension_id, res)
-    elif res['type'] == 'saas':
+    elif res['type'] == 'private':
         get_arkstore_saas_app_values(tenant, token, extension_id, res)
     else:
         # res['type'] in ('url', 'oidc') or else

@@ -78,7 +78,7 @@ class ITEM_TYPE(str, Enum):
     arkstore_auto_form_fill =  _("arkstore_auto_form_fill", "表单代填应用")
     arkstore_url =  _("arkstore_url", "推广链接")
     arkstore_custom =  _("arkstore_custom", "自定义")
-    arkstore_saas =  _("arkstore_saas", "SAAS应用")
+    arkstore_saas =  _("arkstore_private", "私有化应用")
 
 
 class PAYMENT_TYPE(str, Enum):
@@ -523,6 +523,16 @@ def list_arkstore_rented_extensions(request, tenant_id: str):
                 )
 
     return extensions
+
+
+@api.get("/tenant/{tenant_id}/arkstore/purchased/private_apps/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(ArstorePagination)
+def list_arkstore_purchased_extensions(request, tenant_id: str, category_id: str = None):
+    extra_params = {}
+    if category_id and category_id != "" and category_id != "0":
+        extra_params['category_id'] = category_id
+    return get_arkstore_list(request, True, 'private_app', extra_params=extra_params)
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
