@@ -312,15 +312,19 @@ class PermissionData(object):
                 systempermission.save()
             else:
                 api_data.append(permissions_item)
-
-                systempermission, is_create = SystemPermission.objects.get_or_create(
+                systempermission = SystemPermission.valid_objects.filter(
+                    tenant=None,
                     category='api',
                     is_system=True,
-                    is_del=False,
                     operation_id=operation_id,
-                )
-                if is_create is True:
+                ).first()
+                if not systempermission:
+                    systempermission = SystemPermission()
+                    systempermission.category = 'api'
+                    systempermission.is_system = True
                     systempermission.code = 'api_{}'.format(uuid.uuid4())
+                    systempermission.tenant = None
+                    systempermission.operation_id = operation_id
                 systempermission.name = name
                 systempermission.describe = {
                     'method': method,
@@ -835,18 +839,23 @@ class PermissionData(object):
                     permission.save()
                 else:
                     api_data.append(permissions_item)
-                    permission, is_create = Permission.objects.get_or_create(
+                    permission = Permission.valid_objects.filter(
                         tenant=tenant,
                         app=app,
                         category='api',
                         is_system=True,
-                        is_del=False,
                         operation_id=operation_id,
-                    )
-                    if is_create is True:
+                    ).first()
+                    if not permission:
+                        permission = Permission()
+                        permission.app = app
+                        permission.category = 'group'
+                        permission.is_system = True
                         permission.code = 'api_{}'.format(uuid.uuid4())
+                        permission.tenant = tenant
+                        permission.operation_id = operation_id
+                        permission.describe = {}
                     permission.name = name
-                    permission.describe = {}
                     permission.is_update = True
                     permission.save()
                 permissions_item['sort_real_id'] = permission.sort_id
