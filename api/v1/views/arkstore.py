@@ -320,7 +320,7 @@ def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Q
 @api.get("/tenant/{tenant_id}/arkstore/private_apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(ArstorePagination)
-def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
+def list_arkstore_private_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
     query_data = query_data.dict()
     return get_arkstore_list(request, None, 'private_app', extra_params=query_data)
 
@@ -530,7 +530,7 @@ def list_arkstore_rented_extensions(request, tenant_id: str):
 @api.get("/tenant/{tenant_id}/arkstore/purchased/private_apps/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(ArstorePagination)
-def list_arkstore_purchased_extensions(request, tenant_id: str, category_id: str = None):
+def list_arkstore_purchased_private_apps(request, tenant_id: str, category_id: str = None):
     extra_params = {}
     if category_id and category_id != "" and category_id != "0":
         extra_params['category_id'] = category_id
