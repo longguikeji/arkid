@@ -200,3 +200,4 @@ arkid_extensions
 .devcontainer/
 storage/
 results.sqlite
+tasks/
