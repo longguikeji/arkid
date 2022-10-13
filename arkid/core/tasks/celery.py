@@ -45,7 +45,7 @@ app.conf.update(
 
 @app.task(bind=True)
 def dispatch_task(self, task_name, *args, **kwargs):
-    logger.info(f'=== Dispatch task：{task_name}, args: {args}, kwargs: {kwargs}')
+    # logger.info(f'=== Dispatch task：{task_name}, args: {args}, kwargs: {kwargs}')
     for name, task in app.tasks.items():
         func_name = name.split('.')[-1]
         if func_name == task_name:
