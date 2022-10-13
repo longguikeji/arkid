@@ -1,5 +1,6 @@
 from arkid.core.translation import gettext_default as _
 from arkid.core import actions, pages, routers
+from django.conf import settings
 
 tag = "mine_switch_tenant"
 name = _("Switch Tenant", "切换租户")
@@ -28,7 +29,7 @@ page.create_actions(
             name=_("新建租户"),
             path='/api/v1/tenants/',
         )
-    },
+    } if not settings.IS_CENTRAL_ARKID else {},
     local_actions={
         'switch_tenant': actions.DirectAction(
             name=_('Switch', '切换'),
