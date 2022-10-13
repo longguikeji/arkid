@@ -1,4 +1,4 @@
-package='com.longgui.other.defaultdesktop'
+package='com.longgui.default.desktop'
 name="租户默认桌面设置"
 version='1.0'
 labels='defaultdesktop'
