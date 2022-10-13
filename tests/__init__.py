@@ -1,6 +1,7 @@
 from django.test import Client, TestCase as django_TestCase
 from arkid.core.models import *
 from arkid.extension.models import *
+from webhook.models import *
 from arkid.core.token import generate_token
 
 import uuid
@@ -139,7 +140,7 @@ class TestCase(django_TestCase):
         config.save()
         self.auto_auth = config
         # 一个插件
-        self.extension = Extension.active_objects.first()
+        self.extension = Extension.active_objects.order_by('-created').first()
         # 主题
         config = TenantExtensionConfig()
         config.tenant = self.tenant
@@ -202,5 +203,67 @@ class TestCase(django_TestCase):
         self.permission = permission
         # 用户分组
         self.user_group = UserGroup.valid_objects.filter(tenant=self.tenant).first()
-
+        # 注册配置
         self.register_config = TenantExtensionConfig.valid_objects.filter(extension__package='com.longgui.auth.factor.password', tenant=self.tenant).first()
+        # 数据同步
+        config = TenantExtensionConfig()
+        config.tenant = self.tenant
+        config.extension = Extension.active_objects.get(package='com.longgui.scim.sync.arkid')
+        config.config = {
+            "user_url":"",
+            "group_url":"",
+            "mode":"server"
+        }
+        config.name = '一个新服务配置'
+        config.type = 'ArkID'
+        config.save()
+        self.scim_sync = config
+        # 飞书可能会没有
+        self.feishu = TenantExtensionConfig.valid_objects.filter(extension__package='com.longgui.external.idp.feishu', tenant=self.tenant).first()
+        # 新租户
+        # only_name = uuid.uuid4().hex
+        # self.create_tenant = Tenant.objects.create(name=only_name, slug=only_name, icon='')
+        self.create_tenant = Tenant.valid_objects.exclude(slug='').order_by('-created').first()
+        if self.create_tenant is None:
+            self.create_tenant = self.tenant
+        # 第三方认证
+        config = TenantExtensionConfig()
+        config.tenant = self.tenant
+        config.extension = Extension.active_objects.get(package='com.longgui.external.idp.dingding')
+        config.config = {
+            "app_key":"aa",
+            "app_secret":"bb",
+            "img_url":"",
+            "login_url":"",
+            "callback_url":"",
+            "bind_url":"",
+            "frontend_callback":""
+        }
+        config.name = 'ssst'
+        config.type = 'dingding'
+        config.save()
+        self.third_auth = config
+        # 用户分组
+        user_group = UserGroup.objects.create(tenant=self.tenant, name='一个新分组')
+        systempermission = SystemPermission()
+        systempermission.name = user_group.name
+        systempermission.code = 'group_{}'.format(uuid.uuid4())
+        systempermission.tenant = self.tenant
+        systempermission.category = 'group'
+        systempermission.is_system = True
+        systempermission.operation_id = ''
+        systempermission.describe = {}
+        systempermission.save()
+        user_group.permission = systempermission
+        user_group.save()
+        user_group.users.add(self.user)
+        self.user_group = user_group
+        # 一个新用户
+        create_user = User.objects.create(username='sssss', tenant=self.tenant)
+        self.create_user = create_user
+        # webhook
+        webhook = Webhook.objects.create(tenant=self.tenant, name='xxx', url='https://www.baidu.com', secret='xxxx')
+        self.webhook = webhook
+        # webhook 历史记录
+        webhook_triggerhistory = WebhookTriggerHistory.objects.create(tenant=self.tenant, webhook=self.webhook, request='', response='')
+        self.webhook_triggerhistory = webhook_triggerhistory

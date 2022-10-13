@@ -68,7 +68,7 @@ def create_tenant(request, data:TenantCreateIn):
 def update_tenant(request, id: str, data:TenantUpdateIn):
     """ 编辑租户
     """
-    tenant = get_object_or_404(Tenant.expand_objects,id=id)
+    tenant = get_object_or_404(Tenant.valid_objects,id=id)
     for attr, value in data.dict().items():
         setattr(tenant, attr, value)
     tenant.save()

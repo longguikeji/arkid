@@ -169,10 +169,44 @@ def unregister_front_routers(routers, primary: FrontRouter = None):
         global_routers.remove(router)
 
 
-def get_global_routers():
+def _get_global_routers():
     # return [item.dict() for item in global_routers]
     result = []
     for item in global_routers:
         item.format_router_page()
         result.append(item.dict())
     return result
+
+def exclude_routers(global_routers):
+    '''
+    通过事件机制排除掉一些路由
+    '''
+    from arkid.core.event import Event, dispatch_event, EXCLUDE_PATHS
+    from arkid.core.models import Tenant
+    import copy
+    # 排除掉一些过滤后的路由
+    results = dispatch_event(
+        Event(tag=EXCLUDE_PATHS, tenant=Tenant.platform_tenant())
+    )
+    items = []
+    for func, (result, extension) in results:
+        for global_router in global_routers:
+            global_path = global_router.get('path', '')
+            global_children = global_router.get('children', [])
+            if global_path not in result:
+                # 需要判断二级菜单
+                if global_children:
+                    global_children_copy = copy.deepcopy(global_children)
+                    for child in global_children:
+                        child_path = child.get('path', '')
+                        if child_path in result:
+                            global_children_copy.remove(child)
+                    # 替换取得的children
+                    global_router['children'] = global_children_copy
+                # 需要把处理好的菜单加进去
+                items.append(global_router)
+    return items
+
+def get_global_routers():
+    global_routers = _get_global_routers()
+    return exclude_routers(global_routers)

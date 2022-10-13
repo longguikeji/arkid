@@ -196,6 +196,7 @@ db.sqlite3-journal
 djangosaml2idp/saml2_config/*.xml
 
 arkid_extensions
+arkid_celery_tasks
 
 .devcontainer/
 storage/
