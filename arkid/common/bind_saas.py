@@ -20,9 +20,10 @@ def get_bind_info(tenant_id):
     if resp.status_code != 200:
         raise Exception(f'Error get_bind_info: {resp.status_code}')
     resp = resp.json()
-    tenant = Tenant.objects.get(id=tenant_id)
-    create_arkidstore_login_app(tenant, resp['saas_tenant_id'])
-    create_arkid_saas_login_app(tenant, resp['saas_tenant_id'], resp.get('saas_login_url'))
+    if resp.get('saas_tenant_id'):
+        tenant = Tenant.objects.get(id=tenant_id)
+        create_arkidstore_login_app(tenant, resp['saas_tenant_id'])
+        create_arkid_saas_login_app(tenant, resp['saas_tenant_id'], resp.get('saas_login_url'))
     return resp
 
 
