@@ -130,7 +130,9 @@ class MessageSenderItemOut(Schema):
     )
     
 class MessageSenderOut(ResponseSchema):
-    data:List[MessageSenderItemOut]
+    data:List[MessageSenderItemOut] =Field(
+        default=[]
+    )
 
 class MineMessageListItemOut(ModelSchema):
     class Config:
