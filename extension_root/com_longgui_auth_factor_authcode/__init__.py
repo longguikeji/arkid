@@ -87,10 +87,11 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
             },
         ]
         for login_pages,ext in event.data["login_pages"]:
-            for config_id,login_page in login_pages.items():
-                if config_id == uuid.UUID(event.data["main_auth_factor_id"]).hex:
-                    for form in login_page[self.LOGIN]["forms"]:
-                        form["items"].extend(items)
+            if login_pages:
+                for config_id,login_page in login_pages.items():
+                    if config_id == uuid.UUID(event.data["main_auth_factor_id"]).hex:
+                        for form in login_page[self.LOGIN]["forms"]:
+                            form["items"].extend(items)
 
     def check_auth_data(self, event, **kwargs):
         """ 响应检查认证凭证事件
