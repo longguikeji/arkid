@@ -34,6 +34,16 @@ class UserGroupListOut(ResponseSchema):
 
     data: List[UserGroupListItemOut]
 
+class UserGroupPullItemOut(ModelSchema):
+    parent_id:UUID = Field(default=None, alias='parent.id')
+    class Config:
+        model = UserGroup
+        model_fields = ['id', 'name','is_del','is_active','created','updated']
+
+class UserGroupPullOut(ResponseSchema):
+
+    data: List[UserGroupPullItemOut]
+
 class UserGroupCreateOut(ResponseSchema):
     pass
 

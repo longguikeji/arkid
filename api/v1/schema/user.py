@@ -7,8 +7,15 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.schema import ResponseSchema
 
 class UserListQueryIn(Schema):
-    name:str = Field(
-        default=None
+    order:str = Field(
+        default=None,
+        title=_("排序字段"),
+        notranslation=True
+    )
+    username:str = Field(
+        default=None,
+        title=_("用户名"),
+        notranslation=True
     )
 
 class UserListItemOut(ModelSchema):
@@ -23,6 +30,20 @@ class UserListItemOut(ModelSchema):
     
 class UserListOut(ResponseSchema):
     data: List[UserListItemOut]
+
+
+class UserPullItemOut(ModelSchema):
+
+    class Config:
+        model = User
+        model_fields = ['id', 'username', 'avatar','is_platform_user','is_del','is_active','created','updated']
+        
+    created:Any = Field(
+        title=_("注册时间")
+    )
+    
+class UserPullOut(ResponseSchema):
+    data: List[UserPullItemOut]
 
 class UserCreateIn(ModelSchema):
     class Config:

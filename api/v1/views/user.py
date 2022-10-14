@@ -13,7 +13,7 @@ from api.v1.schema.user import (
     UserCreateIn, UserCreateOut, UserDeleteOut,
     UserListItemOut, UserListOut, UserListQueryIn,
     UserOut, UserUpdateIn, UserUpdateOut,
-    UserFieldsOut,
+    UserFieldsOut, UserPullOut, UserPullItemOut,
 )
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
@@ -25,13 +25,13 @@ from django.utils import timezone
 @api.get("/tenant/{tenant_id}/users/",response=List[UserListItemOut], tags=['用户'])
 @operation(UserListOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def user_list(request, tenant_id: str,order:str = None, query_data: UserListQueryIn=Query(...)):
+def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
     from arkid.core.perm.permission_data import PermissionData
     users = User.expand_objects.filter(tenant_id=tenant_id, is_del=False)
-    
-    if order:
-        users = users.order_by(order)
-    
+    if query_data.username:
+        users = users.filter(username__icontains=query_data.username)
+    if query_data.order:
+        users = users.order_by(query_data.order)
     login_user = request.user
     tenant = request.tenant
     pd = PermissionData()
@@ -41,6 +41,8 @@ def user_list(request, tenant_id: str,order:str = None, query_data: UserListQuer
         user['created'] = timezone.localtime(user['created']).strftime('%Y-%m-%d %H:%M:%S')
     
     return list(users)
+
+
 
 @api.get("/tenant/{tenant_id}/user_no_super/",response=UserListOut, tags=['用户'])
 @operation(UserListOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -76,6 +78,18 @@ def user_create(request, tenant_id: str,data:UserCreateIn):
     user.save()
 
     return {"data":{"user":user.id.hex}}
+
+@api.get("/tenant/{tenant_id}/users/pull/",response=List[UserPullItemOut], tags=['用户'])
+@operation(UserPullOut,roles=[PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def user_pull(request, tenant_id: str):
+    '''
+    拉取用户
+    '''
+    users = User.objects.filter(
+        tenant_id=tenant_id
+    ).order_by('created')
+    return users
 
 # ------------- 删除用户接口 --------------    
 @api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOut, tags=['用户'])
