@@ -72,6 +72,22 @@ def list_groups(request, tenant_id: str,  parent_id: str = None):
     return {"data": list(usergroups.all())}
 
 
+@api.get("/tenant/{tenant_id}/user_groups/pull/", response=List[UserGroupPullItemOut], tags=['用户分组'])
+@operation(UserGroupPullOut, roles=[PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def user_group_pull(request, tenant_id: str,  parent_id: str = ''):
+    '''
+    拉取用户分组
+    '''
+    usergroups = UserGroup.objects.filter(
+        tenant_id=tenant_id,
+    )
+    if parent_id != '':
+        usergroups = usergroups.filter(parent__id=parent_id)
+    usergroups = usergroups.order_by('created')
+    return usergroups
+
+
 @api.get("/tenant/{tenant_id}/user_groups/{id}/", response=UserGroupDetailOut, tags=['用户分组'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_group(request, tenant_id: str, id: str):
