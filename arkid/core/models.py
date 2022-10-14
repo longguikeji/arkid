@@ -32,7 +32,7 @@ class Tenant(BaseModel, ExpandModel):
         verbose_name_plural = _("tenant", "租户")
 
     name = models.CharField(verbose_name=_('Name', '名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('Slug', '短链接标识'), unique=True, blank=True, null=True)
+    slug = models.SlugField(verbose_name=_('Slug', '短链接标识'), unique=True, blank=True, null=True, max_length=24)
     icon = models.URLField(verbose_name=_('Icon', '图标'), blank=True, null=True)
 
     token_duration_minutes = models.IntegerField(

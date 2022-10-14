@@ -1,3 +1,4 @@
+from email.policy import default
 from django.db import models
 from arkid.core.translation import gettext_default as _
 from django.apps import AppConfig
@@ -12,6 +13,6 @@ class DefaultDesktop(TenantExpandAbstract):
     class Meta:
         app_label = app_label
     
-    default_desktop = models.CharField(verbose_name=_('Default Desktop', '默认桌面'),blank=True,null=True, max_length=1024)
+    default_desktop = models.CharField(verbose_name=_('Default Desktop', '默认桌面'),blank=True,null=True, max_length=1024,default="/desktop/")
     
 
