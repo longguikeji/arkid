@@ -87,7 +87,7 @@ class AuthCodeAuthFactorExtension(AuthFactorExtension):
             },
         ]
         for login_pages,ext in event.data["login_pages"]:
-            if login_pages:
+            if login_pages and isinstance(login_pages,dict):
                 for config_id,login_page in login_pages.items():
                     if config_id == uuid.UUID(event.data["main_auth_factor_id"]).hex:
                         for form in login_page[self.LOGIN]["forms"]:
