@@ -11,7 +11,9 @@ from arkid.common.logger import logger
 from django.utils.translation import gettext_lazy as _
 from random import SystemRandom
 
-CHARS_COMMON = ('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+CHARS_COMMON = (
+    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+
 
 def deep_merge(*dicts: List[Dict], update=False) -> Dict:
     """
@@ -90,7 +92,8 @@ def i18n_mobile_verify(mobile, state_code, state=None):
     from inventory.models import I18NMobileConfig
 
     # 验证区号是否匹配
-    config = I18NMobileConfig.valid_objects.filter(state_code=state_code).first()
+    config = I18NMobileConfig.valid_objects.filter(
+        state_code=state_code).first()
     if not config:  # 未匹配任何配置
         return False
     if not config.is_active:  # 配置未启用
@@ -239,13 +242,14 @@ def verify_token(request):
 
     return token.user
 
+
 def data_to_simplenamespace(data):
     if isinstance(data, Schema):
         data = data.dict()
     elif isinstance(data, Model):
         data = model_to_dict(data)
-    elif isinstance(data,dict):
-        for k,v in data.items():
+    elif isinstance(data, dict):
+        for k, v in data.items():
             data[k] = data_to_simplenamespace(v)
     else:
         return data
@@ -257,10 +261,29 @@ def generate_secret(chars=None, length=128):
     生成指定位数的字符串
     '''
     if chars is None:
-        chars= CHARS_COMMON
+        chars = CHARS_COMMON
     rand = SystemRandom()
     return ''.join(rand.choice(chars) for x in range(length))
+
 
 def generate_md5_secret(secret):
     import hashlib
     return hashlib.md5(secret.encode('utf-8')).hexdigest()
+
+def get_remote_addr_from_xforward(request):
+    remote_addr =  request.headers.get("X-Forwarded-For", None)
+    if isinstance(remote_addr,str):
+        remote_addr = remote_addr.split(",")[0]
+    return remote_addr
+
+def get_remote_addr(request):
+
+    remote_addr =  get_remote_addr_from_xforward(request) or request.headers.get(
+        "X-Real-IP", None) or request.headers.get(
+            "Proxy-Client-IP", None) or request.headers.get(
+                "Proxy-Client-IP", None) or request.headers.get(
+                    "WL-Proxy-Client-IP", None) or request.headers.get(
+                        "HTTP_CLIENT_IP", None) or request.headers.get(
+                            "HTTP_X_FORWARDED_FOR", None) or request.META.get(
+                                "REMOTE_ADDR")
+    return remote_addr
