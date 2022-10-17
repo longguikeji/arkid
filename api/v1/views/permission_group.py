@@ -134,6 +134,7 @@ def delete_permission_group(request, tenant_id: str, id: str):
 def get_permissions_from_group(request, tenant_id: str, permission_group_id: str, category: str = None, operation_id: str = None):
     """ 获取当前分组的权限列表
     """
+    from arkid.core.perm.permission_data import PermissionData
     if permission_group_id != 'arkid':
         permission = SystemPermission.valid_objects.filter(id=permission_group_id).first()
         if permission is None:
@@ -151,15 +152,6 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
             app = App.valid_objects.filter(id=permission_group_id).first()
             items = []
             if app:
-                if app.entry_permission:
-                    if category and category in app.entry_permission.category:
-                        category = category.strip()
-                        items.append(app.entry_permission)
-                    elif operation_id and operation_id in app.entry_permission.operation_id:
-                        operation_id = operation_id.strip()
-                        items.append(app.entry_permission)
-                    else:
-                        items.append(app.entry_permission)
                 app_permission_ids = []
                 base_permissions = Permission.valid_objects.filter(
                     app_id=app.id,
@@ -187,10 +179,25 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                             operation_id = operation_id.strip()
                             group_permission_details = group_permission_details.filter(operation_id__icontains=operation_id)
                         items.extend(group_permission_details)
+                entry_permission = None
+                if app.entry_permission:
+                    if category and category in app.entry_permission.category:
+                        category = category.strip()
+                        entry_permission = app.entry_permission
+                    elif operation_id and operation_id in app.entry_permission.operation_id:
+                        operation_id = operation_id.strip()
+                        entry_permission = app.entry_permission
+                    else:
+                        entry_permission = app.entry_permission
+                # 需要过滤展示
+                permissiondata = PermissionData()
+                items = permissiondata.get_permissions_by_app_filter(tenant_id, app.id, items, entry_permission, request.user)
             return items
     else:
         permissions = SystemPermission.valid_objects.filter(category='group', is_system=True)
-        return permissions
+        # 只能看到自己拥有的权限
+        permissiondata = PermissionData()
+        return permissiondata.get_system_permission_by_filter(tenant_id, permissions, request.user)
     # tenant = request.tenant
     # if tenant.is_platform_tenant:
     #     permission = get_object_or_404(SystemPermission, id=permission_group_id, is_del=False)
