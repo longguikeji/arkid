@@ -62,14 +62,14 @@ def user_list_no_super(request, tenant_id: str):
 @api.post("/tenant/{tenant_id}/users/",response=UserCreateOut, tags=['用户'])
 @operation(UserCreateOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def user_create(request, tenant_id: str,data:UserCreateIn):
-
+    tenant = request.tenant
     # user = User.expand_objects.create(tenant=request.tenant,**data.dict())
-    if User.objects.filter(tenant=request.tenant, username=data.username).count():
+    if User.objects.filter(tenant=tenant, username=data.username).count():
         return ErrorDict(
             ErrorCode.USERNAME_EXISTS_ERROR
         )
     
-    user = User.objects.create(tenant=request.tenant, username=data.username)
+    user = User.objects.create(tenant=tenant, username=data.username)
     for key,value in data.dict().items():
         if key=='username':
             continue
@@ -77,6 +77,8 @@ def user_create(request, tenant_id: str,data:UserCreateIn):
             setattr(user,key,value)
     user.save()
 
+    tenant.users.add(user)
+    tenant.save()
     return {"data":{"user":user.id.hex}}
 
 @api.get("/tenant/{tenant_id}/users/pull/",response=List[UserPullItemOut], tags=['用户'])
