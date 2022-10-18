@@ -49,8 +49,8 @@ def dispatch_task(self, task_name, *args, **kwargs):
     for name, task in app.tasks.items():
         func_name = name.split('.')[-1]
         if func_name == task_name:
-            logger.info(f"Ready to delay funtion {name}")
-            task.delay(*args, **kwargs)
+            logger.info(f"Ready to apply_async funtion {name}")
+            task.apply_async(args, kwargs)
             break
     else:
         logger.info(f"*** Warning! No task found for name {task_name} ***")

@@ -172,3 +172,16 @@ def reload_extension(ext_dir: str) -> None:
     # 重新加载相应的url
     reload(api.v1.urls)
     reload(arkid.urls)
+
+
+def restart_celery():
+    from django.core.cache import cache
+    key = "CELERY_RESTART"
+    value = True
+    timeout = 60*1
+    if cache.get(key):
+        return
+
+    cache.set(key, value, timeout=timeout)
+    from arkid.core.tasks.celery import dispatch_task
+    dispatch_task.delay('restart', countdown=timeout)
