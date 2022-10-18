@@ -43,7 +43,7 @@ class TenantCreateIn(ModelSchema):
     slug:str = Field(
         title=_("短链接标识"),
         format="^[a-z0-9]{1,24}$",
-        feedback=_("输入错误，必须为24位以内数字和小写字母的组合")
+        feedback=_("输入错误,必须为24位以内数字和小写字母的组合")
     )
 
     class Config:
