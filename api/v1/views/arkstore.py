@@ -438,13 +438,13 @@ def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str)
     return {'data': resp}
 
 
-@api.get("/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/", tags=['方舟商店'],
+@api.get("/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/extensions/{uuid}/", tags=['方舟商店'],
     response={
         200: PaymentStatus,
         202: ResponseSchema,
     })
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str):
+def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
@@ -452,6 +452,9 @@ def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_n
     if resp.get('code') == '0' and not resp.get('appid'):
         return 202, {'data': resp}
     else:
+        # install extension
+        if resp.get('trade_state') == 'SUCCESS':
+            install_arkstore_extension(tenant, token, uuid)
         return 200, resp
 
 
@@ -578,6 +581,8 @@ def create_order_arkstore_extension_trial(request, tenant_id: str, uuid: str):
     resp = trial_arkstore_extension(access_token, uuid)
     if resp.get('code') == '10003':
         return ErrorDict(ErrorCode.TRIAL_EXTENSION_TWICE)
+    # install extension
+    install_arkstore_extension(tenant, token, uuid)
     return {'data': resp}
 
 
