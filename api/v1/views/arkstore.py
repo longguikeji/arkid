@@ -384,6 +384,36 @@ def list_arkstore_purchased_extensions(request, tenant_id: str, category_id: str
     return get_arkstore_list(request, True, 'extension', extra_params=extra_params)
 
 
+@api.get("/tenant/{tenant_id}/arkstore/not_installed/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def list_arkstore_not_installed_extensions(request, tenant_id: str, category_id: str = None):
+    extra_params = {}
+    if category_id and category_id != "" and category_id != "0":
+        extra_params['category_id'] = category_id
+    installed_exts = Extension.valid_objects.filter()
+    installed_ext_packages = set(str(ext.package) for ext in installed_exts)
+    purchased_exts = get_arkstore_list(request, True, 'extension', all=True, extra_params=extra_params)['items']
+    return [ext for ext in purchased_exts if ext['package'] not in installed_ext_packages]
+
+
+@api.get("/tenant/{tenant_id}/arkstore/not_upgraded/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def list_arkstore_not_upgraded_extensions(request, tenant_id: str, category_id: str = None):
+    extra_params = {}
+    if category_id and category_id != "" and category_id != "0":
+        extra_params['category_id'] = category_id
+    installed_exts = Extension.valid_objects.filter()
+    installed_ext_packages = {ext.package: ext for ext in installed_exts}
+    purchased_exts = get_arkstore_list(request, True, 'extension', all=True, extra_params=extra_params)['items']
+    exts = []
+    for ext in purchased_exts:
+        if ext['package'] in installed_ext_packages and installed_ext_packages[ext['package']].version < ext['version']:
+            exts.append(ext)
+    return exts
+
+
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
