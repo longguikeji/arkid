@@ -40,7 +40,7 @@ from ninja import Schema, Query
 import enum
 from pydantic import Field
 from ninja.pagination import paginate
-from arkid.core.pagenation import CustomPagination, ArstorePagination
+from arkid.core.pagenation import CustomPagination, ArstorePagination, ArstoreExtensionPagination
 from arkid.extension.models import Extension, TenantExtension, ArkStoreCategory
 from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
@@ -138,6 +138,8 @@ class OnShelveExtensionPurchaseOut(ArkstoreExtensionItemSchemaOut):
     purchase_useful_life: Optional[List[str]] = Field(
         title=_('Purchase Useful Life', '有效期')
     )
+    install: Optional[bool] = Field(title=_("Install", "安装"), default=False, hidden=True)
+    upgrade: Optional[bool] = Field(title=_("Upgrade", "升级"), default=False, hidden=True)
 
 
 class OrderStatusSchema(Schema):
@@ -275,7 +277,7 @@ class ArkstoreAppQueryIn(Schema):
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate(ArstorePagination)
+@paginate(ArstoreExtensionPagination)
 def list_arkstore_extensions(request, tenant_id: str, query_data: ArkstoreExtensionQueryIn=Query(...)):
     query_data = query_data.dict()
     return get_arkstore_list(request, None, 'extension', extra_params=query_data)
@@ -376,7 +378,7 @@ def get_arkstore_category_http():
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate(ArstorePagination)
+@paginate(ArstoreExtensionPagination)
 def list_arkstore_purchased_extensions(request, tenant_id: str, category_id: str = None):
     extra_params = {}
     if category_id and category_id != "" and category_id != "0":
