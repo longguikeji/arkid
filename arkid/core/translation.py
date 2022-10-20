@@ -61,5 +61,10 @@ def reset_lang_maps():
                 lang_maps[item.name].update(item.custom_data)
         except Exception as err:
             logger.error(err)
+    
+    for key in default_lang_maps.keys():
+        if key not in lang_maps.keys():
+            lang_maps[key] = default_lang_maps[key]
+
     return lang_maps
 
