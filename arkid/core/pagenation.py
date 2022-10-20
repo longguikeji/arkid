@@ -59,3 +59,33 @@ class ArstorePagination(CustomPagination):
             "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page > 2 else "",
             "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < len(list(queryset)) else ""
         }
+
+
+class ArstoreExtensionPagination(CustomPagination):
+    def paginate_queryset(self, queryset, pagination: CustomPagination.Input, request, **params):
+
+        if isinstance(queryset,dict) and "error" in queryset.keys() and queryset.get("error") not in ["0",0]:
+            queryset["items"] = []
+            return queryset
+
+        page = pagination.page
+        page_size = pagination.page_size
+        items = queryset["items"]
+        count = queryset["count"]
+
+        from arkid.extension.models import Extension
+        installed_exts = Extension.valid_objects.filter()
+        installed_ext_packages = {ext.package: ext for ext in installed_exts}
+        for ext in items:
+            if ext['package'] in installed_ext_packages:
+                if installed_ext_packages[ext['package']].version < ext['version']:
+                    ext['upgrade'] = True
+            else:
+                ext['install'] = True
+
+        return {
+            'items': items,
+            'count': count,
+            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page > 2 else "",
+            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < len(list(queryset)) else ""
+        }

@@ -74,8 +74,10 @@ class ExtensionListOut(ModelSchema):
     
     class Config:
         model= ExtensionModel
-        model_fields=["id","name","type","package","labels","version","is_active","is_allow_use_platform_config"]
-        
+        model_fields=["id","name","type","package","labels","version","is_active","is_allow_use_platform_config",
+            "author", "logo", "homepage"
+        ]
+
     labels:Optional[List[str]]
     is_active: bool = Field(
         title='是否启动',
