@@ -1,1 +1,0 @@
-package = "com.longgui.message.artemis"

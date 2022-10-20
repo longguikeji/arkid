@@ -1,1 +1,0 @@
-package = "com.longgui.auth.factor.ldap"

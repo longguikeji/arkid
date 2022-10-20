@@ -1,1 +1,0 @@
-package = "com.longgui.app.protocol.saml2"
