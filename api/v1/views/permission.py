@@ -496,7 +496,9 @@ def permission_toggle_open(request, tenant_id: str, permission_id: str):
     if permission and permission.tenant is None:
         return ErrorDict(ErrorCode.SYSTEM_PERMISSION_NOT_OPERATION)
     if permission is None:
-        permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=permission_id).first()
+        permission = Permission.valid_objects.filter(id=permission_id).first()
+        if str(permission.tenant_id) != tenant_id:
+            return ErrorDict(ErrorCode.PERMISSION_NOT_BELONG_TO_TENANT)
     if permission:
         is_open = permission.is_open
         if is_open:
@@ -571,7 +573,9 @@ def permission_toggle_other_user_open(request, tenant_id: str, permission_id: st
     if permission and permission.tenant is None:
         return ErrorDict(ErrorCode.SYSTEM_PERMISSION_NOT_OPERATION)
     if permission is None:
-        permission = Permission.valid_objects.filter(tenant_id=tenant_id, id=permission_id).first()
+        permission = Permission.valid_objects.filter(id=permission_id).first()
+        if str(permission.tenant_id) != tenant_id:
+            return ErrorDict(ErrorCode.PERMISSION_NOT_BELONG_TO_TENANT)
     if permission:
         is_open_other_user = permission.is_open_other_user
         if is_open_other_user:

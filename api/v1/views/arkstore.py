@@ -40,7 +40,7 @@ from ninja import Schema, Query
 import enum
 from pydantic import Field
 from ninja.pagination import paginate
-from arkid.core.pagenation import CustomPagination, ArstorePagination
+from arkid.core.pagenation import CustomPagination, ArstorePagination, ArstoreExtensionPagination
 from arkid.extension.models import Extension, TenantExtension, ArkStoreCategory
 from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
@@ -138,6 +138,8 @@ class OnShelveExtensionPurchaseOut(ArkstoreExtensionItemSchemaOut):
     purchase_useful_life: Optional[List[str]] = Field(
         title=_('Purchase Useful Life', '有效期')
     )
+    install: Optional[bool] = Field(title=_("Install", "安装"), default=False, hidden=True)
+    upgrade: Optional[bool] = Field(title=_("Upgrade", "升级"), default=False, hidden=True)
 
 
 class OrderStatusSchema(Schema):
@@ -275,7 +277,7 @@ class ArkstoreAppQueryIn(Schema):
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate(ArstorePagination)
+@paginate(ArstoreExtensionPagination)
 def list_arkstore_extensions(request, tenant_id: str, query_data: ArkstoreExtensionQueryIn=Query(...)):
     query_data = query_data.dict()
     return get_arkstore_list(request, None, 'extension', extra_params=query_data)
@@ -376,12 +378,42 @@ def get_arkstore_category_http():
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate(ArstorePagination)
+@paginate(ArstoreExtensionPagination)
 def list_arkstore_purchased_extensions(request, tenant_id: str, category_id: str = None):
     extra_params = {}
     if category_id and category_id != "" and category_id != "0":
         extra_params['category_id'] = category_id
     return get_arkstore_list(request, True, 'extension', extra_params=extra_params)
+
+
+@api.get("/tenant/{tenant_id}/arkstore/not_installed/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def list_arkstore_not_installed_extensions(request, tenant_id: str, category_id: str = None):
+    extra_params = {}
+    if category_id and category_id != "" and category_id != "0":
+        extra_params['category_id'] = category_id
+    installed_exts = Extension.valid_objects.filter()
+    installed_ext_packages = set(str(ext.package) for ext in installed_exts)
+    purchased_exts = get_arkstore_list(request, True, 'extension', all=True, extra_params=extra_params)['items']
+    return [ext for ext in purchased_exts if ext['package'] not in installed_ext_packages]
+
+
+@api.get("/tenant/{tenant_id}/arkstore/not_upgraded/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def list_arkstore_not_upgraded_extensions(request, tenant_id: str, category_id: str = None):
+    extra_params = {}
+    if category_id and category_id != "" and category_id != "0":
+        extra_params['category_id'] = category_id
+    installed_exts = Extension.valid_objects.filter()
+    installed_ext_packages = {ext.package: ext for ext in installed_exts}
+    purchased_exts = get_arkstore_list(request, True, 'extension', all=True, extra_params=extra_params)['items']
+    exts = []
+    for ext in purchased_exts:
+        if ext['package'] in installed_ext_packages and installed_ext_packages[ext['package']].version < ext['version']:
+            exts.append(ext)
+    return exts
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
@@ -438,13 +470,13 @@ def get_order_payment_arkstore_extension(request, tenant_id: str, order_no: str)
     return {'data': resp}
 
 
-@api.get("/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/", tags=['方舟商店'],
+@api.get("/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/extensions/{uuid}/", tags=['方舟商店'],
     response={
         200: PaymentStatus,
         202: ResponseSchema,
     })
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str):
+def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_no: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
@@ -452,6 +484,9 @@ def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_n
     if resp.get('code') == '0' and not resp.get('appid'):
         return 202, {'data': resp}
     else:
+        # install extension
+        if resp.get('trade_state') == 'SUCCESS':
+            install_arkstore_extension(tenant, token, uuid)
         return 200, resp
 
 
@@ -578,6 +613,8 @@ def create_order_arkstore_extension_trial(request, tenant_id: str, uuid: str):
     resp = trial_arkstore_extension(access_token, uuid)
     if resp.get('code') == '10003':
         return ErrorDict(ErrorCode.TRIAL_EXTENSION_TWICE)
+    # install extension
+    install_arkstore_extension(tenant, token, uuid)
     return {'data': resp}
 
 

@@ -233,3 +233,108 @@ public class OidcRedirectServlet extends HttpServlet {
     }
 }
 ```
+
+## .NET
+
+``` C#
+public partial class AutoLogin_Qywx3 : System.Web.UI.Page
+{
+    string clientId = "----------------------------------";//新建一个应用，提供如下信息
+    string clientSecret = "---------------------";
+    string myurl = "--------------------------;
+    string URL_Authorize = "--------------------oauth/authorize/";
+    string URL_Token = "---------------------------/oauth/token/";
+    string URL_Userinfo = "------------------------/oauth/userinfo/";//用户信息地址
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        string code = Request.QueryString["code"];
+        if (string.IsNullOrEmpty(code))
+        {
+            //请求code
+            string return_url = Server.UrlEncode(myurl);
+            string url = "";
+            url = URL_Authorize + "?client_id=" + clientId + "&redirect_uri=" + return_url + "&response_type=code&scope=userinfo";
+            Response.Redirect(url);
+            return;
+        }
+        else
+        {
+            string json = sendMessage(URL_Token, code); 
+            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(AccessToken));
+            var mStream = new MemoryStream(Encoding.Default.GetBytes(json));
+            AccessToken token = (AccessToken)serializer.ReadObject(mStream);
+            string access_token=token.access_token;
+string url = "----------------/oauth/userinfo/"; //用户信息地址
+                string R = SendGetHttpRequest(url, access_token);
+                Response.Write(R);
+                return;
+        }
+    }
+
+    public string SendGetHttpRequest(string url, string requestData)
+    {
+        WebRequest request = (WebRequest)HttpWebRequest.Create(url);  
+        request.Method = "Get"; 
+        request.Headers["Authorization"] = "Bearer " + requestData;
+        string result = string.Empty;
+        using (WebResponse response = request.GetResponse())
+        {
+            if (response != null)
+            {
+                using (Stream stream = response.GetResponseStream())
+                {
+                    using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                    {
+                        result = reader.ReadToEnd();
+                    }
+                }
+
+            }
+        }
+        return result;
+    }
+
+    public string sendMessage(string strUrl, string code)
+    {
+        ServicePointManager.Expect100Continue = true;
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+        ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, errors) => true;
+        //1.设置消息头
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(strUrl);
+        request.Method = "Post";
+        string a = clientId + ":" + clientSecret;
+        var b = Encoding.UTF8.GetBytes(a);
+        var base64 = Convert.ToBase64String(b);
+        request.Headers.Add("Authorization", "Basic " + base64);
+        request.UserAgent = "Apifox/1.0.0 (https://www.apifox.cn)";
+        request.ContentType = "application/x-www-form-urlencoded";
+        request.Accept = "*/*";
+        request.Host = "-------";//sso域名及端口
+        request.AllowAutoRedirect = true;
+        request.Headers.Add("accept-encoding", "gzip, deflate, br");
+        string param = "grant_type=authorization_code&code=" + HttpUtility.UrlEncode(code);
+        byte[] byteData = Encoding.ASCII.GetBytes(param);
+        request.ContentLength = byteData.Length;
+
+        using (Stream reqStream = request.GetRequestStream())
+        {
+            reqStream.Write(byteData, 0, byteData.Length);
+        }
+        //Response应答流获取数据
+        string strResponse = "";
+        using (HttpWebResponse res = (HttpWebResponse)request.GetResponse())
+        {
+            using (Stream resStream = res.GetResponseStream())
+            {
+                using (StreamReader sr = new StreamReader(resStream, Encoding.UTF8)) //UTF8
+                {
+                    strResponse = sr.ReadToEnd();
+                }
+            }
+            // res.Close();
+        }
+        return strResponse;
+    }
+}
+```
