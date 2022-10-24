@@ -45,6 +45,11 @@ AutoFormFillConfigSchema = create_extension_schema(
             str,
             Field(title=_('Submit Button CSS Selector', '提交/登录按钮CSS Selector')),
         ),
+        (
+            'extra_js',
+            str,
+            Field(format="textarea", title=_('Extra Element JavaScrip Selector', '额外的元素JavaScript Selector')),
+        ),
         ('auto_login', bool, Field(default=False, title=_('Auto Login', '自动登录'))),
     ],
 )
