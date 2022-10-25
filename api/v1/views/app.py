@@ -3,7 +3,7 @@ from pydantic import Field
 from ninja import ModelSchema
 from django.db.models import Q
 from arkid.core.models import App
-
+from ninja import Query
 from arkid.core.api import api, operation
 from django.db import transaction
 from ninja.pagination import paginate
@@ -85,7 +85,7 @@ def list_all_apps(request, tenant_id: str):
 
 @api.get("/tenant/{tenant_id}/all_apps_in_arkid/", response=AppListsOut, tags=['应用'])
 @operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
+def all_apps_in_arkid(request, tenant_id: str, query_data:AppAllListsQueryIn=Query(...)):
     '''
     所有app列表(含arkid)
     '''
@@ -93,7 +93,7 @@ def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
         Q(entry_permission__is_open=True)|Q(tenant_id=tenant_id)
     )
     items = []
-    if not_arkid is None:
+    if query_data.not_arkid is None:
         items.append({
             'id': 'arkid',
             'name': 'arkid',

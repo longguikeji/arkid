@@ -112,8 +112,10 @@ class PermissionGroupCategory(str, Enum):
     other = 'other'
 
 class PermissionGroupListQueryIn(Schema):
+
     category: Optional[PermissionGroupCategory] = Field(title=_("分类"), default=None)
     name: Optional[str] = Field(title=_("权限名称"), default=None)
+    app_name: Optional[str] = Field(title=_("应用名称"), default=None)
     operation_id: Optional[str] = Field(title=_("操作ID"), default=None)
 
 

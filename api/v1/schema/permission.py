@@ -92,6 +92,12 @@ class PermissionListQueryIn(Schema):
     operation_id: Optional[str] = Field(title=_("操作ID"), default=None)
 
 
+class AppPermissionListQueryIn(Schema):
+
+    category: Optional[PermissionCategory] = Field(title=_("分类"), default=None)
+    name: Optional[str] = Field(title=_("权限名称"), default=None)
+    operation_id: Optional[str] = Field(title=_("操作ID"), default=None)
+
 class UserGroupLastPermQueryIn(Schema):
 
     usergroup_id: Optional[str] = Field(hidden=True, default=None)
