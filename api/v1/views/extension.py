@@ -10,7 +10,7 @@ from django.conf import settings
 from arkid.core.constants import NORMAL_USER, PLATFORM_ADMIN, TENANT_ADMIN
 from arkid.core.extension import Extension
 from arkid.core.schema import ResponseSchema
-from arkid.extension.utils import import_extension
+from arkid.extension.utils import import_extension, restart_celery
 from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
 from arkid.core.error import ErrorCode, ErrorDict
 from ninja.pagination import paginate
@@ -74,8 +74,10 @@ class ExtensionListOut(ModelSchema):
     
     class Config:
         model= ExtensionModel
-        model_fields=["id","name","type","package","labels","version","is_active","is_allow_use_platform_config"]
-        
+        model_fields=["id","name","type","package","labels","version","is_active","is_allow_use_platform_config",
+            "author", "logo", "homepage"
+        ]
+
     labels:Optional[List[str]]
     is_active: bool = Field(
         title='是否启动',
@@ -230,6 +232,7 @@ def toggle_extension_active_status(request, id: str):
         extension.is_active = True
 
     extension.save()
+    restart_celery()
     return ErrorDict(ErrorCode.OK)
 
 @api.post("/extensions/{id}/use_platform_config/toggle/", tags=["平台插件"])

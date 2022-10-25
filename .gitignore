@@ -202,5 +202,6 @@ arkid_celery_tasks
 storage/
 results.sqlite
 
+tasks/*
+~/*
 tasks
-~

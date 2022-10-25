@@ -45,12 +45,27 @@ app.conf.update(
 
 @app.task(bind=True)
 def dispatch_task(self, task_name, *args, **kwargs):
-    logger.info(f'=== Dispatch task：{task_name}, args: {args}, kwargs: {kwargs}')
+    # logger.info(f'=== Dispatch task：{task_name}, args: {args}, kwargs: {kwargs}')
     for name, task in app.tasks.items():
         func_name = name.split('.')[-1]
         if func_name == task_name:
             logger.info(f"Ready to delay funtion {name}")
             task.delay(*args, **kwargs)
+            break
+    else:
+        logger.info(f"*** Warning! No task found for name {task_name} ***")
+
+
+@app.task(bind=True)
+def dispatch_task_with_options(self, task_name, celery_options={}, *args, **kwargs):
+    # logger.info(f'=== Dispatch task：{task_name}, args: {args}, kwargs: {kwargs}, celery_options: {celery_options}')
+    for name, task in app.tasks.items():
+        func_name = name.split('.')[-1]
+        if func_name == task_name:
+            if not celery_options or not isinstance(celery_options, dict):
+                celery_options = {}
+            logger.info(f"Ready to apply_async funtion {name} with {celery_options}")
+            task.apply_async(args, kwargs, **celery_options)
             break
     else:
         logger.info(f"*** Warning! No task found for name {task_name} ***")

@@ -49,7 +49,8 @@ class ErrorCode(Enum):
     BAN_REMOVE_GROUP_SCOPE = ('10036', _('ban remove group permission', '该分组范围不允许移除'))
     PERMISSION_GROUP_NOT_EDIT = ('10037', _('the permission group not edit', '该分组权限不允许编辑'))
     PERMISSION_GROUP_NOT_DELETE = ('10038', _('the permission group not delete', '该分组权限不允许删除'))
-    SYSTEM_PERMISSION_NOT_OPERATION = ('10033', _('system permission not operation', '系统权限不支持此操作'))
+    SYSTEM_PERMISSION_NOT_OPERATION = ('10039', _('system permission not operation', '系统权限不支持此操作'))
+    PERMISSION_NOT_BELONG_TO_TENANT = ('10040', _('permission not belong to tenant', '该应用不属于该租户'))
 
     # SMS_PROVIDER_IS_MISSING = '11001'
     # AUTHCODE_PROVIDER_IS_MISSING = '11002'

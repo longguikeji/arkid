@@ -1,6 +1,7 @@
 from typing import Optional
 import uuid
 from api.v1.views.loginpage import login_page
+from arkid.common.utils import get_remote_addr
 from arkid.core import actions, pages
 from arkid.core.event import AUTH_FAIL, Event, dispatch_event,BEFORE_AUTH
 from arkid.core.extension import create_extension_schema
@@ -104,7 +105,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         # 检查是否存在满足条件的配置
         for config in self.get_tenant_configs(event.tenant):
             if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"]:
-                host = event.request.META.get("REMOTE_ADDR")
+                host = get_remote_addr(event.request)
                 key = self.gen_key(host,config.id.hex)
                 try_times  = int(cache.get(event.tenant,key) or 0)
                 cache.set(event.tenant,key,try_times+1,expired=config.config.get("expired",30)*60)
@@ -117,7 +118,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
     def check_rule(self, event, config):
         login_pages = event.data
         
-        if self.check_retry_times(event.tenant,event.request.META.get("REMOTE_ADDR"),config.id.hex,config.config.get("try_times",0)): 
+        if self.check_retry_times(event.tenant,get_remote_addr(event.request),config.id.hex,config.config.get("try_times",0)): 
             dispatch_event(
                 Event(
                     core_event.AUTHRULE_FIX_LOGIN_PAGE,

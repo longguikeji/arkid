@@ -8,31 +8,26 @@
 * PV provisioner support in the underlying infrastructure
 * ReadWriteMany volumes for deployment scaling
 
-## 通过helm安装
+## 通过helm-controller安装
 
-> !!! 生产环境推荐使用 gitops工具（如argoCD）来部署和管理
-> chart源码仓库地址： https://github.com/longguikeji/arkid-charts.git
-
-### 添加helm仓库
+### 安装 CRD
 ```shell
-helm repo add lgkj https://harbor.longguikeji.com/chartrepo/public
-
-helm repo update
+CHARTCRD=`kubectl get crd|grep helmcharts.helm.cattle.io`
+if [ -z "$CHARTCRD" ];then
+    kubectl create -f https://gitee.com/longguikeji/arkid-charts/raw/main/helmchartscrd.yaml
+fi
 ```
 
-### helm 查找 arkid 的 charts
-```shell
-helm search repo arkid -l
-```
-
-### 安装 arkid chart
-
-
+### 部署 arkid
 ```shell
 kubectl create ns arkid
+kubectl create -f https://gitee.com/longguikeji/arkid-charts/raw/main/arkid.yaml
+```
 
-helm --namespace arkid install arkid lgkj/arkid \
---set persistence.init=true
+### 卸载 arkid
+```shell
+kubectl -n arkid delete helmcharts arkid
+
 ```
 
 ## nodeport 端口访问 arkid
@@ -52,13 +47,13 @@ helm --namespace arkid install arkid lgkj/arkid \
 
 ## 升级 arkid chart版本
 ```shell
-helm repo update
+kubectl -n arkid edit helmcharts arkid
 
-helm -n arkid upgrade arkid lgkj/arkid \
---set persistence.init=true
+## 修改版本号，保存退出, 会自动更新
+spec:
+  chart: arkid
+  version: 3.1.3
 ```
-
-
 
 ## 更多配置
 > https://github.com/longguikeji/arkid-charts.git
