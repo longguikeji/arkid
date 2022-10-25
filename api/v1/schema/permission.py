@@ -80,6 +80,17 @@ class PermissionCreateItemSchemaIn(Schema):
     id:UUID = Field(hidden=True)
     name:str
 
+
+class PermissionListQueryIn(Schema):
+
+    app_id: Optional[str] = Field(hidden=True, default=None)
+    select_user_id: Optional[str] = Field(hidden=True, default=None)
+    group_id: Optional[str] = Field(hidden=True, default=None)
+    app_name: Optional[str] = Field(title=_("应用名称"), default=None)
+    category: Optional[str] = Field(title=_("分类"), default=None)
+    name: Optional[str] = Field(title=_("权限名称"), default=None)
+    operation_id: Optional[str] = Field(title=_("操作ID"), default=None)
+
 class PermissionCreateSchemaIn(ModelSchema):
 
     app: PermissionCreateItemSchemaIn = Field(
