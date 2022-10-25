@@ -2,6 +2,7 @@
 from arkid.core.api import api, operation
 from typing import List, Optional
 from django.db import transaction
+from ninja import Query
 from ninja.pagination import paginate
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.pagenation import CustomPagination
@@ -48,14 +49,14 @@ def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
 @api.get("/tenant/{tenant_id}/permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_id: str = None, group_id: str = None, app_name: str = None, category: str = None, operation_id: str = None):
+def list_permissions(request, tenant_id: str, query_data:PermissionListQueryIn=Query(...)):
     '''
     权限列表
     '''
     login_user = request.user
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category, operation_id=operation_id)
+    return permissiondata.get_permissions_by_search(tenant_id, query_data.app_id, query_data.select_user_id, query_data.group_id, login_user, app_name=query_data.app_name, category=query_data.category, operation_id=query_data.operation_id, name=query_data.name)
 
 
 @api.get("/tenant/{tenant_id}/apps/{id}/permissions", response=List[AppPermissionsItemSchemaOut], tags=['权限'])
