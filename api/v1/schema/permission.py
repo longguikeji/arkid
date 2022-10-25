@@ -55,7 +55,7 @@ class UserAppLastPermissionsItemSchemaOut(Schema):
     app_name: str = Field(default=None, alias="app.name", title=_("应用"))
     sort_id: int = Field(hidden=True)
     # is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value}, title=_("是否授权给其它租户"))
-    category: str = Field(title=_("分类应用名称"))
+    category: str = Field(title=_("分类名称"), notranslation=True)
     in_current: bool = Field(title=_("是否已拥有"))
 
 class UserAppLastPermissionsSchemaOut(ResponseSchema):
@@ -87,7 +87,33 @@ class PermissionListQueryIn(Schema):
     select_user_id: Optional[str] = Field(hidden=True, default=None)
     group_id: Optional[str] = Field(hidden=True, default=None)
     app_name: Optional[str] = Field(title=_("应用名称"), default=None)
-    category: Optional[str] = Field(title=_("分类"), default=None)
+    category: Optional[PermissionCategory] = Field(title=_("分类"), default=None)
+    name: Optional[str] = Field(title=_("权限名称"), default=None)
+    operation_id: Optional[str] = Field(title=_("操作ID"), default=None)
+
+
+class UserGroupLastPermQueryIn(Schema):
+
+    usergroup_id: Optional[str] = Field(hidden=True, default=None)
+    app_name: Optional[str] = Field(title=_("应用名称"), default=None)
+    category: Optional[PermissionCategory] = Field(title=_("分类"), default=None)
+    name: Optional[str] = Field(title=_("权限名称"), default=None)
+    operation_id: Optional[str] = Field(title=_("操作ID"), default=None)
+
+class GroupPermissionListQueryIn(Schema):
+
+    select_usergroup_id: Optional[str] = Field(hidden=True, default=None)
+    app_name: Optional[str] = Field(title=_("应用名称"), default=None)
+    category: Optional[PermissionCategory] = Field(title=_("分类"), default=None)
+    name: Optional[str] = Field(title=_("权限名称"), default=None)
+    operation_id: Optional[str] = Field(title=_("操作ID"), default=None)
+
+class UserPermissionLastQueryIn(Schema):
+
+    app_id: Optional[str] = Field(hidden=True, default=None)
+    user_id: Optional[str] = Field(hidden=True, default=None)
+    app_name: Optional[str] = Field(title=_("应用名称"), default=None)
+    category: Optional[PermissionCategory] = Field(title=_("分类"), default=None)
     name: Optional[str] = Field(title=_("权限名称"), default=None)
     operation_id: Optional[str] = Field(title=_("操作ID"), default=None)
 
