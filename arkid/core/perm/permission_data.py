@@ -1451,7 +1451,7 @@ class PermissionData(object):
                     data_group_parent_child[parent_id_hex] = temp_data_group
         data_dict = collections.OrderedDict(sorted(data_dict.items(), key=lambda obj: obj[0]))
     
-    def get_app_permissions_by_search(self, tenant_id, app_id, category = None, operation_id = None):
+    def get_app_permissions_by_search(self, tenant_id, app_id, category = None, operation_id = None, name = None):
         '''
         根据应用查权限(根据应用权限字符串)
         '''
@@ -1481,6 +1481,9 @@ class PermissionData(object):
                     if operation_id:
                         operation_id = operation_id.strip()
                         result_items = result_items.filter(operation_id__icontains=operation_id)
+                    if name:
+                        name = name.strip()
+                        result_items = result_items.filter(name__icontains=name)
                     result.extend(list(result_items.order_by('sort_id')))
                 else:
                     result_items = SystemPermission.valid_objects.filter(
@@ -1492,6 +1495,9 @@ class PermissionData(object):
                     if operation_id:
                         operation_id = operation_id.strip()
                         result_items = result_items.filter(operation_id__icontains=operation_id)
+                    if name:
+                        name = name.strip()
+                        result_items = result_items.filter(name__icontains=name)
                     result.extend(list(result_items.order_by('sort_id')))
 
         return result

@@ -31,6 +31,11 @@ class AppListsOut(ResponseSchema):
     data: List[AppItemsOut]
 
 
+class AppAllListsQueryIn(Schema):
+
+    not_arkid: Optional[int]=Field(hidden=True,default=None)
+
+
 class AppItemOut(ModelSchema):
 
     id: UUID = Field(readonly=True)

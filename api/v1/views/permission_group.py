@@ -138,6 +138,7 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
     category = query_data.category
     operation_id = query_data.operation_id
     name = query_data.name
+    app_name = query_data.app_name
     from arkid.core.perm.permission_data import PermissionData
     if permission_group_id != 'arkid':
         permission = SystemPermission.valid_objects.filter(id=permission_group_id).first()
@@ -154,6 +155,21 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
             if name:
                 name = name.strip()
                 result_items = result_items.filter(name__icontains=name)
+            if app_name:
+                app_name = app_name.strip()
+                if isinstance(permission, SystemPermission):
+                    permissions = permissions.filter(app__name__icontains=app_name)
+                else:
+                    filter_apps = App.valid_objects.filter(
+                        name__icontains=app_name
+                    )
+                    filter_ids = []
+                    for filter_app in filter_apps:
+                        filter_ids.append(filter_app.entry_permission.id)
+                    if filter_ids:
+                        result_items = result_items.filter(id__in=filter_ids)
+                    else:
+                        result_items = result_items.filter(id__isnull=True)
             return result_items
         else:
             app = App.valid_objects.filter(id=permission_group_id).first()
@@ -178,6 +194,9 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                     if name:
                         name = name.strip()
                         group_permissions = group_permissions.filter(name__icontains=name)
+                    if app_name:
+                        app_name = app_name.strip()
+                        group_permissions = group_permissions.filter(app__name__icontains=app_name)
                     items.extend(group_permissions)
                 for group_permission in group_permissions:
                     for item in group_permission.container.all():
@@ -197,6 +216,9 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                         if name:
                             name = name.strip()
                             group_permission_details = group_permission_details.filter(name__icontains=name)
+                        if app_name:
+                            app_name = app_name.strip()
+                            group_permissions = group_permissions.filter(app__name__icontains=app_name)
                         items.extend(group_permission_details)
                 entry_permission = None
                 if app.entry_permission:
@@ -214,6 +236,9 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                         entry_permission = app.entry_permission
                     elif name and name in app.entry_permission.name:
                         entry_permission = app.entry_permission
+                    
+                    if app_name and app_name not in app.name:
+                        entry_permission = None
                 # 需要过滤展示
                 permissiondata = PermissionData()
                 items = permissiondata.get_permissions_by_app_filter(tenant_id, app.id, items, entry_permission, request.user)
@@ -229,6 +254,18 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
         if name:
             name = name.strip()
             permissions = permissions.filter(name__icontains=name)
+        if app_name:
+            app_name = app_name.strip()
+            filter_apps = App.valid_objects.filter(
+                name__icontains=app_name
+            )
+            filter_ids = []
+            for filter_app in filter_apps:
+                filter_ids.append(filter_app.entry_permission.id)
+            if filter_ids:
+                permissions = permissions.filter(id__in=filter_ids)
+            else:
+                permissions = permissions.filter(id__isnull=True)
         # 只能看到自己拥有的权限
         permissiondata = PermissionData()
         return permissiondata.get_system_permission_by_filter(tenant_id, permissions, request.user)

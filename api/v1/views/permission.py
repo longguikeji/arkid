@@ -62,13 +62,13 @@ def list_permissions(request, tenant_id: str, query_data:PermissionListQueryIn=Q
 @api.get("/tenant/{tenant_id}/apps/{id}/permissions", response=List[AppPermissionsItemSchemaOut], tags=['权限'])
 @operation(AppPermissionsListSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def app_list_permissions(request, tenant_id: str,  id: str, category: str = None, operation_id: str = None):
+def app_list_permissions(request, tenant_id: str,  id: str, query_data:AppPermissionListQueryIn=Query(...)):
     '''
     应用权限列表
     '''
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_app_permissions_by_search(tenant_id, id, category, operation_id)
+    return permissiondata.get_app_permissions_by_search(tenant_id, id, query_data.category, query_data.operation_id, query_data.name)
 
 @api.get("/tenant/{tenant_id}/user_app_last_permissions", response=List[UserAppLastPermissionsItemSchemaOut], tags=['权限'])
 @operation(UserAppLastPermissionsSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -276,7 +276,6 @@ def usergroup_remove_permission(request, tenant_id: str, select_usergroup_id: st
     # from arkid.core.perm.permission_data import PermissionData
     # pd = PermissionData()
     if isinstance(permission, SystemPermission):
-        pass
         dispatch_event(Event(tag=REMOVE_USERGROUP_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
         # pd.remove_app_permission_to_usergroup(
