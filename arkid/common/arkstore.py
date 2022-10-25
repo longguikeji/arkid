@@ -605,6 +605,15 @@ def check_arkstore_purcahsed_extension_expired(tenant, token, package):
     if ext_info is None:
         return True
     extension_uuid = ext_info['uuid']
+
+    price_info = get_arkstore_extension_price(access_token, extension_uuid)
+    prices = price_info.get('prices')
+    if not prices:
+        return True
+    for price in prices:
+        if price.get('sale_price') == 0:
+            return True
+
     order_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_uuid}/purchased'
     headers = {'Authorization': f'Token {access_token}'}
     params = {}
