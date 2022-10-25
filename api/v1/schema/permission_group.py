@@ -92,16 +92,29 @@ class PermissionGroupEditSchemaIn(Schema):
     #     model_fields = ['name']
 
 class PermissionListSchemaOut(Schema):
-    category: str = Field(title=_("分类"))
+    category: str = Field(title=_("分类"),notranslation=True)
     operation_id: str = Field(default='', title=_("操作ID"))
     id: UUID = Field(title=_("id"))
     name: str = Field(title=_("名称"))
     is_open: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_open", "method":actions.FrontActionMethod.POST.value}, title=_("是否授权给其它租户"))
     is_open_other_user: bool = Field(item_action={"path":"/api/v1/tenant/{tenant_id}/permission/{id}/toggle_other_user_open", "method":actions.FrontActionMethod.POST.value}, title=_("是否租户内所有人可见"))
-    is_system: bool = Field(title=_("是否是系统权限 "))
+    is_system: bool = Field(title=_("是否是系统权限"))
     # class Config:
     #     model = SystemPermission
     #     model_fields = ['id', 'name', 'is_system']
+
+class PermissionGroupCategory(str, Enum):
+    entry = 'entry'
+    api = 'api'
+    data = 'data'
+    group = 'group'
+    ui = 'ui'
+    other = 'other'
+
+class PermissionGroupListQueryIn(Schema):
+    category: Optional[PermissionGroupCategory] = Field(title=_("分类"), default=None)
+    name: Optional[str] = Field(title=_("权限名称"), default=None)
+    operation_id: Optional[str] = Field(title=_("操作ID"), default=None)
 
 
 class PermissionListSelectSchemaOut(Schema):
@@ -110,7 +123,7 @@ class PermissionListSelectSchemaOut(Schema):
     in_current: bool = Field(title=_("是否在当前分组里"), hidden=True)
     name: str
     category: str
-    is_system: bool
+    is_system: bool = Field(title=_("是否是系统权限"))
 
 class PermissionListDataSelectSchemaOut(ResponseSchema):
     data: List[PermissionListSelectSchemaOut]

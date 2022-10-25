@@ -1,4 +1,5 @@
 from uuid import UUID
+from ninja import Query
 from typing import List
 from ninja import Field
 from ninja import Schema
@@ -131,9 +132,12 @@ def delete_permission_group(request, tenant_id: str, id: str):
 @api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/permissions/", response=List[PermissionListSchemaOut], tags=["权限分组"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_permissions_from_group(request, tenant_id: str, permission_group_id: str, category: str = None, operation_id: str = None):
+def get_permissions_from_group(request, tenant_id: str, permission_group_id: str, query_data:PermissionGroupListQueryIn=Query(...)):
     """ 获取当前分组的权限列表
     """
+    category = query_data.category
+    operation_id = query_data.operation_id
+    name = query_data.name
     from arkid.core.perm.permission_data import PermissionData
     if permission_group_id != 'arkid':
         permission = SystemPermission.valid_objects.filter(id=permission_group_id).first()
@@ -147,6 +151,9 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
             if operation_id:
                 operation_id = operation_id.strip()
                 result_items = result_items.filter(operation_id__icontains=operation_id)
+            if name:
+                name = name.strip()
+                result_items = result_items.filter(name__icontains=name)
             return result_items
         else:
             app = App.valid_objects.filter(id=permission_group_id).first()
@@ -162,6 +169,15 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                     #code__startswith='group_role'
                 )
                 if group_permissions:
+                    if category:
+                        category = category.strip()
+                        group_permissions = group_permissions.filter(category__icontains=category)
+                    if operation_id:
+                        operation_id = operation_id.strip()
+                        group_permissions = group_permissions.filter(operation_id__icontains=operation_id)
+                    if name:
+                        name = name.strip()
+                        group_permissions = group_permissions.filter(name__icontains=name)
                     items.extend(group_permissions)
                 for group_permission in group_permissions:
                     for item in group_permission.container.all():
@@ -178,16 +194,25 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                         if operation_id:
                             operation_id = operation_id.strip()
                             group_permission_details = group_permission_details.filter(operation_id__icontains=operation_id)
+                        if name:
+                            name = name.strip()
+                            group_permission_details = group_permission_details.filter(name__icontains=name)
                         items.extend(group_permission_details)
                 entry_permission = None
                 if app.entry_permission:
-                    if category and category in app.entry_permission.category:
-                        category = category.strip()
+                    if category and operation_id and name and category in app.entry_permission.category and operation_id in app.entry_permission.operation_id and name in app.entry_permission.name:
+                        entry_permission = app.entry_permission
+                    elif category and operation_id and category in app.entry_permission.category and operation_id in app.entry_permission.operation_id:
+                        entry_permission = app.entry_permission
+                    elif category and name and category in app.entry_permission.category and name in app.entry_permission.name:
+                        entry_permission = app.entry_permission
+                    elif operation_id and name and operation_id in app.entry_permission.operation_id and name in app.entry_permission.name:
+                        entry_permission = app.entry_permission
+                    elif category and category in app.entry_permission.category:
                         entry_permission = app.entry_permission
                     elif operation_id and operation_id in app.entry_permission.operation_id:
-                        operation_id = operation_id.strip()
                         entry_permission = app.entry_permission
-                    else:
+                    elif name and name in app.entry_permission.name:
                         entry_permission = app.entry_permission
                 # 需要过滤展示
                 permissiondata = PermissionData()
@@ -195,6 +220,15 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
             return items
     else:
         permissions = SystemPermission.valid_objects.filter(category='group', is_system=True)
+        if category:
+            category = category.strip()
+            permissions = permissions.filter(category__icontains=category)
+        if operation_id:
+            operation_id = operation_id.strip()
+            permissions = permissions.filter(operation_id__icontains=operation_id)
+        if name:
+            name = name.strip()
+            permissions = permissions.filter(name__icontains=name)
         # 只能看到自己拥有的权限
         permissiondata = PermissionData()
         return permissiondata.get_system_permission_by_filter(tenant_id, permissions, request.user)
@@ -270,9 +304,12 @@ def update_permissions_from_group(request, tenant_id: str, permission_group_id: 
 @api.get("/tenant/{tenant_id}/permission_groups/{permission_group_id}/select_permissions/", response=List[PermissionListSelectSchemaOut], tags=["权限分组"])
 @operation(PermissionListDataSelectSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_select_permissions(request, tenant_id: str, permission_group_id: str, category: str = None, operation_id: str = None):
+def get_select_permissions(request, tenant_id: str, permission_group_id: str, query_data:PermissionGroupListQueryIn=Query(...)):
     """ 获取所有权限并附加是否在当前分组的状态
     """
+    category = query_data.category
+    operation_id = query_data.operation_id
+    name = query_data.name
     # 只允许非arkid的分组操作(如果用户直接在系统分组里加权限会有问题)
     if permission_group_id == 'arkid':
         return []
@@ -293,6 +330,9 @@ def get_select_permissions(request, tenant_id: str, permission_group_id: str, ca
         if operation_id:
             operation_id = operation_id.strip()
             permissions = permissions.filter(operation_id__icontains=operation_id)
+        if name:
+            name = name.strip()
+            permissions = permissions.filter(name__icontains=name)
         for permission in permissions:
             id_hex = permission.id.hex
             if id_hex in ids:
@@ -312,6 +352,9 @@ def get_select_permissions(request, tenant_id: str, permission_group_id: str, ca
         if operation_id:
             operation_id = operation_id.strip()
             permissions = permissions.filter(operation_id__icontains=operation_id)
+        if name:
+            name = name.strip()
+            permissions = permissions.filter(name__icontains=name)
         for permission in permissions:
             id_hex = permission.id.hex
             if id_hex in ids:
