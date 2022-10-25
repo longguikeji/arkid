@@ -266,8 +266,3 @@ if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
 
 
 CSRF_TRUSTED_ORIGINS = []
-
-
-RP_ID = "localhost"
-RP_NAME = "test"
-RP_EXPECTED_ORIGIN = "http://localhost:9528"
