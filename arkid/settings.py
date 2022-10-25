@@ -175,11 +175,32 @@ LOCALE_PATHS = [
     # '/home/guancy/longgui/arkid/extension_root/com_longgui_international_en_us/locale'
 ]
 
+REDIS_CONFIG = {
+    'HOST': 'localhost',
+    'PORT': 6379,
+    'DB': 0,
+    'PASSWORD': None,
+}
+
+REDIS_URL = 'redis://{}:{}/{}'.format(REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'],\
+    REDIS_CONFIG['DB']) if REDIS_CONFIG['PASSWORD'] is None \
+        else 'redis://:{}@{}:{}/{}'.format(REDIS_CONFIG['PASSWORD'],\
+            REDIS_CONFIG['HOST'], REDIS_CONFIG['PORT'], REDIS_CONFIG['DB'])
+
 # Celery settings
-CELERY_BROKER = 'redis://localhost:6379'
-CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_BROKER = REDIS_URL
+CELERY_BROKER_URL = REDIS_URL
 CELERY_TIMEZONE = 'Asia/Shanghai'
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"{REDIS_URL}/1",
+    }
+}
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
 #: Only add pickle to this list if your broker is secured
 #: from unwanted access (see userguide/security.html)

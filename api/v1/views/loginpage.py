@@ -41,6 +41,7 @@ class ButtonSchema(Schema):
     http: Optional[ButtonHttpSchema] = Field(title=_('http', 'http请求'))
     delay: Optional[int] = Field(title=_('delay', '点击后延时（单位：秒）'))
     agreement: Optional[ButtonAgreementSchema] = Field(title=_('agreement', '隐私声明'))
+    action: Optional[str] = Field(title=_('action', '点击执行函数'))
 
 
 class LOGIN_FORM_ITEM_TYPES(str, Enum):
@@ -59,11 +60,15 @@ class LoginFormItemSchema(Schema):
     http: Optional[ButtonHttpSchema] = Field(title=_('http', 'http请求'))
     content: Optional[str] = Field(title=_('content', '内容'))
 
+class ScriptSchema(Schema):
+    src: str
+    globals: Optional[List[str]]
 
 class LoginFormSchema(Schema):
     label: str = Field(title=_('label', '表单名'))
     items: List[LoginFormItemSchema] = Field(title=_('items', '表单项'))
     submit: ButtonSchema = Field(title=_('submit', '表单提交'))
+    scripts: Optional[List[ScriptSchema]] = Field(title=_('scripts', '自定义表单脚本'))
 
 
 class LoginPageExtendSchema(Schema):
@@ -190,6 +195,12 @@ def login_page(request, tenant_id: str):
 
     tenant_expanded = Tenant.expand_objects.get(id=tenant.id)
     tenant_expanded["is_platform_tenant"] = tenant.is_platform_tenant
+
+
+    if not request.session.exists(request.session.session_key):
+        request.session.create()
+        request.session.set_expiry(0)
+
     return {
         'tenant': tenant_expanded,
         'data': data,
