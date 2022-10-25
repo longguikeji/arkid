@@ -69,6 +69,14 @@ class MinePermissionListSchemaOut(Schema):
     #     model_fields = ['id', 'name', 'category', 'is_system']
 
 
+class MinePermissionListQueryIn(Schema):
+
+    app_id: Optional[str] = Field(hidden=True)
+    app_name: Optional[str] = Field(title=_("应用名称"), default=None)
+    category: Optional[str] = Field(title=_("分类"), default=None)
+    name: Optional[str] = Field(title=_("权限名称"), default=None)
+    operation_id: Optional[str] = Field(title=_("操作ID"), default=None)
+
 class MineTenantListOut(ResponseSchema):
     data: List[MineTenantListItemOut]
 

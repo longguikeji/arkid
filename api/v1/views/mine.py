@@ -1,4 +1,5 @@
 from typing import List
+from ninja import Query
 from django.urls import reverse
 from django.shortcuts import render
 from arkid.config import get_app_config
@@ -67,10 +68,7 @@ def update_mine_profile(request, tenant_id: str, data: ProfileSchemaIn):
 def get_mine_permissions(
     request,
     tenant_id: str,
-    app_id: str = None,
-    app_name: str = None,
-    category: str = None,
-    operation_id: str = None,
+    query_data:MinePermissionListQueryIn=Query(...)
 ):
     """我的权限列表"""
     login_user = request.user
@@ -78,7 +76,7 @@ def get_mine_permissions(
 
     permissiondata = PermissionData()
     items = permissiondata.get_permissions_by_mine_search(
-        tenant_id, app_id, None, None, login_user, app_name=app_name, category=category, operation_id=operation_id,
+        tenant_id, query_data.app_id, None, None, login_user, app_name=query_data.app_name, category=query_data.category, operation_id=query_data.operation_id, name=query_data.name,
     )
     return items
 
