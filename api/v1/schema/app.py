@@ -15,6 +15,12 @@ class AppListItemOut(ModelSchema):
         model_fields = ['id', 'name', 'url', 'logo', 'type']
 
 
+class AppListQueryIn(Schema):
+
+    order: Optional[str] = Field(hidden=True, default=None)
+    category_id: Optional[str] = Field(hidden=True, default=None)
+    name: Optional[str] = Field(title=_("应用名称"), default=None)
+
 class AppListOut(ResponseSchema):
     data: List[AppListItemOut]
 

@@ -2812,7 +2812,7 @@ class PermissionData(object):
                     })
         return permissions, manager_scope, self_source_ids
     
-    def get_child_mans(self, auth_users, tenant):
+    def get_child_mans(self, auth_users, tenant, username):
         '''
         获取子管理员
         '''
@@ -2864,7 +2864,11 @@ class PermissionData(object):
                     auth_user.is_tenant_admin = False
 
         if ids:
-            return User.valid_objects.filter(id__in=ids)
+            users = User.valid_objects.filter(id__in=ids)
+            if username:
+                return users.filter(username__icontains=username)
+            else:
+                return users
         else:
             return []
 

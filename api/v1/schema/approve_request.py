@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+from enum import Enum
 from typing import List
 from pydantic import Field
 from ninja import Schema, ModelSchema
@@ -38,3 +38,13 @@ class ApproveRequestListItemOut(ModelSchema):
 
 class ApproveRequestListOut(ResponseSchema):
     data: List[ApproveRequestListItemOut]
+
+class PermissionCategory(str, Enum):
+    否 = 'false'
+    是 = 'true'
+
+class ApproveRequestListQueryIn(Schema):
+
+    package: str = Field(title=_('Package', '包名'), hidden=True, default=None)
+    username: str = Field(title=_('Username', '用户名'), default=None)
+    is_approved: PermissionCategory = Field(title=_('Is Approved', '是否同意'), default=None)

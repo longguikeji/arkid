@@ -14,6 +14,11 @@ class AuthFactorListItemOut(Schema):
     extension_name: str = Field(title=_("所属插件"))
     extension_package: str = Field(title=_("所属插件标识"))
 
+
+class FactorListQueryIn(Schema):
+
+    order: str = Field(hidden=True, default=None)
+
 class AuthFactorListOut(ResponseSchema):
     data: List[AuthFactorListItemOut]
 
