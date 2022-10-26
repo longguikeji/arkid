@@ -29,21 +29,21 @@ def get_event_list(request, tenant_id: str, query_data: EventListQueryIn=Query(.
     name = query_data.name
     tag = query_data.tag
     for event_type in event.tag_map_event_type.values():
-        if name and tag and name in query_data.name and tag in query_data.tag:
+        if name and tag and name in event_type.name and tag in event_type.tag:
             events.append({
                 'tag':event_type.tag,
                 'name':event_type.name,
                 'description':event_type.description,
                 'url': f'{host}/arkid/%20%20%20用户指南/用户手册/%20租户管理员/扩展能力/事件列表/#{event_type.name}'
             })
-        elif name and name in query_data.name:
+        elif name and name in event_type.name:
             events.append({
                 'tag':event_type.tag,
                 'name':event_type.name,
                 'description':event_type.description,
                 'url': f'{host}/arkid/%20%20%20用户指南/用户手册/%20租户管理员/扩展能力/事件列表/#{event_type.name}'
             })
-        elif tag and tag in query_data.tag:
+        elif tag and tag in event_type.tag:
             events.append({
                 'tag':event_type.tag,
                 'name':event_type.name,
