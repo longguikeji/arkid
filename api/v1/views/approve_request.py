@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from ninja import Query
 from arkid.core.api import api, operation
 from arkid.core.constants import *
 from arkid.core.translation import gettext_default as _
@@ -17,6 +18,7 @@ from arkid.core.pagenation import CustomPagination
 from api.v1.schema.approve_request import (
     ApproveRequestListItemOut,
     ApproveRequestListOut,
+    ApproveRequestListQueryIn,
 )
 
 
@@ -28,14 +30,16 @@ from api.v1.schema.approve_request import (
 @operation(List[ApproveRequestListItemOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def approve_request_list(
-    request, tenant_id: str, package: str = "", is_approved: str = ""
+    request, tenant_id: str, query_data:ApproveRequestListQueryIn=Query(...)
 ):
     tenant = request.tenant
     requests = ApproveRequest.valid_objects.filter(tenant=tenant)
-    if package:
-        requests = requests.filter(action__extension__package=package)
-    if is_approved == "true":
+    if query_data.package:
+        requests = requests.filter(action__extension__package=query_data.package)
+    if query_data.username:
+        requests = requests.filter(user__username__icontains=query_data.username)
+    if query_data.is_approved == "true":
         requests = requests.exclude(status="wait")
-    elif is_approved == "false":
+    elif query_data.is_approved == "false":
         requests = requests.filter(status="wait")
     return requests

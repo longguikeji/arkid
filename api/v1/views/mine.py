@@ -394,9 +394,13 @@ def get_mine_app_groups(request, tenant_id: str, parent_id=None):
 @api.get("/mine/tenant/{tenant_id}/mine_group_apps/", response=List[MineAppListItemOut], tags=["我的"])
 @operation(MineAppListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_mine_apps_with_group(request, tenant_id: str, app_group_id:str=None, order:str=None):
+def get_mine_apps_with_group(request, tenant_id: str, query_data:MineAppsGroupQueryIn=Query(...)):
     """获取我的分组应用
     """
+    app_group_id = query_data.app_group_id
+    order = query_data.order
+    name = query_data.name
+
     apps = []
     if app_group_id in [None,"","0",0]:
         apps = App.active_objects.filter(
@@ -416,6 +420,9 @@ def get_mine_apps_with_group(request, tenant_id: str, app_group_id:str=None, ord
         apps = apps.filter(id__in=app_ids)
     else:
         apps = apps.filter(id=None)
+    if name:
+        name = name.strip()
+        apps = apps.filter(name__icontains=name)
     if order:
         apps = apps.order_by(order)
     apps = apps.all()
