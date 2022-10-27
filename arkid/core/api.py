@@ -77,6 +77,7 @@ class HttpBaseBearer(HttpAuthBase, ABC):
     header: str = "Authorization"
     app_id: str = "APP_ID"
     app_secret: str = "APP_SECRET"
+    download_token = "DOWNLOAD_TOKEN"
 
     def __call__(self, request: HttpRequest) -> Optional[Any]:
         headers = get_headers(request)
@@ -86,6 +87,8 @@ class HttpBaseBearer(HttpAuthBase, ABC):
             parts = auth_value.split(" ")
             if parts[0].lower() == self.openapi_scheme:
                 token = " ".join(parts[1:])
+        elif request.GET.get(self.download_token, None):
+            token = request.GET.get(self.download_token)
 
         app_id = headers.get(self.app_id, None)
         app_secret = headers.get(self.app_secret, None)
