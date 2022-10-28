@@ -10,12 +10,28 @@ class UserListQueryIn(Schema):
     order:str = Field(
         default=None,
         title=_("排序字段"),
+        hidden=True,
         notranslation=True
     )
     username:str = Field(
         default=None,
         title=_("用户名"),
         notranslation=True
+    )
+
+    nickname:str = Field(
+        default=None,
+        title=_("昵称"),
+    )
+
+    mobile:str = Field(
+        default=None,
+        title=_("电话"),
+    )
+
+    email:str = Field(
+        default=None,
+        title=_("邮箱"),
     )
 
 class UserListItemOut(ModelSchema):

@@ -1,4 +1,5 @@
 from uuid import UUID
+from ninja import Query
 from datetime import datetime
 from ninja import Schema, ModelSchema
 from arkid.core import actions, extension
@@ -41,6 +42,12 @@ ExtensionProfileGetSchemaOut = Extension.create_profile_schema(
 
 class ExtensionProfileGetSchemaResponse(ResponseSchema):
     data: ExtensionProfileGetSchemaOut
+
+class ExtensionListQueryIn(Schema):
+
+    name: str = Field(title=_("插件名称"), default=None)
+    package: str = Field(title=_("标识"), default=None)
+    category_id: str = Field(hidden=True, default=None)
 
 @api.get("/extensions/{id}/profile/", response=ExtensionProfileGetSchemaResponse, tags=['平台插件'])
 @operation(roles=[PLATFORM_ADMIN])
@@ -107,13 +114,17 @@ class ExtensionListOut(ModelSchema):
 @api.get("/extensions/", response=List[ExtensionListOut], tags=['平台插件'])
 @operation(roles=[PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_extensions(request, status: str = None, category_id: str = None):
+def list_extensions(request, query_data: ExtensionListQueryIn=Query(...)):
     """ 获取平台插件列表"""
-    if not status:
+    if not query_data.name:
         qs = ExtensionModel.valid_objects.filter()
     else:
-        qs = ExtensionModel.valid_objects.filter(status=status)
+        qs = ExtensionModel.valid_objects.filter(name__icontains=query_data.name)
+    
+    if query_data.package:
+        qs = qs.filter(package__icontains=query_data.package)
 
+    category_id = query_data.category_id
     if category_id and category_id != "" and category_id != "0":
         qs = qs.filter(category_id=int(category_id))
 

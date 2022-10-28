@@ -205,3 +205,4 @@ results.sqlite
 tasks/*
 ~/*
 tasks
+docker-entrypoint.sh

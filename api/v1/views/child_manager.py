@@ -16,14 +16,14 @@ from arkid.core.event import(
 @api.get("/tenant/{tenant_id}/child_managers/", response=List[ChildManagerListOut], tags=["子管理员"])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_child_managers(request, tenant_id: str):
+def get_child_managers(request, tenant_id: str, username: str=None):
     """ 子管理员列表
     """
     from arkid.core.perm.permission_data import PermissionData
     tenant = request.tenant
     users = User.valid_objects.filter(tenant=tenant)
     permissiondata = PermissionData()
-    child_mans = permissiondata.get_child_mans(users, tenant)
+    child_mans = permissiondata.get_child_mans(users, tenant, username)
     return child_mans
 
 @api.get("/tenant/{tenant_id}/child_managers/{id}/", response=ChildManagerDeatilBaseOut, tags=["子管理员"])

@@ -1,6 +1,7 @@
 from distutils.command.build_ext import extension_name_re
 from distutils.command.config import config
 from typing import List
+from ninja import Query
 from ninja import Field, ModelSchema, Schema
 from ninja.pagination import paginate
 from arkid.core.api import api, operation
@@ -9,13 +10,13 @@ from arkid.core.translation import gettext_default as _
 from arkid.core.extension.auth_factor import AuthFactorExtension
 from arkid.extension.models import Extension, TenantExtensionConfig
 from arkid.core.error import ErrorCode, ErrorDict
-from api.v1.schema.auth_factor import AuthFactorCreateIn, AuthFactorCreateOut, AuthFactorDeleteOut, AuthFactorListItemOut, AuthFactorListOut, AuthFactorOut, AuthFactorUpdateIn, AuthFactorUpdateOut
+from api.v1.schema.auth_factor import *
 from arkid.core.pagenation import CustomPagination
 
 @api.get("/tenant/{tenant_id}/auth_factors/", response=List[AuthFactorListItemOut], tags=[_("认证因素")])
 @operation(List[AuthFactorListItemOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_auth_factors(request, tenant_id: str,order:str=None):
+def get_auth_factors(request, tenant_id: str, query_data: FactorListQueryIn=Query(...)):
     """ 认证因素列表
     """
     extensions = Extension.active_objects.filter(
@@ -23,7 +24,7 @@ def get_auth_factors(request, tenant_id: str,order:str=None):
     configs = TenantExtensionConfig.active_objects.filter(
         tenant__id=tenant_id, extension__in=extensions)
     
-    if order:
+    if query_data.order:
         configs = configs.order_by(order)
     
     configs = configs.all()

@@ -1,4 +1,5 @@
 from typing import List
+from ninja import Query
 from django.urls import reverse
 from django.shortcuts import render
 from arkid.config import get_app_config
@@ -67,10 +68,7 @@ def update_mine_profile(request, tenant_id: str, data: ProfileSchemaIn):
 def get_mine_permissions(
     request,
     tenant_id: str,
-    app_id: str = None,
-    app_name: str = None,
-    category: str = None,
-    operation_id: str = None,
+    query_data:MinePermissionListQueryIn=Query(...)
 ):
     """我的权限列表"""
     login_user = request.user
@@ -78,7 +76,7 @@ def get_mine_permissions(
 
     permissiondata = PermissionData()
     items = permissiondata.get_permissions_by_mine_search(
-        tenant_id, app_id, None, None, login_user, app_name=app_name, category=category, operation_id=operation_id,
+        tenant_id, query_data.app_id, None, None, login_user, app_name=query_data.app_name, category=query_data.category, operation_id=query_data.operation_id, name=query_data.name,
     )
     return items
 
@@ -396,7 +394,44 @@ def get_mine_app_groups(request, tenant_id: str, parent_id=None):
 @api.get("/mine/tenant/{tenant_id}/mine_group_apps/", response=List[MineAppListItemOut], tags=["我的"])
 @operation(MineAppListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_mine_apps_with_group(request, tenant_id: str, app_group_id:str=None, order:str=None):
+def get_mine_apps_with_group(request, tenant_id: str, query_data:MineAppsGroupQueryIn=Query(...)):
+    """获取我的分组应用
+    """
+    app_group_id = query_data.app_group_id
+    order = query_data.order
+    name = query_data.name
+
+    apps = []
+    if app_group_id in [None,"","0",0]:
+        apps = App.active_objects.filter(
+            Q(tenant=request.tenant) | Q(entry_permission__is_open=True)
+        )
+    else:
+        app_group = AppGroup.active_objects.get(
+            tenant =request.tenant,
+            id=app_group_id
+        )
+        apps = app_group.apps.filter(Q(tenant=request.tenant) | Q(entry_permission__is_open=True))
+    # 需要甄别有入口权限的应用
+    from arkid.core.perm.permission_data import PermissionData
+    pd = PermissionData()
+    app_ids = pd.get_entry_apps(request.user, tenant_id, apps)
+    if app_ids:
+        apps = apps.filter(id__in=app_ids)
+    else:
+        apps = apps.filter(id=None)
+    if name:
+        name = name.strip()
+        apps = apps.filter(name__icontains=name)
+    if order:
+        apps = apps.order_by(order)
+    apps = apps.all()
+        
+    return list(apps) if apps else []
+
+@api.get("/mine/tenant/{tenant_id}/mine_group_apps_all/", response=MineAppListOut, tags=["我的"])
+@operation(MineAppListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def get_mine_apps_with_group_all(request, tenant_id: str, app_group_id:str=None, order:str=None):
     """获取我的分组应用
     """
     apps = []
@@ -422,7 +457,7 @@ def get_mine_apps_with_group(request, tenant_id: str, app_group_id:str=None, ord
         apps = apps.order_by(order)
     apps = apps.all()
         
-    return list(apps) if apps else []
+    return SuccessDict(data=list(apps) if apps else [])
 
 @api.get("/mine/unread_messages/",response=List[MineMessageListItemOut],tags=["我的"],auth=GlobalAuth())
 @operation(MineMessageListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])

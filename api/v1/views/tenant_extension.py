@@ -1,4 +1,5 @@
 from uuid import UUID
+from ninja import Query
 from datetime import datetime
 from ninja import Query, Schema, ModelSchema
 from arkid.core.api import api, operation
@@ -42,6 +43,11 @@ class ExtensionConfigGetOut(ResponseSchema):
 class ExtensionConfigCreateSchemaOut(Schema):
     config_id: str
 
+class TenantExtensionListQueryIn(Schema):
+
+    name: str = Field(title=_("插件名称"), default=None)
+    package: str = Field(title=_("标识"), default=None)
+    category_id: str = Field(hidden=True, default=None)
 
 class TenantExtensionConfigOut(ModelSchema):
     
@@ -256,14 +262,21 @@ def get_platform_extensions(request, tenant_id: str, category_id: str = None):
 @api.get("/tenant/{tenant_id}/tenant/extensions/", tags=["租户插件"],response=List[TenantRentedExtensionListOut])
 @operation(List[TenantRentedExtensionListOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def get_tenant_extensions(request, tenant_id: str, category_id: str = None):
+def get_tenant_extensions(request, tenant_id: str, query_data: TenantExtensionListQueryIn=Query(...)):
     """ 租户插件列表
     """
+    category_id: str = query_data.category_id
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_rented=True).values('extension_id')
     extensions = ExtensionModel.active_objects.filter(id__in = extension_ids)
     
+    if query_data.name:
+        extensions = extensions.filter(name__icontains=query_data.name)
+    
+    if query_data.package:
+        extensions = extensions.filter(package__icontains=query_data.package)
+
     if category_id and category_id != "" and category_id != "0":
         extensions = extensions.filter(category_id=int(category_id))
 

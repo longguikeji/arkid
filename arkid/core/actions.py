@@ -1,9 +1,9 @@
 from enum import Enum
-from typing import Union, Tuple,List
+from typing import Union, Tuple,List, Optional
 from arkid.common import DeepSN
 from arkid.common.utils import gen_tag
 from arkid.core.translation import gettext_default as _
-
+from ninja import Schema
 
 class FrontActionType(Enum):
     """前端动作类型枚举类
@@ -35,6 +35,7 @@ class FrontActionType(Enum):
     NEXT_ACTION = 'next'
     ORDER_ACTION = 'order'
     ORDERSET_ACTION = 'orderset'
+    SCRIPT_ACTION = 'script'
 
 
 class FrontActionMethod(Enum):
@@ -214,6 +215,16 @@ class OrderSetAction(FrontAction):
         self.order_parms = order_parms
         super().__init__(action_type=FrontActionType.ORDERSET_ACTION,*args, **kwargs)
 
+class ScriptSchema(Schema):
+    src: str
+    globals: Optional[List[str]]
+
+
+class ScriptAction(FrontAction):
+    def __init__(self, scripts: List[ScriptSchema], script_func:str, *args, **kwargs):
+        self.scripts = scripts
+        self.script_func = script_func
+        super().__init__(action_type=FrontActionType.SCRIPT_ACTION, *args, **kwargs)
 
 
 nav_actions = {}

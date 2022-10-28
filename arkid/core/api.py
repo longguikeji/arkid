@@ -77,6 +77,7 @@ class HttpBaseBearer(HttpAuthBase, ABC):
     header: str = "Authorization"
     app_id: str = "APP_ID"
     app_secret: str = "APP_SECRET"
+    download_token = "DOWNLOAD_TOKEN"
 
     def __call__(self, request: HttpRequest) -> Optional[Any]:
         headers = get_headers(request)
@@ -86,6 +87,8 @@ class HttpBaseBearer(HttpAuthBase, ABC):
             parts = auth_value.split(" ")
             if parts[0].lower() == self.openapi_scheme:
                 token = " ".join(parts[1:])
+        elif request.GET.get(self.download_token, None):
+            token = request.GET.get(self.download_token)
 
         app_id = headers.get(self.app_id, None)
         app_secret = headers.get(self.app_secret, None)
@@ -107,6 +110,7 @@ class GlobalAuth(HttpBaseBearer):
                 token = ExpiringToken.objects.filter(user=request.user).first()
                 if not token:
                     token = ExpiringToken.objects.create(user=request.user, token=generate_token())
+                self.refresh_token_active_date(token)
                 tenant = request.tenant
                 # 获取操作id查询用户权限
                 operation_id = request.operation_id
@@ -122,6 +126,7 @@ class GlobalAuth(HttpBaseBearer):
                 if token:
                     # 使用传统的token访问
                     token = ExpiringToken.objects.get(token=token)
+                    self.refresh_token_active_date(token)
                     if not token.user.is_active:
                         raise HttpError(401, _('User inactive or deleted','用户无效或被删除'))
                     tenant = request.tenant or Tenant.platform_tenant()
@@ -171,6 +176,14 @@ class GlobalAuth(HttpBaseBearer):
         # except Exception as err:
         #     logger.error(err)
         #     return
+
+    @staticmethod
+    def refresh_token_active_date(token):
+        from django.utils import timezone
+        local_date = timezone.localdate()
+        if not token.active_date or token.active_date < local_date:
+            token.active_date = local_date
+            token.save()
 
 
 class ArkidApi(NinjaAPI):

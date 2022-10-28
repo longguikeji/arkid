@@ -3,7 +3,7 @@ from pydantic import Field
 from ninja import ModelSchema
 from django.db.models import Q
 from arkid.core.models import App
-
+from ninja import Query
 from arkid.core.api import api, operation
 from django.db import transaction
 from ninja.pagination import paginate
@@ -28,10 +28,14 @@ from api.v1.schema.app import *
 @api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'])
 @operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_apps(request, tenant_id: str,order:str=None, category_id:str=None):
+def list_apps(request, tenant_id: str, query_data: AppListQueryIn=Query(...)):
     '''
     app列表
     '''
+    category_id = query_data.category_id
+    name = query_data.name
+    order = query_data.order
+
     apps = App.expand_objects.filter(
         tenant_id=tenant_id,
         is_active=True,
@@ -42,6 +46,9 @@ def list_apps(request, tenant_id: str,order:str=None, category_id:str=None):
         apps = apps.filter(arkstore_category_id=category_id)
     elif category_id == "-1":
         apps = apps.filter(arkstore_category_id=None, arkstore_app_id=None)
+    if name:
+        name = name.strip()
+        apps = apps.filter(name__icontains=name)
     if order:
         apps = apps.order_by(order)
     else:
@@ -85,7 +92,7 @@ def list_all_apps(request, tenant_id: str):
 
 @api.get("/tenant/{tenant_id}/all_apps_in_arkid/", response=AppListsOut, tags=['应用'])
 @operation(AppListOut, roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
-def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
+def all_apps_in_arkid(request, tenant_id: str, query_data:AppAllListsQueryIn=Query(...)):
     '''
     所有app列表(含arkid)
     '''
@@ -93,7 +100,7 @@ def all_apps_in_arkid(request, tenant_id: str, not_arkid: int=None):
         Q(entry_permission__is_open=True)|Q(tenant_id=tenant_id)
     )
     items = []
-    if not_arkid is None:
+    if query_data.not_arkid is None:
         items.append({
             'id': 'arkid',
             'name': 'arkid',

@@ -30,6 +30,12 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
     users = User.expand_objects.filter(tenant_id=tenant_id, is_del=False)
     if query_data.username:
         users = users.filter(username__icontains=query_data.username)
+    if query_data.nickname:
+        users = users.filter(nickname__icontains=query_data.nickname)
+    if query_data.mobile:
+        users = users.filter(mobile__icontains=query_data.mobile)
+    if query_data.email:
+        users = users.filter(email__icontains=query_data.email)
     if query_data.order:
         users = users.order_by(query_data.order)
     login_user = request.user
@@ -41,7 +47,6 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
         user['created'] = timezone.localtime(user['created']).strftime('%Y-%m-%d %H:%M:%S')
     
     return list(users)
-
 
 
 @api.get("/tenant/{tenant_id}/user_no_super/",response=UserListOut, tags=['用户'])

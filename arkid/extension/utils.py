@@ -152,7 +152,12 @@ def unload_extension(ext_dir: str) -> any:
     if not Path(ext_dir).exists():
         return
     ext_name = f'{Path(ext_dir).parent}.{Path(ext_dir).name}'
-    ext = importlib.import_module(ext_name)
+    try:
+        ext = importlib.import_module(ext_name)
+    except Exception as e:
+        logger.error(f"import_module {ext_name} failed: {str(e)}")
+        return
+
     if ext:
         ext.extension.stop()
     sys.modules.pop(ext_name, None)

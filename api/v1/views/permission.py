@@ -2,6 +2,7 @@
 from arkid.core.api import api, operation
 from typing import List, Optional
 from django.db import transaction
+from ninja import Query
 from ninja.pagination import paginate
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.pagenation import CustomPagination
@@ -48,38 +49,38 @@ def create_permission(request, tenant_id: str, data: PermissionCreateSchemaIn):
 @api.get("/tenant/{tenant_id}/permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_permissions(request, tenant_id: str,  app_id: str = None, select_user_id: str = None, group_id: str = None, app_name: str = None, category: str = None, operation_id: str = None):
+def list_permissions(request, tenant_id: str, query_data:PermissionListQueryIn=Query(...)):
     '''
     权限列表
     '''
     login_user = request.user
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_permissions_by_search(tenant_id, app_id, select_user_id, group_id, login_user, app_name=app_name, category=category, operation_id=operation_id)
+    return permissiondata.get_permissions_by_search(tenant_id, query_data.app_id, query_data.select_user_id, query_data.group_id, login_user, app_name=query_data.app_name, category=query_data.category, operation_id=query_data.operation_id, name=query_data.name)
 
 
 @api.get("/tenant/{tenant_id}/apps/{id}/permissions", response=List[AppPermissionsItemSchemaOut], tags=['权限'])
 @operation(AppPermissionsListSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def app_list_permissions(request, tenant_id: str,  id: str, category: str = None, operation_id: str = None):
+def app_list_permissions(request, tenant_id: str,  id: str, query_data:AppPermissionListQueryIn=Query(...)):
     '''
     应用权限列表
     '''
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_app_permissions_by_search(tenant_id, id, category, operation_id)
+    return permissiondata.get_app_permissions_by_search(tenant_id, id, query_data.category, query_data.operation_id, query_data.name)
 
 @api.get("/tenant/{tenant_id}/user_app_last_permissions", response=List[UserAppLastPermissionsItemSchemaOut], tags=['权限'])
 @operation(UserAppLastPermissionsSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def user_app_last_permissions(request, tenant_id: str,  user_id: str = None, app_id: str = None, category: str = None, operation_id: str = None):
+def user_app_last_permissions(request, tenant_id: str,  query_data:UserPermissionLastQueryIn=Query(...)):
     '''
     用户最终结果权限列表
     '''
     login_user = request.user
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_user_app_last_permissions(tenant_id, app_id, user_id, category, operation_id)
+    return permissiondata.get_user_app_last_permissions(tenant_id, query_data.app_id, query_data.user_id, query_data.category, query_data.operation_id, query_data.name, query_data.app_name)
 
 @api.get("/tenant/{tenant_id}/childmanager_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -275,7 +276,6 @@ def usergroup_remove_permission(request, tenant_id: str, select_usergroup_id: st
     # from arkid.core.perm.permission_data import PermissionData
     # pd = PermissionData()
     if isinstance(permission, SystemPermission):
-        pass
         dispatch_event(Event(tag=REMOVE_USERGROUP_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=permission))
     else:
         # pd.remove_app_permission_to_usergroup(
@@ -288,24 +288,24 @@ def usergroup_remove_permission(request, tenant_id: str, select_usergroup_id: st
 @api.get("/tenant/{tenant_id}/group_permissions", response=List[PermissionsListSchemaOut], tags=['权限'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_group_permissions(request, tenant_id: str, select_usergroup_id: str = None, app_name: str = None, category: str = None, operation_id: str = None):
+def list_group_permissions(request, tenant_id: str, query_data:GroupPermissionListQueryIn=Query(...)):
     '''
     分组权限列表
     '''
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_group_permissions_by_search(tenant_id, select_usergroup_id, app_name, category, operation_id)
+    return permissiondata.get_group_permissions_by_search(tenant_id, query_data.select_usergroup_id, query_data.app_name, query_data.category, query_data.operation_id, query_data.name)
 
 @api.get("/tenant/{tenant_id}/user_group_last_permissions", response=List[UserAppLastPermissionsItemSchemaOut], tags=['权限'])
 @operation(UserAppLastPermissionsSchemaOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_user_group_last_permissions(request, tenant_id: str, usergroup_id: str = None, category: str = None, operation_id: str = None):
+def list_user_group_last_permissions(request, tenant_id: str, query_data:UserGroupLastPermQueryIn=Query(...)):
     '''
     分组权限最终列表
     '''
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_user_group_last_permissions(tenant_id, usergroup_id, category, operation_id)
+    return permissiondata.get_user_group_last_permissions(tenant_id, query_data.usergroup_id, query_data.category, query_data.operation_id, query_data.name, query_data.app_name)
 
 # @api.post("/tenant/{tenant_id}/permission/{permission_id}/set_open", tags=['权限'])
 # @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
