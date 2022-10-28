@@ -547,6 +547,7 @@ class ExpiringToken(models.Model):
         default=generate_token,
     )
     created = models.DateTimeField(_("Created", '创建时间'), auto_now=True)
+    active_date = models.DateField(_("Active Date", '活跃日期'), blank=True, null=True, default=None)
 
     def expired(self, tenant):
         """Return boolean indicating token expiration."""
