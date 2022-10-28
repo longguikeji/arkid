@@ -735,3 +735,23 @@ def get_app_config_from_arkstore(request, arkstore_app_id):
         app = get_arkid_saas_app_detail(tenant, token, arkstore_app_id)
         return app.get('config', {}).get('config', {})
     return {}
+
+
+def get_admin_user_token():
+    from django.core.cache import cache
+
+    key = "ADMIN_USER_TOKEN"
+    value = refresh_admin_uesr_token
+    timeout = 60*30
+    token = cache.get_or_set(key, value, timeout=timeout)
+    return token
+
+
+def refresh_admin_uesr_token():
+    from arkid.core.token import refresh_token
+    platform_tenant = Tenant.platform_tenant()
+    admin_user = User.objects.filter(
+        username='admin', tenant=platform_tenant
+    ).first()
+    token = refresh_token(admin_user)
+    return token
