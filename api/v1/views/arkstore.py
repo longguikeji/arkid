@@ -304,7 +304,6 @@ def list_arkstore_categorys(request, tenant_id: str, parent_id:str = None, type:
         get_arkstore_category_http()
         items = ArkStoreCategory.valid_objects.filter()
     items = items.filter(arkstore_type=type)
-
     if parent_id in [None,""]:
         # 未传则获取所有一级分组
         items = items.filter(arkstore_parent_id=None)
@@ -363,17 +362,31 @@ def get_arkstore_category_http():
         raise Exception(f'Error get_arkstore_apps_and_extensions: {url}, {resp.status_code}')
     resp = resp.json()
     data = resp.get('data', [])
+    all_arkstore_categorys = ArkStoreCategory.valid_objects.all()
+    all_arkstore_category_ids = []
+    for arkstore_category_item in all_arkstore_categorys:
+        all_arkstore_category_ids.append(str(arkstore_category_item.id))
     for item in data:
         arkstore_id = item.get('id')
         arkstore_name = item.get('name', '')
         arkstore_type = item.get('type', '')
         arkstore_parent_id = item.get('parent_id', None)
 
-        arkstorecategory, created = ArkStoreCategory.objects.get_or_create(arkstore_id=arkstore_id)
+        arkstorecategory = ArkStoreCategory.valid_objects.filter(
+            arkstore_id=arkstore_id
+        ).first()
+        if arkstorecategory is None:
+            arkstorecategory = ArkStoreCategory()
+            ArkStoreCategory.arkstore_id = arkstore_id
         arkstorecategory.arkstore_name = arkstore_name
         arkstorecategory.arkstore_type = arkstore_type
         arkstorecategory.arkstore_parent_id = arkstore_parent_id
         arkstorecategory.save()
+        if str(arkstorecategory.id) in all_arkstore_category_ids:
+            all_arkstore_category_ids.remove(str(arkstorecategory.id))
+    if all_arkstore_category_ids:
+        ArkStoreCategory.valid_objects.filter(id__in=all_arkstore_category_ids).delete()
+    # 需要同步应用分类关系
     logging.info('同步arkstore分类')
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
