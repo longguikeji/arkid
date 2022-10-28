@@ -6,6 +6,7 @@ from arkid.core.token import refresh_token
 from arkid.core.error import ErrorCode, ErrorDict
 from api.v1.schema.auth import *
 from django.http import HttpResponse, JsonResponse
+from arkid.core.tasks.celery import dispatch_task
 
 @api.post("/tenant/{tenant_id}/auth/", response=AuthOut, tags=['登录与注册'], auth=None)
 @operation(AuthOut, use_id=True)
@@ -22,6 +23,7 @@ def auth(request, tenant_id: str, event_tag: str, data: AuthIn):
 
     # 生成 token
     token = refresh_token(user)
+    dispatch_task.delay('async_get_arkstore_access_token', tenant.id.hex, token)
     netloc = request.get_host().split(':')[0]
 
     is_ip_addr = False
