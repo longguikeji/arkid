@@ -176,7 +176,7 @@ LOCALE_PATHS = [
 ]
 
 REDIS_CONFIG = {
-    'HOST': 'localhost',
+    'HOST': 'arkid-redis',
     'PORT': 6379,
     'DB': 0,
     'PASSWORD': None,
