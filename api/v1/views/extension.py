@@ -186,13 +186,13 @@ def list_extensions(request, status: str = None, category_id: str = None):
 class ExtensionItemOut(ModelSchema):
     class Config:
         model=ExtensionModel
-        model_fields=['id','type']
+        model_fields=['id','type',"package","name"]
         
 class ExtensionOut(ResponseSchema):
     data:ExtensionItemOut
 
-@api.get("/extensions/{id}/",tags=['平台插件'])
-@operation(roles=[PLATFORM_ADMIN])
+@api.get("/extensions/{id}/",tags=['平台插件'],response=ExtensionOut)
+@operation(roles=[PLATFORM_ADMIN,TENANT_ADMIN])
 def get_extension(request, id: str):
     """ 获取平台插件
     """
