@@ -321,7 +321,7 @@ def toggle_tenant_extension_status(request, tenant_id: str, id: str):
     """ 租户插件列表
     """
     extension= ExtensionModel.active_objects.get(id=id)
-    tenant_extension = TenantExtension.valid_objects.get(extension=extension)
+    tenant_extension = TenantExtension.valid_objects.get(tenant=request.tenant, extension=extension)
     tenant_extension.is_active = True if tenant_extension.is_active is False else False
     tenant_extension.save()
     return ErrorDict(ErrorCode.OK)
