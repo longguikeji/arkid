@@ -74,7 +74,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         """
         for config in self.get_tenant_configs(event.tenant):
             if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"]:
-                host = event.request.META.get("REMOTE_ADDR")
+                host = get_remote_addr(event.request)
                 if self.check_retry_times(event.tenant,host,config.id.hex,config.config.get("try_times",0)):
                     # 判定需要验证
                     responses = dispatch_event(
