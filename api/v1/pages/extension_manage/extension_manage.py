@@ -229,7 +229,7 @@ config_page.create_actions(
             path="/api/v1/tenant/{tenant_id}/extension/{extension_id}/config/",
             init_data={
                 'package': 'package',
-                'type': 'type'
+                # 'type': 'type'
             }
         ),
     },
