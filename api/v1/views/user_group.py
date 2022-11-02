@@ -34,12 +34,19 @@ def create_group(request, tenant_id: str, data: UserGroupCreateIn):
     '''
     分组创建
     '''
+    data_dict = data.dict()
     group = UserGroup()
+
     group.tenant_id = tenant_id
-    group.name = data.name
-    parent = data.dict().get("parent",None)
+    group.name = data_dict.pop('name', '')
+    parent = data_dict.pop("parent",None)
     parent_id = parent.get("id",None) if parent else None
     group.parent = get_object_or_404(UserGroup, id=parent_id) if parent_id else None
+    group.save()
+    # 需要注意额外的字段
+    for key,value in data_dict.items():
+        if value:
+            setattr(group,key,value)
     group.save()
     # 分发事件开始
     result = dispatch_event(
@@ -107,14 +114,20 @@ def update_group(request, tenant_id: str, id: str, data: UserGroupUpdateIn):
     '''
     修改分组
     '''
+    data_dict = data.dict()
     group = get_object_or_404(UserGroup.active_objects, id=id)
-    group.name = data.dict().get("name",None)
-    parent = data.dict().get("parent",None)
+    group.name = data_dict.pop("name",None)
+    parent = data_dict.pop("parent",None)
     parent_id = parent.get("id",None) if parent else None
     group.parent = get_object_or_404(UserGroup.active_objects, id=parent_id) if parent_id else None
     
     if group.parent == group:
         return ErrorDict(ErrorCode.USER_GROUP_PARENT_CANT_BE_ITSELF)
+    group.save()
+    # 需要注意额外的字段
+    for key,value in data_dict.items():
+        if value:
+            setattr(group,key,value)
     group.save()
     # 分发事件开始
     dispatch_event(Event(tag=UPDATE_GROUP, tenant=request.tenant,
