@@ -14,6 +14,7 @@ router = routers.FrontRouter(
     name=name,
     page=page,
     icon='extension_psc',
+    hidden=True
 )
 pages.register_front_pages(page)
 
