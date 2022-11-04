@@ -8,6 +8,7 @@ from arkid.core.error import ErrorCode, ErrorDict
 from arkid.common.arkstore import (
     check_arkstore_purcahsed_extension_expired,
     check_arkstore_rented_extension_expired,
+    check_time_and_user_valid,
     get_arkstore_access_token,
     get_arkstore_extension_detail_by_package,
     purcharse_arkstore_extension,
@@ -90,7 +91,7 @@ class ArkstoreItemSchemaOut(Schema):
     version: str = Field(readonly=True, title=_('Version', '版本'))
     author: str = Field(readonly=True, title=_('Author', '作者'))
     logo: str = Field(readonly=True, default="")
-    description: str = Field(readonly=True)
+    description: Optional[str] = Field(readonly=True)
     category: Optional[str] = Field(title=_('Category', '分类'), readonly=True)
     labels: Optional[str] = Field(title=_('Labels', '标签'), readonly=True)
     homepage: str = Field(readonly=True, title=_('Homepage', '官方网站'))
@@ -140,6 +141,8 @@ class OnShelveExtensionPurchaseOut(ArkstoreExtensionItemSchemaOut):
     )
     install: Optional[bool] = Field(title=_("Install", "安装"), default=False, hidden=True)
     upgrade: Optional[bool] = Field(title=_("Upgrade", "升级"), default=False, hidden=True)
+    lease_state: Optional[str] = Field(title=_('Lease State', '租赁状态'))
+    lease_useful_life: Optional[List[str]] = Field(title=_('Lease Useful Life', '有效期'))
 
 
 class OrderStatusSchema(Schema):
@@ -399,34 +402,90 @@ def list_arkstore_purchased_extensions(request, tenant_id: str, category_id: str
     return get_arkstore_list(request, True, 'extension', extra_params=extra_params)
 
 
-@api.get("/tenant/{tenant_id}/arkstore/not_installed/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
+class ArkstoreStatusFilterIn(Schema):
+    install: Optional[bool] = Field(
+        title=_("未安装")
+    )
+    upgrade: Optional[bool] = Field(
+        title=_("有升级")
+    )
+
+@api.get("/tenant/{tenant_id}/arkstore/purchased_and_installed/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(CustomPagination)
-def list_arkstore_not_installed_extensions(request, tenant_id: str, category_id: str = None):
+def list_arkstore_purchased_and_installed_extensions(request, tenant_id: str, filter: ArkstoreStatusFilterIn=Query(...)):
     extra_params = {}
-    if category_id and category_id != "" and category_id != "0":
-        extra_params['category_id'] = category_id
-    installed_exts = Extension.valid_objects.filter()
-    installed_ext_packages = set(str(ext.package) for ext in installed_exts)
-    purchased_exts = get_arkstore_list(request, True, 'extension', all=True, extra_params=extra_params)['items']
-    return [ext for ext in purchased_exts if ext['package'] not in installed_ext_packages]
+    installed_exts = Extension.valid_objects.filter().all()
 
-
-@api.get("/tenant/{tenant_id}/arkstore/not_upgraded/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
-@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-@paginate(CustomPagination)
-def list_arkstore_not_upgraded_extensions(request, tenant_id: str, category_id: str = None):
-    extra_params = {}
-    if category_id and category_id != "" and category_id != "0":
-        extra_params['category_id'] = category_id
-    installed_exts = Extension.valid_objects.filter()
     installed_ext_packages = {ext.package: ext for ext in installed_exts}
     purchased_exts = get_arkstore_list(request, True, 'extension', all=True, extra_params=extra_params)['items']
-    exts = []
     for ext in purchased_exts:
-        if ext['package'] in installed_ext_packages and installed_ext_packages[ext['package']].version < ext['version']:
-            exts.append(ext)
-    return exts
+        if ext['package'] in installed_ext_packages:
+            if installed_ext_packages[ext['package']].version < ext['version']:
+                ext['upgrade'] = True
+        else:
+            ext['install'] = True
+
+    purchased_exts_packages = {ext['package']: ext for ext in purchased_exts}
+    local_exts = [ext for ext in installed_exts if ext.package not in purchased_exts_packages]
+    for ext in local_exts:
+        ext.uuid = str(ext.id)
+        ext.labels = " ".join(ext.labels) if ext.labels else ""
+
+    if filter.upgrade == True:
+        return [ext for ext in purchased_exts if ext.get('upgrade') == True]
+
+    if filter.install == True:
+        return [ext for ext in purchased_exts if ext.get('install') == True]
+    elif filter.install == False:
+        return local_exts + [ext for ext in purchased_exts if ext.get('install') == False]
+
+    return local_exts + purchased_exts
+
+
+@api.get("/tenant/{tenant_id}/arkstore/rented/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def list_arkstore_rented_extensions(request, tenant_id: str):
+    tenant = Tenant.objects.get(id=tenant_id)
+    extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_rented=True).values('extension_id')
+    extensions = Extension.valid_objects.filter().all()
+
+    # 使用TenantExtension的is_active覆盖ExtensionModel的is_active
+    extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_active=True).values('extension_id')
+    active_extension_ids_set = {x['extension_id'] for x in extension_ids}
+    for ext in extensions:
+        ext.is_active = True if ext.id in active_extension_ids_set else False
+    
+    if settings.IS_CENTRAL_ARKID:
+        return extensions
+
+    for ext in extensions:
+        ext.uuid = str(ext.id)
+        ext.labels = " ".join(ext.labels) if ext.labels else ""
+
+    if tenant.is_platform_tenant:
+        for ext in extensions:
+            ext.lease_useful_life = ["不限天数，不限人数"]
+            ext.lease_state = '已租赁'
+        return extensions
+
+    resp = get_arkstore_list(request, None, 'extension', rented=True, all=True)['items']
+    extensions_rented = {ext['package']: ext for ext in resp}
+    for ext in extensions:
+        if ext.package in extensions_rented:
+            ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
+            ext.lease_state = '已租赁'
+            lease_records = extensions_rented[ext.package].get('lease_records') or []
+            # check_lease_records_expired
+            if check_time_and_user_valid(lease_records, tenant):
+                tenant_extension, created = TenantExtension.objects.update_or_create(
+                    tenant_id=tenant_id,
+                    extension=ext,
+                    defaults={"is_rented": True}
+                )
+
+    return extensions
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
