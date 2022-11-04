@@ -261,6 +261,10 @@ class ArkstoreExtensionQueryIn(Schema):
         default="",
         title=_("应用分类")
     )
+    search:str = Field(
+        default="",
+        title=_("任一字段")
+    )
 
 
 class ArkstoreAppQueryIn(Schema):
