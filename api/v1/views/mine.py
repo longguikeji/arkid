@@ -458,7 +458,7 @@ def get_mine_apps_with_group_all(request, tenant_id: str, app_group_id:str=None,
         apps = apps.order_by(order)
     apps = apps.all()
         
-    return SuccessDict(data=list(apps) if apps else [])
+    return SuccessDict(data=list(apps))
 
 @api.get("/mine/unread_messages/",response=List[MineMessageListItemOut],tags=["我的"],auth=GlobalAuth())
 @operation(MineMessageListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
