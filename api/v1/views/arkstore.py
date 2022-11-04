@@ -47,6 +47,7 @@ from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
 from arkid.core.schema import ResponseSchema
 from django.conf import settings
+from arkid.core import actions
 
 
 def get_arkstore_list(request, purchased, type, rented=False, all=False, extra_params={}):
@@ -143,6 +144,20 @@ class OnShelveExtensionPurchaseOut(ArkstoreExtensionItemSchemaOut):
     upgrade: Optional[bool] = Field(title=_("Upgrade", "升级"), default=False, hidden=True)
     lease_state: Optional[str] = Field(title=_('Lease State', '租赁状态'))
     lease_useful_life: Optional[List[str]] = Field(title=_('Lease Useful Life', '有效期'))
+    is_active: Optional[bool] = Field(
+        title='是否启动',
+        item_action={
+            "path":"/api/v1/extensions/{id}/toggle/",
+            "method":actions.FrontActionMethod.POST.value
+        }
+    )
+    is_active_tenant: Optional[bool] = Field(
+        title='是否使用',
+        item_action={
+            "path":"/api/v1/tenant/{tenant_id}/tenant/extensions/{id}/active/",
+            "method":actions.FrontActionMethod.POST.value
+        }
+    )
 
 
 class OrderStatusSchema(Schema):
@@ -420,11 +435,18 @@ class ArkstoreStatusFilterIn(Schema):
 def list_arkstore_purchased_and_installed_extensions(request, tenant_id: str, filter: ArkstoreStatusFilterIn=Query(...)):
     extra_params = {}
     installed_exts = Extension.valid_objects.filter().all()
+    
+    tenant_extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_active=True).values('extension_id')
+    tenant_active_extension_ids_set = {x['extension_id'] for x in tenant_extension_ids}
+    for ext in installed_exts:
+        ext.is_active_tenant = True if ext.id in tenant_active_extension_ids_set else False
 
     installed_ext_packages = {ext.package: ext for ext in installed_exts}
     purchased_exts = get_arkstore_list(request, True, 'extension', all=True, extra_params=extra_params)['items']
     for ext in purchased_exts:
         if ext['package'] in installed_ext_packages:
+            ext['is_active'] = installed_ext_packages[ext['package']].is_active
+            ext['is_active_tenant'] = installed_ext_packages[ext['package']].is_active_tenant
             if installed_ext_packages[ext['package']].version < ext['version']:
                 ext['upgrade'] = True
         else:
@@ -455,11 +477,10 @@ def list_arkstore_rented_extensions(request, tenant_id: str):
     extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_rented=True).values('extension_id')
     extensions = Extension.valid_objects.filter().all()
 
-    # 使用TenantExtension的is_active覆盖ExtensionModel的is_active
-    extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_active=True).values('extension_id')
-    active_extension_ids_set = {x['extension_id'] for x in extension_ids}
+    tenant_extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_active=True).values('extension_id')
+    tenant_active_extension_ids_set = {x['extension_id'] for x in tenant_extension_ids}
     for ext in extensions:
-        ext.is_active = True if ext.id in active_extension_ids_set else False
+        ext.is_active_tenant = True if ext.id in tenant_active_extension_ids_set else False
     
     if settings.IS_CENTRAL_ARKID:
         return extensions
