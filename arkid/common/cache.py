@@ -17,4 +17,4 @@ def set(tenant,key,value,**kwargs):
             continue
         return response
     
-    return cache.set(key,value)
+    return cache.set(key,value,timeout=kwargs['expired'] if hasattr(kwargs, 'expired') else None)

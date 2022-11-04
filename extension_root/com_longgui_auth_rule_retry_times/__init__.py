@@ -3,7 +3,7 @@ import uuid
 from api.v1.views.loginpage import login_page
 from arkid.common.utils import get_remote_addr
 from arkid.core import actions, pages
-from arkid.core.event import AUTH_FAIL, Event, dispatch_event,BEFORE_AUTH
+from arkid.core.event import AUTH_FAIL, AUTH_SUCCESS, Event, dispatch_event,BEFORE_AUTH
 from arkid.core.extension import create_extension_schema
 from arkid.core.extension.auth_factor import BaseAuthFactorSchema
 from arkid.core.extension.auth_rule import AuthRuleExtension, BaseAuthRuleSchema,MainAuthRuleSchema
@@ -24,6 +24,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         self.create_extension_config_schema()
         self.listen_event(AUTH_FAIL,self.auth_fail)
         self.listen_event(BEFORE_AUTH,self.before_auth)
+        self.listen_event(AUTH_SUCCESS,self.auth_success)
         
         # 配置初始数据
         tenant = Tenant.platform_tenant()
@@ -73,7 +74,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
         """
         for config in self.get_tenant_configs(event.tenant):
             if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"]:
-                host = event.request.META.get("REMOTE_ADDR")
+                host = get_remote_addr(event.request)
                 if self.check_retry_times(event.tenant,host,config.id.hex,config.config.get("try_times",0)):
                     # 判定需要验证
                     responses = dispatch_event(
@@ -94,6 +95,16 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
                         if not result:
                             return response
         return True,None
+    
+    def auth_success(self,event,**kwargs):
+        # 检查是否存在满足条件的配置
+        for config in self.get_tenant_configs(event.tenant):
+            if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"].id.hex:
+                host = get_remote_addr(event.request)
+                key = self.gen_key(host,config.id.hex)
+                try_times  = 1
+                cache.set(event.tenant,key,try_times,expired=config.config.get("expired",30)*60)
+                self.clear_refresh_status(event.tenant,host,config.id.hex)
         
     def auth_fail(self, event, **kwargs):
         """响应事件：认证失败，记录对应IP认证失败次数
@@ -107,7 +118,7 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
             if uuid.UUID(config.config["main_auth_factor"]["id"]).hex == event.data["auth_factor_config_id"]:
                 host = get_remote_addr(event.request)
                 key = self.gen_key(host,config.id.hex)
-                try_times  = int(cache.get(event.tenant,key) or 0)
+                try_times  = int(cache.get(event.tenant,key) or 1)
                 cache.set(event.tenant,key,try_times+1,expired=config.config.get("expired",30)*60)
                 if self.check_retry_times(event.tenant,host,config.id.hex,config.config.get("try_times",0)) and not self.check_refresh_status(event.tenant,host,config.id.hex):
                     data.update(self.error(ErrorCode.AUTH_FAIL_TIMES_OVER_LIMITED))
@@ -158,6 +169,9 @@ class AuthRuleRetryTimesExtension(AuthRuleExtension):
             config_id (str): 插件运行时ID
         """
         cache.set(tenant,self.gen_refresh_key(host,config_id),1)
+        
+    def clear_refresh_status(self,tenant,host,config_id):
+        cache.set(tenant,self.gen_refresh_key(host,config_id),0)
     
     def check_refresh_status(self,tenant,host,config_id):
         """校验是否需要刷新页面
