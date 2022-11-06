@@ -60,7 +60,8 @@ def get_saas_token(tenant, token, use_cache=True):
         raise Exception(f'Error get_saas_token: {resp.status_code}')
     resp = resp.json()
     result = (resp['token'], resp['tenant_id'], resp['tenant_slug'])
-    cache.set(key, result, timeout=60*60)
+    # 中心arkid token 24小时过期
+    cache.set(key, result, timeout=60*60*23)
     return result
 
 
@@ -117,7 +118,8 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
         from urllib.parse import urlencode, unquote
         raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}, url: {unquote(resp.url)}')
     id_token = resp['access_token']
-    cache.set(key, id_token, timeout=60*60)
+    # arkstore idtoken 10小时过期
+    cache.set(key, id_token, timeout=60*60*9)
     return id_token
 
 

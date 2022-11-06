@@ -516,6 +516,25 @@ class Extension(ABC):
         for schema_cls in api_schema_cls:
             core_api.add_fields(schema_cls, **field_definitions)
             self.extend_apis.append((schema_cls, list(field_definitions.keys())))
+    
+    def unregister_extend_api(self, *api_schema_cls, field_keys=[]):
+        """移除扩展内核API
+        Args:
+            api_schema_cls (class): API Schema Class
+            field_keys (list): 需要移除的字段名称，example：field_keys=['nickname','mobile'])
+        """
+        # 遍历需要移除的schema
+        for schema_cls in api_schema_cls:
+            # 遍历所有的extend_apis
+            for api_schema_cls, fields in self.extend_apis:
+                if schema_cls == schema_cls:
+                    # 遍历需要移除的keys
+                    for key in field_keys:
+                        if key in fields:
+                            # 从self.extend_apis移除
+                            fields.remove(key)
+                            # 从core_api移除
+                            core_api.remove_fields(api_schema_cls, key)
 
     def register_front_routers(self, router, primary:core_routers.FrontRouter=None):
         """注册前端路由

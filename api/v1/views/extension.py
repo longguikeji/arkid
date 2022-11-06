@@ -1,3 +1,4 @@
+from dataclasses import field, fields
 from uuid import UUID
 from ninja import Query
 from datetime import datetime
@@ -13,7 +14,7 @@ from arkid.core.extension import Extension
 from arkid.core.schema import ResponseSchema
 from arkid.extension.utils import import_extension, restart_celery
 from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
-from arkid.core.error import ErrorCode, ErrorDict
+from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from ninja.pagination import paginate
 from oauth2_provider.models import Application
 from arkid.core.pagenation import CustomPagination
@@ -193,12 +194,24 @@ def list_extensions(request, query_data: ExtensionListQueryIn=Query(...)):
 #     """
 #     return {"success": True}
 
-@api.post("/extensions/{id}/",tags=['平台插件'])
-@operation(roles=[PLATFORM_ADMIN])
-def update_extension(request, id: str):
-    """ 更新平台插件 TODO
+class ExtensionItemOut(ModelSchema):
+    class Config:
+        model=ExtensionModel
+        model_fields=['id','type',"package","name"]
+        
+class ExtensionOut(ResponseSchema):
+    data:ExtensionItemOut
+
+@api.get("/extensions/{id}/",tags=['平台插件'],response=ExtensionOut)
+@operation(roles=[PLATFORM_ADMIN,TENANT_ADMIN])
+def get_extension(request, id: str):
+    """ 获取平台插件
     """
-    return {"success": True}
+    instance = ExtensionModel.valid_objects.get(id=id)
+    
+    return SuccessDict(
+        data=instance
+    )
 
 class ExtensionMarkDownOut(ResponseSchema):
     data:dict = Field(format='markdown',readonly=True)
