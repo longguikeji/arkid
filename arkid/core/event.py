@@ -14,7 +14,11 @@ from arkid.common.utils import data_to_simplenamespace
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from types import SimpleNamespace
-event_id_map = {}
+from django.core.cache import cache
+import pickle
+import codecs
+
+# event_id_map = {}
 
 
 def send_event_through_webhook(event):
@@ -250,12 +254,22 @@ def remove_event_id(event):
 
 def listen_event(tag, func, listener=None, **kwargs):
     def signal_func(sender, event, **kwargs2):
-        if event.uuid and event_id_map.get(event.uuid, {}).get(func):
-            return event_id_map.get(event.uuid, {}).get(func), listener
+        # if event.uuid and event_id_map.get(event.uuid, {}).get(func):
+        #     return event_id_map.get(event.uuid, {}).get(func), listener
+        func_id = str(id(func))
+        if event.uuid and cache.get(f'event:{event.uuid}', {}).get(func_id):
+            pickled_res = cache.get(f'event:{event.uuid}').get(func_id)
+            unpickled = pickle.loads(codecs.decode(pickled_res.encode(), "base64"))
 
+            return unpickled, listener
         res = func(sender=sender, event=event, **kwargs2)
+
         if event.uuid:
-            event_id_map[event.uuid] = {func: res}
+            # event_id_map[event.uuid] = {func: res}
+            pickled_res = codecs.encode(pickle.dumps(res), "base64").decode()
+            cached = cache.get(f'event:{event.uuid}', {})
+            cached[func_id] = pickled_res
+            cache.set(f'event:{event.uuid}', cached)
         return res, listener
 
     if isinstance(tag, (list, tuple)):
@@ -342,6 +356,7 @@ DELETE_FRONT_THEME_CONFIG = 'DELETE_FRONT_THEME_CONFIG'
 BEFORE_AUTH = 'BEFORE_AUTH'
 AUTH_SUCCESS = 'AUTH_SUCCESS'
 AUTH_FAIL = 'AUTH_FAIL'
+BEFORE_REFRESH_TOKEN = 'BEFORE_REFRESH_TOKEN'
 
 CREATE_ACCOUNT_LIFE_CONFIG = 'CREATE_ACCOUNT_LIFE_CONFIG'
 UPDATE_ACCOUNT_LIFE_CONFIG = 'UPDATE_ACCOUNT_LIFE_CONFIG'
@@ -414,6 +429,7 @@ register_event(
 register_event(BEFORE_AUTH, _('before_auth', '认证前'))
 register_event(AUTH_SUCCESS, _('auth success', '认证成功'))
 register_event(AUTH_FAIL, _('auth fail', '认证失败'))
+register_event(BEFORE_REFRESH_TOKEN, _('before_refresh_token', '刷新token前'))
 register_event(CREATE_GROUP_PERMISSION, _('create group permission', '创建权限分组'))
 register_event(UPDATE_GROUP_PERMISSION, _('update group permission', '修改权限分组'))
 register_event(DELETE_GROUP_PERMISSION, _('delete group permission', '删除权限分组'))
