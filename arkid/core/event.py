@@ -249,7 +249,8 @@ def decorator_listen_event(tag, **kwargs):
 
 def remove_event_id(event):
     if event.uuid:
-        event_id_map.pop(event.uuid, None)
+        # event_id_map.pop(event.uuid, None)
+        cache.delete(f'event:{event.uuid}')
 
 
 def listen_event(tag, func, listener=None, **kwargs):
