@@ -127,7 +127,9 @@ class MineAppListItemOut(ModelSchema):
         model_fields = ['id', 'logo', 'name','url','description','type']
         
 class MineAppListOut(ResponseSchema):
-    data:List[MineAppListItemOut]
+    data:List[MineAppListItemOut] = Field(
+        default=[]
+    )
     
 
 class MessageSenderItemOut(Schema):

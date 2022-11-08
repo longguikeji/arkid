@@ -1,8 +1,8 @@
 from arkid.core import routers, pages, actions
 from arkid.core.translation import gettext_default as _
 
-tag = 'extension_buy'
-name = '插件购买'
+tag = 'extension_rent'
+name = '插件租赁'
 
 page = pages.StepPage(tag=tag, name=name)
 price_page = pages.CardsPage(name='选择价格')
@@ -13,7 +13,7 @@ router = routers.FrontRouter(
     path=tag,
     name=name,
     page=page,
-    icon='extension_buy',
+    icon='extension_rent',
     hidden=True
 )
 
@@ -30,7 +30,7 @@ page.add_pages([
 
 price_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/rent/extensions/{package}/',
         method=actions.FrontActionMethod.GET
     ),
     local_actions={
@@ -48,7 +48,7 @@ copies_page.create_actions(
     global_actions={
        'next': actions.NextAction(
             name="创建订单",
-            path="/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/",
+            path="/api/v1/tenant/{tenant_id}/arkstore/rent/extensions/{package}/",
             method=actions.FrontActionMethod.POST
         ),
     }
@@ -62,7 +62,7 @@ payment_page.create_actions(
     global_actions={
        'next': actions.NextAction(
             name="已支付",
-            path="/api/v1/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/extensions/{uuid}/",
+            path="/api/v1/tenant/{tenant_id}/arkstore/rent/order/{order_no}/payment_status/extensions/{package}/",
             method=actions.FrontActionMethod.GET
         ),
     }

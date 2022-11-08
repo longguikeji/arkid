@@ -2,6 +2,7 @@ from typing import List
 from ninja import Query
 from django.urls import reverse
 from django.shortcuts import render
+from arkid.common.utils import deep_merge
 from arkid.config import get_app_config
 from arkid.core.api import GlobalAuth, api, operation
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
@@ -457,7 +458,7 @@ def get_mine_apps_with_group_all(request, tenant_id: str, app_group_id:str=None,
         apps = apps.order_by(order)
     apps = apps.all()
         
-    return SuccessDict(data=list(apps) if apps else [])
+    return SuccessDict(data=list(apps))
 
 @api.get("/mine/unread_messages/",response=List[MineMessageListItemOut],tags=["我的"],auth=GlobalAuth())
 @operation(MineMessageListOut,roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
@@ -560,7 +561,7 @@ def post_personal_settings(request,tenant_id:str,data:MinePersonalSettingsIn):
         user=request.user
     )
     
-    setting.settings.update(data.dict())
+    setting.settings = deep_merge(setting.settings,data.dict())
     setting.save()
     
     return SuccessDict(
