@@ -8,7 +8,7 @@ from pydantic import Field
 from arkid.core import actions
 from arkid.core.extension import Extension
 from arkid.core.models import Tenant
-from arkid.extension.models import TenantExtensionConfig, TenantExtension, Extension as ExtensionModel
+from arkid.extension.models import ArkStoreCategory, TenantExtensionConfig, TenantExtension, Extension as ExtensionModel
 from arkid.core.translation import gettext_default as _
 from arkid.core.pagenation import CustomPagination
 from ninja.pagination import paginate
@@ -229,7 +229,12 @@ def get_platform_extensions(request, tenant_id: str, category_id: str = None):
     tenant = Tenant.objects.get(id=tenant_id)
     extensions = ExtensionModel.active_objects.filter()
     if category_id and category_id != "" and category_id != "0":
-        extensions = extensions.filter(category_id=int(category_id))
+        arkstorecategory = ArkStoreCategory.valid_objects.filter(
+            arkstore_id=int(category_id)
+        ).first()
+        if arkstorecategory:
+            item_category_ids = arkstorecategory.get_all_child([])
+            extensions = extensions.filter(category_id__in=item_category_ids)
     if settings.IS_CENTRAL_ARKID:
         return extensions
 
@@ -278,7 +283,12 @@ def get_tenant_extensions(request, tenant_id: str, query_data: TenantExtensionLi
         extensions = extensions.filter(package__icontains=query_data.package)
 
     if category_id and category_id != "" and category_id != "0":
-        extensions = extensions.filter(category_id=int(category_id))
+        arkstorecategory = ArkStoreCategory.valid_objects.filter(
+            arkstore_id=int(category_id)
+        ).first()
+        if arkstorecategory:
+            item_category_ids = arkstorecategory.get_all_child([])
+            extensions = extensions.filter(category_id__in=item_category_ids)
 
     # 使用TenantExtension的is_active覆盖ExtensionModel的is_active
     extension_ids = TenantExtension.valid_objects.filter(tenant_id=tenant_id, is_active=True).values('extension_id')

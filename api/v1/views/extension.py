@@ -13,7 +13,7 @@ from arkid.core.constants import NORMAL_USER, PLATFORM_ADMIN, TENANT_ADMIN
 from arkid.core.extension import Extension
 from arkid.core.schema import ResponseSchema
 from arkid.extension.utils import import_extension, restart_celery
-from arkid.extension.models import TenantExtensionConfig, Extension as ExtensionModel
+from arkid.extension.models import TenantExtensionConfig, ArkStoreCategory ,Extension as ExtensionModel
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from ninja.pagination import paginate
 from oauth2_provider.models import Application
@@ -127,7 +127,12 @@ def list_extensions(request, query_data: ExtensionListQueryIn=Query(...)):
 
     category_id = query_data.category_id
     if category_id and category_id != "" and category_id != "0":
-        qs = qs.filter(category_id=int(category_id))
+        arkstorecategory = ArkStoreCategory.valid_objects.filter(
+            arkstore_id=int(category_id)
+        ).first()
+        if arkstorecategory:
+            item_category_ids = arkstorecategory.get_all_child([])
+            qs = qs.filter(category_id__in=item_category_ids)
 
     if settings.IS_CENTRAL_ARKID:
         return qs
