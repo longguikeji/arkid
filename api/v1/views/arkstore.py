@@ -377,7 +377,7 @@ def get_arkstore_category_http():
         ).first()
         if arkstorecategory is None:
             arkstorecategory = ArkStoreCategory()
-            ArkStoreCategory.arkstore_id = arkstore_id
+            arkstorecategory.arkstore_id = arkstore_id
         arkstorecategory.arkstore_name = arkstore_name
         arkstorecategory.arkstore_type = arkstore_type
         arkstorecategory.arkstore_parent_id = arkstore_parent_id
