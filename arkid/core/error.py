@@ -51,6 +51,7 @@ class ErrorCode(Enum):
     PERMISSION_GROUP_NOT_DELETE = ('10038', _('the permission group not delete', '该分组权限不允许删除'))
     SYSTEM_PERMISSION_NOT_OPERATION = ('10039', _('system permission not operation', '系统权限不支持此操作'))
     PERMISSION_NOT_BELONG_TO_TENANT = ('10040', _('permission not belong to tenant', '该应用不属于该租户'))
+    OTP_2FA_REQUIRED = ('10050', _('user require otp two-factor authentication', '该用户需要OTP双因素认证'))
 
     # SMS_PROVIDER_IS_MISSING = '11001'
     # AUTHCODE_PROVIDER_IS_MISSING = '11002'

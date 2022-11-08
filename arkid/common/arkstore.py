@@ -16,9 +16,8 @@ from arkid.extension.models import TenantExtension, Extension
 from arkid.extension.utils import import_extension, unload_extension, load_extension_apps, restart_celery
 from pathlib import Path
 from arkid.common.logger import logger
+from django.core.cache import cache
 
-
-arkid_saas_token_cache = {}
 
 def get_saas_token(tenant, token, use_cache=True):
     """
@@ -26,8 +25,10 @@ def get_saas_token(tenant, token, use_cache=True):
     """
     # 缓存 saas_token
     key = (str(tenant.id) + '_' + str(token)).replace('-', '')
-    if use_cache and key in arkid_saas_token_cache:
-        return arkid_saas_token_cache[key]
+    saas_cache = cache.get(key)
+    if use_cache and saas_cache:
+        return saas_cache
+
     app = Application.objects.filter(name='arkid_saas', uuid = tenant.id).first()
     nonce = uuid.uuid4().hex
     params = {
@@ -55,11 +56,13 @@ def get_saas_token(tenant, token, use_cache=True):
 
     resp = requests.get(resp.url)
     if resp.status_code != 200:
-        arkid_saas_token_cache.pop(key, None)
+        cache.delete(key)
         raise Exception(f'Error get_saas_token: {resp.status_code}')
     resp = resp.json()
-    arkid_saas_token_cache[key] = (resp['token'], resp['tenant_id'], resp['tenant_slug'])
-    return arkid_saas_token_cache[key]
+    result = (resp['token'], resp['tenant_id'], resp['tenant_slug'])
+    # 中心arkid token 24小时过期
+    cache.set(key, result, timeout=60*60*23)
+    return result
 
 
 def get_arkstore_access_token(tenant, token, use_cache=True):
@@ -77,7 +80,6 @@ def get_arkstore_access_token(tenant, token, use_cache=True):
             use_cache=False, local_tenant=tenant, local_token=token)
 
 
-arkstore_access_token_saas_cache = {}
 
 def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, saas_token, 
         use_cache=True, local_tenant=None, local_token=None):
@@ -86,19 +88,20 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
     """
     # 缓存 idtoken
     key = (str(saas_tenant_id) + '_' + str(saas_token)).replace('-', '')
-    if use_cache and key in arkstore_access_token_saas_cache:
+    id_token = cache.get(key)
+    if use_cache and id_token:
         try:
-            payload = jwt.decode(arkstore_access_token_saas_cache[key], options={"verify_signature": False})
+            payload = jwt.decode(id_token, options={"verify_signature": False})
         except Exception:
-            arkstore_access_token_saas_cache.pop(key, None)
+            cache.delete(key)
             raise Exception("Unable to parse id_token")
         exp_dt = datetime.fromtimestamp(payload["exp"])
         expire_time = timezone.make_aware(exp_dt, timezone.get_default_timezone())
         now = timezone.localtime()
         if now <= expire_time:
-            return arkstore_access_token_saas_cache[key]
+            return id_token
         else:
-            arkstore_access_token_saas_cache.pop(key, None)
+            cache.delete(key)
             # id_token 过期后，重新获取saas_token和id_token
             if local_tenant and local_token:
                 saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(local_tenant, local_token, use_cache=False)
@@ -107,15 +110,17 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
     app_login_url = settings.ARKSTOER_URL + '/api/v1/login'
     resp = requests.get(app_login_url, params=params)
     if resp.status_code != 200:
-        arkstore_access_token_saas_cache.pop(key, None)
+        cache.delete(key)
         raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}, url: {resp.url}')
     try:
         resp = resp.json()
     except:
         from urllib.parse import urlencode, unquote
         raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}, url: {unquote(resp.url)}')
-    arkstore_access_token_saas_cache[key] = resp['access_token']
-    return arkstore_access_token_saas_cache[key] 
+    id_token = resp['access_token']
+    # arkstore idtoken 10小时过期
+    cache.set(key, id_token, timeout=60*60*9)
+    return id_token
 
 
 def get_arkstore_extensions(access_token, purchased=None, rented=False, type=None, offset=0, limit=10, extra_params={}):
@@ -735,3 +740,23 @@ def get_app_config_from_arkstore(request, arkstore_app_id):
         app = get_arkid_saas_app_detail(tenant, token, arkstore_app_id)
         return app.get('config', {}).get('config', {})
     return {}
+
+
+def get_admin_user_token():
+    from django.core.cache import cache
+
+    key = "ADMIN_USER_TOKEN"
+    value = refresh_admin_uesr_token
+    timeout = 60*30
+    token = cache.get_or_set(key, value, timeout=timeout)
+    return token
+
+
+def refresh_admin_uesr_token():
+    from arkid.core.token import refresh_token
+    platform_tenant = Tenant.platform_tenant()
+    admin_user = User.objects.filter(
+        username='admin', tenant=platform_tenant
+    ).first()
+    token = refresh_token(admin_user)
+    return token

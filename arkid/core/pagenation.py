@@ -83,6 +83,21 @@ class ArstoreExtensionPagination(CustomPagination):
             else:
                 ext['install'] = True
 
+        tenant = request.tenant
+        if tenant.is_platform_tenant:
+            # for ext in items:
+            #     ext["lease_useful_life"] = ["不限天数，不限人数"]
+            #     ext["lease_state"] = '已租赁'
+            pass
+        else:
+            from api.v1.views.arkstore import get_arkstore_list
+            resp = get_arkstore_list(request, None, 'extension', rented=True, all=True)['items']
+            extensions_rented = {ext['package']: ext for ext in resp}
+            for ext in items:
+                if ext["package"] in extensions_rented:
+                    ext["lease_useful_life"] = extensions_rented[ext.package]['lease_useful_life']
+                    ext["lease_state"] = '已租赁'
+
         return {
             'items': items,
             'count': count,

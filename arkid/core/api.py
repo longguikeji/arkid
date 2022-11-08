@@ -110,6 +110,7 @@ class GlobalAuth(HttpBaseBearer):
                 token = ExpiringToken.objects.filter(user=request.user).first()
                 if not token:
                     token = ExpiringToken.objects.create(user=request.user, token=generate_token())
+                self.refresh_token_active_date(token)
                 tenant = request.tenant
                 # 获取操作id查询用户权限
                 operation_id = request.operation_id
@@ -125,6 +126,7 @@ class GlobalAuth(HttpBaseBearer):
                 if token:
                     # 使用传统的token访问
                     token = ExpiringToken.objects.get(token=token)
+                    self.refresh_token_active_date(token)
                     if not token.user.is_active:
                         raise HttpError(401, _('User inactive or deleted','用户无效或被删除'))
                     tenant = request.tenant or Tenant.platform_tenant()
@@ -175,12 +177,20 @@ class GlobalAuth(HttpBaseBearer):
         #     logger.error(err)
         #     return
 
+    @staticmethod
+    def refresh_token_active_date(token):
+        from django.utils import timezone
+        local_date = timezone.localdate()
+        if not token.active_date or token.active_date < local_date:
+            token.active_date = local_date
+            token.save()
+
 
 class ArkidApi(NinjaAPI):
     def create_response(self, request, *args, **kwargs):
             response = super().create_response(request, *args, **kwargs)
-            if request.META.get('request_id'):
-                response.headers['request_id'] = request.META.get('request_id')
+            if request.META.get('HTTP_REQUEST_ID'):
+                response.headers['request_id'] = request.META.get('HTTP_REQUEST_ID')
             return response
 
 
@@ -212,10 +222,10 @@ def operation(respnose_model=None, use_id=False, roles: Optional[List[str]] = No
 
         old_view_func = operation.view_func
         def func(request, *params, **kwargs):
-            request_id = request.META.get('request_id')
+            request_id = request.META.get('HTTP_REQUEST_ID')
             if not request_id and use_id:
                 request_id = uuid.uuid4().hex
-                request.META['request_id'] = request_id
+                request.META['HTTP_REQUEST_ID'] = request_id
             
             dispatch_event(Event(tag+'_pre', request.tenant, request=request, uuid=request_id))
             response = old_view_func(request=request, *params, **kwargs)

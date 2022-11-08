@@ -45,7 +45,8 @@ class LanguageDataItemOut(Schema):
     )
     
     translated:str = Field(
-        title=_("译词句")
+        title=_("译词句"),
+        notranslation=True
     )
     
 class LanguageDataOut(ResponseSchema):
@@ -60,7 +61,8 @@ class LanguageDataItemCreateIn(Schema):
     )
     
     translated:str = Field(
-        title=_("译词句")
+        title=_("译词句"),
+        notranslation=True
     )
 
 class LanguageDataItemCreateOut(ResponseSchema):
