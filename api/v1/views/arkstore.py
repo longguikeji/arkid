@@ -140,8 +140,8 @@ class OnShelveExtensionPurchaseOut(ArkstoreExtensionItemSchemaOut):
     purchase_useful_life: Optional[List[str]] = Field(
         title=_('Purchase Useful Life', '有效期')
     )
-    install: Optional[bool] = Field(title=_("Install", "安装"), default=False, hidden=True)
-    upgrade: Optional[bool] = Field(title=_("Upgrade", "升级"), default=False, hidden=True)
+    installed: Optional[bool] = Field(title=_("Installed", "已安装"), default=True, hidden=True)
+    has_upgrade: Optional[bool] = Field(title=_("Has Upgrade", "有升级"), default=False, hidden=True)
     lease_state: Optional[str] = Field(title=_('Lease State', '租赁状态'))
     lease_useful_life: Optional[List[str]] = Field(title=_('Lease Useful Life', '有效期'))
     is_active: Optional[bool] = Field(
@@ -158,6 +158,7 @@ class OnShelveExtensionPurchaseOut(ArkstoreExtensionItemSchemaOut):
             "method":actions.FrontActionMethod.POST.value
         }
     )
+    is_default_extension: Optional[bool] = Field(title=_("Is Default Extension", "是否系统自带插件"), default=False, hidden=True)
 
 
 class OrderStatusSchema(Schema):
@@ -422,10 +423,10 @@ def list_arkstore_purchased_extensions(request, tenant_id: str, category_id: str
 
 
 class ArkstoreStatusFilterIn(Schema):
-    install: Optional[bool] = Field(
-        title=_("未安装")
+    installed: Optional[bool] = Field(
+        title=_("已安装")
     )
-    upgrade: Optional[bool] = Field(
+    has_upgrade: Optional[bool] = Field(
         title=_("有升级")
     )
 
@@ -445,26 +446,28 @@ def list_arkstore_purchased_and_installed_extensions(request, tenant_id: str, fi
     purchased_exts = get_arkstore_list(request, True, 'extension', all=True, extra_params=extra_params)['items']
     for ext in purchased_exts:
         if ext['package'] in installed_ext_packages:
+            ext['installed'] = True
             ext['is_active'] = installed_ext_packages[ext['package']].is_active
             ext['is_active_tenant'] = installed_ext_packages[ext['package']].is_active_tenant
             if installed_ext_packages[ext['package']].version < ext['version']:
-                ext['upgrade'] = True
+                ext['has_upgrade'] = True
         else:
-            ext['install'] = True
+            ext['installed'] = False
 
     purchased_exts_packages = {ext['package']: ext for ext in purchased_exts}
     local_exts = [ext for ext in installed_exts if ext.package not in purchased_exts_packages]
     for ext in local_exts:
         ext.uuid = str(ext.id)
         ext.labels = " ".join(ext.labels) if ext.labels else ""
+        ext.is_default_extension = True
 
-    if filter.upgrade == True:
-        return [ext for ext in purchased_exts if ext.get('upgrade') == True]
+    if filter.has_upgrade == True:
+        return [ext for ext in purchased_exts if ext.get('has_upgrade') == True]
 
-    if filter.install == True:
-        return [ext for ext in purchased_exts if ext.get('install') == True]
-    elif filter.install == False:
-        return local_exts + [ext for ext in purchased_exts if ext.get('install') == False]
+    if filter.installed == False:
+        return [ext for ext in purchased_exts if ext.get('installed') == False]
+    elif filter.installed == True:
+        return local_exts + [ext for ext in purchased_exts if ext.get('installed') == True]
 
     return local_exts + purchased_exts
 
