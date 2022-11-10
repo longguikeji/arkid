@@ -107,8 +107,8 @@ def set_saas_bind_slug(tenant, data):
 def create_arkidstore_login_app(tenant, saas_tenant_id):
     from arkid.core.models import App
     url = f"{settings.ARKSTOER_URL}/api/v1/login?tenant_id={saas_tenant_id}"
-    app = App.objects.filter(tenant=tenant, name="ArkStore", url=url)
-    if app:
+    apps = App.valid_objects.filter(tenant=tenant, name="ArkStore", url=url)
+    for app in apps:
         app.delete()
     create_tenant_oidc_app(tenant, url, '开发与代理', '开发商与代理商的管理后台',
         'https://s1.ax1x.com/2022/07/04/jJrVxg.png')
@@ -117,8 +117,8 @@ def create_arkidstore_login_app(tenant, saas_tenant_id):
 def create_arkid_saas_login_app(tenant, saas_tenant_id, saas_login_url=None):
     from arkid.core.models import App
     url = saas_login_url or f"{settings.ARKID_SAAS_URL}/login?tenant_id={saas_tenant_id}"
-    app = App.objects.filter(tenant=tenant, name="Central ArkID", url=url)
-    if app:
+    apps = App.valid_objects.filter(tenant=tenant, name="Central ArkID", url=url)
+    for app in apps:
         app.delete()
     # create_tenant_oidc_app(tenant, url, 'Central ArkID', '中心ArkID', 
     #     'https://s1.ax1x.com/2022/07/04/jJDh2F.png')
