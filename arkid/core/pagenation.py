@@ -79,9 +79,9 @@ class ArstoreExtensionPagination(CustomPagination):
         for ext in items:
             if ext['package'] in installed_ext_packages:
                 if installed_ext_packages[ext['package']].version < ext['version']:
-                    ext['upgrade'] = True
+                    ext['has_upgrade'] = True
             else:
-                ext['install'] = True
+                ext['installed'] = False
 
         tenant = request.tenant
         if tenant.is_platform_tenant:
