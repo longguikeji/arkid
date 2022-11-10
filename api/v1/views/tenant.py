@@ -59,6 +59,7 @@ def create_tenant(request, data:TenantCreateIn):
     user = request.user
     tenant = Tenant.expand_objects.create(**data.dict())
     tenant.users.add(user)
+    tenant.save()
     # 分发一个创建租户的事件
     dispatch_event(Event(tag=CREATE_TENANT, tenant=tenant, request=request, data=user))
     return ErrorDict(ErrorCode.OK)
