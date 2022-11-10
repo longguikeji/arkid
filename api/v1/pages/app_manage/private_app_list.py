@@ -7,7 +7,7 @@ name = '私有化应用'
 
 page = pages.TabsPage(tag=tag, name=name)
 
-store_page = pages.TreePage(name=_("Extension Store", "私有化应用商店"),show_vnode=True,show_page_if_no_node=False)
+store_page = pages.TreePage(name=_("Private App Store", "私有化应用商店"),show_vnode=True,show_page_if_no_node=False)
 store_cascade_page = pages.CardsPage(name='')
 
 # installed_page = pages.TreePage(name=_("Installed", "已安装"),show_vnode=True,show_page_if_no_node=False)
@@ -215,13 +215,13 @@ trial_page.create_actions(
 
 install_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/arkstore/install/priate_app/{uuid}/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/',
         method=actions.FrontActionMethod.GET,
     ),
     global_actions={
         "confirm": actions.DirectAction(
             name='安装',
-            path='/api/v1/tenant/{tenant_id}/arkstore/install/priate_app/{uuid}/',
+            path='/api/v1/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/',
             method=actions.FrontActionMethod.POST
         ),
     },

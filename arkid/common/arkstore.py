@@ -7,7 +7,7 @@ from django.conf import settings
 from datetime import datetime
 import jwt
 import uuid
-from arkid.core.models import User, App
+from arkid.core.models import User, App, PrivateApp
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from django.db import transaction
@@ -452,15 +452,18 @@ def get_arkstore_private_app_data(tenant, token, app_id):
     return resp
 
 
+def get_arkstore_private_app_name(tenant, token, app_id):
+    access_token = get_arkstore_access_token(tenant, token)
+    res = get_arkstore_extension_detail(access_token, app_id)
+    app_name = f"{res['name'][:55]}-{tenant.id.hex[-8:]}"
+    return app_name
+
+
 def install_arkstore_private_app(tenant, token, app_id, values_data=""):
     data = get_arkstore_private_app_data(tenant, token, app_id)
     download_url = data["download_url"]
-
-    saas_token, saas_tenant_id, saas_tenant_slug = get_saas_token(tenant, token)
-    access_token = get_arkstore_access_token(tenant, token)
-    res = get_arkstore_extension_detail(access_token, app_id)
-    app_name = f"{tenant.id.hex[-8:]}-{res['name']}"[:63]
-    k8s_url = settings.K8S_INSTALL_APP_URL + '/crd/chart/' + app_name
+    app_name = get_arkstore_private_app_name(tenant, token, app_id)
+    k8s_url = settings.K8S_INSTALL_APP_URL + f'/ahc/{tenant.id}/crdchart/' + app_name
 
     data = {
         "chart": download_url,
@@ -475,9 +478,45 @@ def install_arkstore_private_app(tenant, token, app_id, values_data=""):
         resp = resp.json()
         if resp['code'] != 0:
             logger.error(f"Install app to k8s failed: {resp['message']}")
+            return resp
+        
+        # 正在成功
+        access_token = get_arkstore_access_token(tenant, token)
+        app = get_arkstore_extension_detail(access_token, app_id)
+        PrivateApp.objects.update_or_create(
+            tenant = tenant,
+            name = app['name'],
+            defaults= dict(
+                url = app['url'],
+                name = app['name'],
+                description = app['description'],
+                logo = app['logo'],
+                arkstore_category_id = app.get('category_id'),
+                arkstore_app_id = app['uuid'],
+            )
+        )
+ 
         return resp
     except Exception as e:
         logger.error(f"Install app to k8s failed: {e}")
+        return {'code': -1, 'message': str(e)}
+
+
+def delete_arkstore_private_app(tenant, token, app_id):
+    app_name = get_arkstore_private_app_name(tenant, token, app_id)
+    k8s_url = settings.K8S_INSTALL_APP_URL + f'/ahc/{tenant.id}/crdchart/' + app_name
+
+    try:
+        resp = requests.delete(k8s_url, timeout=30)
+        if resp.status_code != 200:
+            logger.error(f'delete_arkstore_private_app failed: {app_name} {resp.status_code}')
+            return {'code': resp.status_code, 'message': resp.content.decode()}
+        resp = resp.json()
+        if resp['code'] != 0:
+            logger.error(f"delete_arkstore_private_app failed: {app_name} {resp['message']}")
+        return resp
+    except Exception as e:
+        logger.error(f"delete_arkstore_private_app failed: {app_name} {e}")
         return {'code': -1, 'message': str(e)}
 
 
@@ -487,14 +526,21 @@ def check_private_app_install_status(app_name):
     try:
         resp = requests.get(k8s_url, timeout=15)
         if resp.status_code != 200:
-            logger.error(f'Install app to k8s failed: {resp.status_code}')
+            logger.error(f'check_private_app_install_status failed: {app_name}, {resp.status_code}')
             return {'code': resp.status_code, 'message': resp.content.decode()}
         resp = resp.json()
         if resp['code'] != 0:
-            logger.error(f"Install app to k8s failed: {resp['message']}")
+            logger.error(f"check_private_app_install_status failed: {app_name}, {resp['message']}")
+        status = resp.get('data').get('status')
+        if status == 2:
+            print("install scuess")
+        elif status == 2:
+            print("installing")
+        elif status == 2:
+            print("install failed")
         return resp
     except Exception as e:
-        logger.error(f"Install app to k8s failed: {e}")
+        logger.error(f"check_private_app_install_status failed: {e}")
         return {'code': -1, 'message': str(e)}
 
 

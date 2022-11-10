@@ -33,6 +33,7 @@ from arkid.common.arkstore import (
     get_arkstore_extension_history_by_package,
     click_arkstore_app,
     install_arkstore_private_app,
+    delete_arkstore_private_app,
     get_arkstore_private_app_data,
 )
 from arkid.common.bind_saas import get_bind_info
@@ -534,7 +535,7 @@ def list_arkstore_purchased_private_apps(request, tenant_id: str, category_id: s
     extra_params = {}
     if category_id and category_id != "" and category_id != "0":
         extra_params['category_id'] = category_id
-    return get_arkstore_list(request, True, 'private_app', extra_params=extra_params)
+    return get_arkstore_list(request, True, 'private_app', extra_params=extra_params)['items']
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
@@ -773,13 +774,13 @@ class CutomValuesData(Schema):
 class CustomAppValuesOut(ResponseSchema):
     data: CutomValuesData
 
-@api.get("/tenant/{tenant_id}/arkstore/install/priate_app/{uuid}/", tags=['方舟商店'], response=CustomAppValuesOut)
+@api.get("/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/", tags=['方舟商店'], response=CustomAppValuesOut)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def get_private_app_custom_values(request, tenant_id: str, uuid: str):
     return {"data": {"values_data": ""}}
 
 
-@api.post("/tenant/{tenant_id}/arkstore/install/priate_app/{uuid}/", tags=['方舟商店'])
+@api.post("/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/", tags=['方舟商店'], response=ResponseSchema)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def install_private_app_from_arkstore(request, tenant_id: str, uuid: str, data: CutomValuesData):
     token = request.user.auth_token
@@ -787,7 +788,20 @@ def install_private_app_from_arkstore(request, tenant_id: str, uuid: str, data: 
     result = install_arkstore_private_app(tenant, token, uuid, data.values_data)
     if result['code'] == 0:
         return {'error': ErrorCode.OK.value, 'data': {}}
+    if result['code'] == 1:
+        return ErrorDict(ErrorCode.PRIVATE_APP_ALREADY_INSTALLED, message=result['message'])
     return ErrorDict(ErrorCode.PRIVATE_APP_INSTALL_FAILED, message=result['message'])
+
+
+@api.delete("/tenant/{tenant_id}/arkstore/private_app/{uuid}/", tags=['方舟商店'], response=ResponseSchema)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def delete_private_app_from_arkstore(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    result = delete_arkstore_private_app(tenant, token, uuid)
+    if result['code'] == 0:
+        return {'error': ErrorCode.OK.value, 'data': {}}
+    return ErrorDict(ErrorCode.PRIVATE_APP_DELETE_FAILED, message=result['message'])
 
 
 class AppValuesSchema(Schema):

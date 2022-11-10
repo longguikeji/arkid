@@ -81,6 +81,8 @@ class ErrorCode(Enum):
     PLUG_IN_NOT_HIRE = ('17005', _('plug-in not hire', '插件没有租赁，无法使用'))
     CAN_NOT_ACTIVATE_EXTENSION = ('17006', _('extension expired or beyond max user limit', '插件已过期或操作人数限制，请再次购买'))
     PRIVATE_APP_INSTALL_FAILED = ('17007', _('private app install failed', '私有化应用安装失败'))
+    PRIVATE_APP_ALREADY_INSTALLED = ('17008', _('private app already installed', '私有化应用已安装，请勿重新安装'))
+    PRIVATE_APP_DELETE_FAILED = ('17007', _('private app delete failed', '私有化应用删除失败'))
     
     PASSWORD_NOT_CORRECT = ('18001', _('password not correct', '密码不正确'))
 
