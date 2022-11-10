@@ -894,6 +894,9 @@ class PrivateApp(BaseModel):
         max_length=100,
         verbose_name=_('Status', "状态"),
     )
+    values_data = models.TextField(
+        blank=True, null=True, verbose_name=_('Values Data', '配置')
+    ) 
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, PrivateApp: {self.name}'
