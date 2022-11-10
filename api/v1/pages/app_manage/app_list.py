@@ -5,17 +5,15 @@ tag = 'app_list'
 name = '应用列表'
 
 
-page = pages.TabsPage(tag=tag, name=name)
+page = pages.TreePage(tag=tag, name=name, show_vnode=True, show_page_if_no_node=False)
 
 edit_page = pages.FormPage(name=_("编辑应用"))
 config_page = pages.FormPage(name=_("配置应用"))
 openapi_page = pages.FormPage(name=_("开放API配置"))
 
-installed_page = pages.TreePage(name=_("Local App", "本地应用"),show_vnode=True,show_page_if_no_node=False)
 installed_cascade_page = pages.CardsPage(name='')
 
 pages.register_front_pages(page)
-pages.register_front_pages(installed_page)
 pages.register_front_pages(installed_cascade_page)
 pages.register_front_pages(edit_page)
 pages.register_front_pages(config_page)
@@ -29,11 +27,7 @@ router = routers.FrontRouter(
     page=page,
 )
 
-page.add_pages([
-    installed_page,
-])
-
-installed_page.create_actions(
+page.create_actions(
     init_action=actions.DirectAction(
         path='/api/v1/tenant/{tenant_id}/arkstore/categorys/?type=app&show_local=1',
         method=actions.FrontActionMethod.GET,
