@@ -319,7 +319,7 @@ def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Q
 
 
 @api.get("/tenant/{tenant_id}/arkstore/private_apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
-@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(List[ArkstoreItemSchemaOut], roles=[PLATFORM_ADMIN])
 @paginate(ArstorePagination)
 def list_arkstore_private_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
     query_data = query_data.dict()
@@ -535,7 +535,7 @@ class PrivateAppPurchaseOut(ArkstoreAppItemSchemaOut):
     )
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/private_apps/", tags=['方舟商店'], response=List[PrivateAppPurchaseOut])
-@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(List[ArkstoreItemSchemaOut], roles=[PLATFORM_ADMIN])
 @paginate(CustomPagination)
 def list_arkstore_purchased_private_apps(request, tenant_id: str, category_id: str = None):
     extra_params = {}
@@ -789,14 +789,14 @@ class CustomAppValuesOut(ResponseSchema):
     data: CutomValuesData
 
 @api.get("/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/", tags=['方舟商店'], response=CustomAppValuesOut)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_ADMIN])
 def get_private_app_custom_values(request, tenant_id: str, uuid: str):
     private_app = PrivateApp.active_objects.filter(arkstore_app_id=uuid).first()
     return {"data": {"values_data": private_app.values_data or ""}}
 
 
 @api.post("/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/", tags=['方舟商店'], response=ResponseSchema)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_ADMIN])
 def install_private_app_from_arkstore(request, tenant_id: str, uuid: str, data: CutomValuesData):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -809,7 +809,7 @@ def install_private_app_from_arkstore(request, tenant_id: str, uuid: str, data: 
 
 
 @api.delete("/tenant/{tenant_id}/arkstore/private_app/{uuid}/", tags=['方舟商店'], response=ResponseSchema)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_ADMIN])
 def delete_private_app_from_arkstore(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
@@ -826,7 +826,7 @@ class AppValuesOut(ResponseSchema):
     data: AppValuesSchema
 
 @api.get("/tenant/{tenant_id}/arkstore/private_app/{uuid}/default_values/", tags=['方舟商店'], response=AppValuesOut)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[PLATFORM_ADMIN])
 def get_private_app_default_values(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
