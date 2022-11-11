@@ -117,7 +117,7 @@ class ConnectDiscoveryInfoView(OIDCOnlyMixin, View):
             if not issuer_url:
                 from arkid.config import get_app_config
                 host = get_app_config().get_frontend_host()
-                issuer_url = "{}/api/v1/tenant/{}/app/{}/".format(host,tenant_id,app_id)
+                issuer_url = "{}/api/v1/tenant/{}/app/{}".format(host,tenant_id,app_id)
                 # issuer_url = oauth2_settings.oidc_issuer(request, tenant_id, app_id)
                 authorization_endpoint = host+reverse(namespace+":authorize", args=[tenant_id, app_id])
                 token_endpoint = host+reverse(namespace+":token", args=[tenant_id])
