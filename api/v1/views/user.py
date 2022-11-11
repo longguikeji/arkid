@@ -69,7 +69,7 @@ def user_list_no_super(request, tenant_id: str):
 def user_create(request, tenant_id: str,data:UserCreateIn):
     tenant = request.tenant
     # user = User.expand_objects.create(tenant=request.tenant,**data.dict())
-    if User.objects.filter(tenant=tenant, username=data.username).count():
+    if tenant.users.filter(username=data.username).count():
         return ErrorDict(
             ErrorCode.USERNAME_EXISTS_ERROR
         )

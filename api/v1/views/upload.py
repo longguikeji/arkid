@@ -16,7 +16,7 @@ def upload(request, tenant_id:str, file: UploadedFile = File(...)):
     data = {
         "file": file,
     }
-    
+
     extension = Extension.active_objects.filter(
         type="storage"
     ).first()

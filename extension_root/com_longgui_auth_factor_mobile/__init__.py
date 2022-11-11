@@ -76,7 +76,17 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         mobile = data.get('mobile')
         sms_code = data.get('sms_code')
 
-        user = User.expand_objects.filter(tenant=tenant,mobile=mobile)
+        # user = User.expand_objects.filter(tenant=tenant,mobile=mobile)
+        temp_users = tenant.users.all()
+        user_ids = []
+        for temp_user in temp_users:
+            user_ids.append(temp_user.id)
+        user = User.expand_objects.filter(
+            is_active=True,
+            is_del=False,
+            id__in=user_ids,
+            mobile=mobile
+        )
         if len(user) > 1:
             logger.error(f'{mobile}在数据库中匹配到多个用户')
             return self.auth_failed(event, data=self.error(ErrorCode.CONTACT_MANAGER))
@@ -151,14 +161,22 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         if not check_sms_code(tenant, mobile, sms_code):
             return self.error(ErrorCode.SMS_CODE_MISMATCH)
         
-        user = User.expand_objects.filter(tenant=tenant,mobile=mobile)
-        
+        # user = User.expand_objects.filter(tenant=tenant,mobile=mobile)
+        temp_users = tenant.users.all()
+        user_ids = []
+        for temp_user in temp_users:
+            user_ids.append(temp_user.id)
+        user = User.expand_objects.filter(
+            is_active=True,
+            is_del=False,
+            id__in=user_ids,
+            mobile=mobile
+        )
         if len(user) > 1:
             logger.error(f'{mobile}在数据库中匹配到多个用户')
             return self.error(ErrorCode.CONTACT_MANAGER)
         if user:
             user = user[0]
-            user = User.active_objects.get(id=user.get("id"))
             user.password = make_password(password)
             user.save()
             return self.success()
@@ -306,8 +324,18 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         """
         if not mobile:
             return False, ErrorCode.MOBILE_EMPTY
-
-        if User.expand_objects.filter(tenant=tenant,mobile=mobile).count():
+        # 需要临时存储
+        temp_users = tenant.users.all()
+        user_ids = []
+        for temp_user in temp_users:
+            user_ids.append(temp_user.id)
+        if User.expand_objects.filter(
+            is_active=True,
+            is_del=False,
+            id__in=user_ids,
+            mobile=mobile
+        ).count():
+        # if User.expand_objects.filter(tenant=tenant,mobile=mobile).count():
             return False, ErrorCode.MOBILE_EXISTS_ERROR
         return True, None
     
@@ -325,7 +353,8 @@ class MobileAuthFactorExtension(AuthFactorExtension):
         if not username:
             return False, ErrorCode.USERNAME_EMPTY
         # 检查username是否已存在
-        if User.expand_objects.filter(tenant=tenant,username=username).count():
+        if tenant.users.filter(is_active=True, is_del=False).filter(username=username).count():
+        # if User.expand_objects.filter(tenant=tenant,username=username).count():
             return False, ErrorCode.USERNAME_EXISTS_ERROR
         
         return True, None
