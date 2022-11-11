@@ -8,7 +8,7 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0032_expiringtoken_active_date'),
+        ('core', '0033_alter_appgroup_apps_alter_tenant_users_and_more'),
     ]
 
     operations = [
