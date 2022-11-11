@@ -210,13 +210,14 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
             else:
                 filter_params = Q(**temp)
             
-        users = User.expand_objects.filter(tenant=tenant).filter(filter_params)
-        
+        users = tenant.users.filter(is_active=True, is_del=False).filter(filter_params)
         if len(users) > 1:
             logger.error(f'{username}在{login_enabled_field_names}中匹配到多个用户')
             return self.auth_failed(event, data=self.error(ErrorCode.CONTACT_MANAGER))
         user = users[0] if users else None
         if user:
+            # 对象转换
+            user = User.expand_objects.filter(id=user.id).first()
             user_password = user.get("password")
             if user_password:
                 if check_password(password, user_password):
@@ -335,7 +336,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
     def _get_register_user(self, tenant, field_name, field_value):
         user = None
         if field_name in ('username', 'email'):
-            user = User.active_objects.filter(**{field_name: field_value}).first()
+            user = tenant.users.filter(is_active=True, is_del=False).filter(**{field_name: field_value}).first()
         else:
             # 获取刚注册的用户
             user = User.expand_objects.filter(**{field_name: field_value}).first()
