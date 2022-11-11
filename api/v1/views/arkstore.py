@@ -3,7 +3,7 @@ from collections import OrderedDict
 from enum import Enum
 from ninja import ModelSchema
 from arkid.core.constants import *
-from arkid.core.models import Platform, Tenant, App
+from arkid.core.models import Platform, Tenant, App, PrivateApp
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.common.arkstore import (
     check_arkstore_purcahsed_extension_expired,
@@ -32,11 +32,14 @@ from arkid.common.arkstore import (
     get_arkstore_extension_markdown,
     get_arkstore_extension_history_by_package,
     click_arkstore_app,
+    install_arkstore_private_app,
+    delete_arkstore_private_app,
+    get_arkstore_private_app_data,
 )
 from arkid.common.bind_saas import get_bind_info
 from arkid.core.api import api, operation
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any
 from ninja import Schema, Query
 import enum
 from pydantic import Field
@@ -78,6 +81,7 @@ class ITEM_TYPE(str, Enum):
     arkstore_auto_form_fill =  _("arkstore_auto_form_fill", "表单代填应用")
     arkstore_url =  _("arkstore_url", "推广链接")
     arkstore_custom =  _("arkstore_custom", "自定义")
+    arkstore_saas =  _("arkstore_private", "私有化应用")
 
 
 class PAYMENT_TYPE(str, Enum):
@@ -314,6 +318,14 @@ def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Q
     return get_arkstore_list(request, None, 'app', extra_params=query_data)
 
 
+@api.get("/tenant/{tenant_id}/arkstore/private_apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(ArstorePagination)
+def list_arkstore_private_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
+    query_data = query_data.dict()
+    return get_arkstore_list(request, None, 'private_app', extra_params=query_data)
+
+
 @api.get("/tenant/{tenant_id}/arkstore/categorys/", tags=['方舟商店'], response=ArkstoreCategoryListSchemaOut)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def list_arkstore_categorys(request, tenant_id: str, parent_id:str = None, type:str = 'app', show_local:int = 0):
@@ -514,6 +526,30 @@ def list_arkstore_rented_extensions(request, tenant_id: str):
                 )
 
     return extensions
+
+
+class PrivateAppPurchaseOut(ArkstoreAppItemSchemaOut):
+    status: str = Field(
+        default="",
+        title=_('Status', "状态")
+    )
+
+@api.get("/tenant/{tenant_id}/arkstore/purchased/private_apps/", tags=['方舟商店'], response=List[PrivateAppPurchaseOut])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def list_arkstore_purchased_private_apps(request, tenant_id: str, category_id: str = None):
+    extra_params = {}
+    if category_id and category_id != "" and category_id != "0":
+        extra_params['category_id'] = category_id
+    arkstore_private_apps = get_arkstore_list(request, True, 'private_app', all=True, extra_params=extra_params)['items']
+    installed_apps = PrivateApp.active_objects.filter(tenant_id=tenant_id, arkstore_app_id__isnull=False)
+    installed_apps_dict = {str(app.arkstore_app_id): app for app in installed_apps}
+    for app in arkstore_private_apps:
+        if app['uuid'] not in installed_apps_dict:
+            app['status'] = '未安装'
+        else:
+            app['status'] = installed_apps_dict[app['uuid']].status
+    return arkstore_private_apps
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/apps/", tags=['方舟商店'], response=List[ArkstoreAppItemSchemaOut])
@@ -720,7 +756,7 @@ def create_order_arkstore_extension_trial(request, tenant_id: str, uuid: str):
 
 @api.post("/tenant/{tenant_id}/arkstore/install/{uuid}/", tags=['方舟商店'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def download_arkstore_extension(request, tenant_id: str, uuid: str):
+def install_arkstore_extension_from_arkstore(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     result = install_arkstore_extension(tenant, token, uuid)
@@ -730,7 +766,7 @@ def download_arkstore_extension(request, tenant_id: str, uuid: str):
 
 @api.post("/tenant/{tenant_id}/arkstore/update/{package}/", tags=['方舟商店'])
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def update_arkstore_extension(request, tenant_id: str, package: str):
+def update_arkstore_extension_from_arkstore(request, tenant_id: str, package: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
     access_token = get_arkstore_access_token(tenant, token)
@@ -740,6 +776,62 @@ def update_arkstore_extension(request, tenant_id: str, package: str):
     result = install_arkstore_extension(tenant, token, ext_info['uuid'])
     resp = {'error': ErrorCode.OK.value, 'data': {}}
     return resp
+
+
+class CutomValuesData(Schema):
+    values_data: Optional[str] = Field(
+        default="",
+        format='textarea',
+        title=_('Values Data', '配置')
+    )
+
+class CustomAppValuesOut(ResponseSchema):
+    data: CutomValuesData
+
+@api.get("/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/", tags=['方舟商店'], response=CustomAppValuesOut)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_private_app_custom_values(request, tenant_id: str, uuid: str):
+    private_app = PrivateApp.active_objects.filter(arkstore_app_id=uuid).first()
+    return {"data": {"values_data": private_app.values_data or ""}}
+
+
+@api.post("/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/", tags=['方舟商店'], response=ResponseSchema)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def install_private_app_from_arkstore(request, tenant_id: str, uuid: str, data: CutomValuesData):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    result = install_arkstore_private_app(tenant, token, uuid, data.values_data)
+    if result['code'] == 0:
+        return {'error': ErrorCode.OK.value, 'data': {}}
+    if result['code'] == 1:
+        return ErrorDict(ErrorCode.PRIVATE_APP_ALREADY_INSTALLED, message=result['message'])
+    return ErrorDict(ErrorCode.PRIVATE_APP_INSTALL_FAILED, message=result['message'])
+
+
+@api.delete("/tenant/{tenant_id}/arkstore/private_app/{uuid}/", tags=['方舟商店'], response=ResponseSchema)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def delete_private_app_from_arkstore(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    result = delete_arkstore_private_app(tenant, token, uuid)
+    if result['code'] == 0:
+        return {'error': ErrorCode.OK.value, 'data': {}}
+    return ErrorDict(ErrorCode.PRIVATE_APP_DELETE_FAILED, message=result['message'])
+
+
+class AppValuesSchema(Schema):
+    values_data: str = Field(format='textarea', readonly=True)
+
+class AppValuesOut(ResponseSchema):
+    data: AppValuesSchema
+
+@api.get("/tenant/{tenant_id}/arkstore/private_app/{uuid}/default_values/", tags=['方舟商店'], response=AppValuesOut)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_private_app_default_values(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
+    resp = get_arkstore_private_app_data(tenant, token, uuid)
+    return {"data": resp}
 
 
 @api.get("/tenant/{tenant_id}/arkstore/bind_agent/", tags=['方舟商店'], response=BindAgentSchemaOut)

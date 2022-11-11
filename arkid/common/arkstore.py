@@ -1,13 +1,13 @@
-from email.policy import default
+import json
 import requests
 from arkid.config import get_app_config
 from arkid.core import extension
 from oauth2_provider.models import Application
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, timedelta
 import jwt
 import uuid
-from arkid.core.models import User, App
+from arkid.core.models import User, App, PrivateApp
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from django.db import transaction
@@ -17,6 +17,7 @@ from arkid.extension.utils import import_extension, unload_extension, load_exten
 from pathlib import Path
 from arkid.common.logger import logger
 from django.core.cache import cache
+from django_celery_beat.models import PeriodicTask, CrontabSchedule
 
 
 def get_saas_token(tenant, token, use_cache=True):
@@ -131,6 +132,8 @@ def get_arkstore_extensions(access_token, purchased=None, rented=False, type=Non
             url = '/api/v1/arkstore/extensions/purchased'
     elif type == 'app':
         url = '/api/v1/arkstore/apps/purchased'
+    elif type == 'private_app':
+        url = '/api/v1/arkstore/private_apps/purchased'
     elif type == 'category':
         url = '/api/v1/arkstore/app/categories'
     else:
@@ -176,7 +179,8 @@ def lease_arkstore_extension(access_token, extension_id, data):
 
 def get_arkstore_extension_detail(access_token, extension_id):
     arkstore_extensions_url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}'
-    headers = {'Authorization': f'Token {access_token}'}
+    # headers = {'Authorization': f'Token {access_token}'}
+    headers = {}
     params = {}
     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
     if resp.status_code != 200:
@@ -316,6 +320,8 @@ def install_arkstore_extension(tenant, token, extension_id):
         local_app.save()
     elif res['type'] == 'extension':
         download_arkstore_extension(tenant, token, extension_id, res)
+    elif res['type'] == 'private':
+        pass
     else:
         # res['type'] in ('url', 'oidc') or else
         app = get_arkid_saas_app_detail(tenant, token, extension_id)
@@ -431,6 +437,121 @@ def load_installed_extension(ext_dir, extension_detail):
             print("未使用supervisor启动django server, 需手动重启django server!")
 
     ext.start()
+
+
+def get_arkstore_private_app_data(tenant, token, app_id):
+    access_token = get_arkstore_access_token(tenant, token)
+    url = settings.ARKSTOER_URL + f'/api/v1/arkstore/saas_apps/{app_id}/download'
+    headers = {'Authorization': f'Token {access_token}'}
+    resp = requests.get(url, headers=headers)
+    if resp.status_code == 402:
+        resp = resp.json()
+        raise Exception(f"error: download failed, msg: {resp.get('msg')}")
+    if resp.status_code != 200:
+        raise Exception('error: download failed')
+
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_private_app_name(tenant, token, app_id):
+    access_token = get_arkstore_access_token(tenant, token)
+    res = get_arkstore_extension_detail(access_token, app_id)
+    app_name = f"{res['name'][:55]}-{tenant.id.hex[-8:]}"
+    return app_name
+
+
+def install_arkstore_private_app(tenant, token, app_id, values_data=""):
+    data = get_arkstore_private_app_data(tenant, token, app_id)
+    download_url = data["download_url"]
+    app_name = get_arkstore_private_app_name(tenant, token, app_id)
+    k8s_url = settings.K8S_INSTALL_APP_URL + f'/ahc/{tenant.id}/crdchart/' + app_name
+
+    data = {
+        "chart": download_url,
+        "targetNamespace": app_name,
+        "valuesContent": values_data,
+    }
+    try:
+        resp = requests.post(k8s_url, json=data, timeout=30)
+        if resp.status_code != 200:
+            logger.error(f'Install app to k8s failed: {resp.status_code}')
+            return {'code': resp.status_code, 'message': resp.content.decode()}
+        resp = resp.json()
+        if resp['code'] != 0 and resp['code'] != 1:
+            logger.error(f"Install app to k8s failed: {resp['message']}")
+            return resp
+        
+        # 正在成功
+        access_token = get_arkstore_access_token(tenant, token)
+        app = get_arkstore_extension_detail(access_token, app_id)
+        private_app, created= PrivateApp.objects.update_or_create(
+            tenant = tenant,
+            arkstore_app_id = app['uuid'],
+            defaults= dict(
+                url = app.get('url'),
+                name = app['name'],
+                description = app['description'],
+                logo = app['logo'],
+                arkstore_category_id = app.get('category_id'),
+                values_data = values_data,
+            )
+        )
+
+        # create PeriodicTask
+        schedule, _ = CrontabSchedule.objects.get_or_create(
+            minute="*",
+            hour="*",
+            day_of_week="*",
+            day_of_month="*",
+            month_of_year="*",
+        )
+
+        PeriodicTask.objects.update_or_create(
+            name=app_name,
+            defaults={
+                'crontab': schedule,
+                'task': 'arkid.core.tasks.celery.dispatch_task',
+                'args': json.dumps(['async_check_private_app_install_status', private_app.id.hex, app_name]),
+                'kwargs': json.dumps({}),
+                'expires': timezone.now() + timedelta(minutes=20)
+            },
+        )
+
+        return resp
+    except Exception as e:
+        logger.error(f"Install app to k8s failed: {e}")
+        return {'code': -1, 'message': str(e)}
+
+
+def delete_arkstore_private_app(tenant, token, app_id):
+    app_name = get_arkstore_private_app_name(tenant, token, app_id)
+    k8s_url = settings.K8S_INSTALL_APP_URL + f'/ahc/{tenant.id}/crdchart/' + app_name
+
+    try:
+        resp = requests.delete(k8s_url, timeout=30)
+        if resp.status_code != 200:
+            logger.error(f'delete_arkstore_private_app failed: {app_name} {resp.status_code}')
+            return {'code': resp.status_code, 'message': resp.content.decode()}
+        resp = resp.json()
+        if resp['code'] != 0:
+            logger.error(f"delete_arkstore_private_app failed: {app_name} {resp['message']}")
+        return resp
+    except Exception as e:
+        logger.error(f"delete_arkstore_private_app failed: {app_name} {e}")
+        return {'code': -1, 'message': str(e)}
+
+
+def check_private_app_install_status(app_name):
+    k8s_url = settings.K8S_INSTALL_APP_URL + '/ahc/crdjob/' + app_name
+
+    resp = requests.get(k8s_url, timeout=15)
+    if resp.status_code != 200:
+        raise Exception(f'check_private_app_install_status failed: {app_name}, {resp.status_code}')
+    resp = resp.json()
+    if resp['code'] != 0:
+        raise Exception(f"check_private_app_install_status failed: {app_name}, {resp['message']}")
+    return resp
 
 
 def get_bind_arkstore_agent(access_token):
@@ -754,9 +875,14 @@ def get_admin_user_token():
 
 def refresh_admin_uesr_token():
     from arkid.core.token import refresh_token
+    from arkid.core.models import ExpiringToken
     platform_tenant = Tenant.platform_tenant()
-    admin_user = User.objects.filter(
+    admin_user = User.active_objects.filter(
         username='admin', tenant=platform_tenant
     ).first()
+    token = ExpiringToken.active_objects.filter(user=admin_user).first()
+    if not token.expired:
+        return token.token
+    
     token = refresh_token(admin_user)
     return token

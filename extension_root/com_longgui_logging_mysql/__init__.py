@@ -116,9 +116,11 @@ class LogItemQueryIn(Schema):
         title=_("HTTP状态码")
     )
     created__gte: Optional[datetime] = Field(
+        format="datetime",
         title=_("起始时间")
     )
     created__lte: Optional[datetime] = Field(
+        format="datetime",
         title=_("结束时间")
     )
 
