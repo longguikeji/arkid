@@ -44,8 +44,8 @@ class Tenant(BaseModel, ExpandModel):
     users = models.ManyToManyField(
         'User',
         blank=True,
-        related_name="tenant_user_set",
-        related_query_name="user",
+        related_name="all_tenant_set",
+        related_query_name="all_tenant",
     )
 
     def __str__(self) -> str:
@@ -156,8 +156,8 @@ class UserGroup(BaseModel, ExpandModel):
     users = models.ManyToManyField(
         'User',
         blank=True,
-        related_name="user_set",
-        related_query_name="user",
+        related_name="usergroup_set",
+        related_query_name="usergroup",
         verbose_name=_('User List', '用户列表'),
     )
     permission = models.ForeignKey(
@@ -247,8 +247,8 @@ class AppGroup(BaseModel, ExpandModel):
     apps = models.ManyToManyField(
         App,
         blank=True,
-        related_name="app_set",
-        related_query_name="app",
+        related_name="appgroup_set",
+        related_query_name="appgroup",
         verbose_name=_('APP List', '应用列表'),
     )
 
@@ -847,7 +847,7 @@ class MessageExpandAbstract(BaseModel):
         on_delete=models.PROTECT,
         related_name="%(app_label)s_%(class)s",
     )
-    
+
 class UserPersonalSettings(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _("UserPersonalSettings", "用户个人设置")
@@ -862,3 +862,41 @@ class UserPersonalSettings(BaseModel, ExpandModel):
 
     def __str__(self) -> str:
         return f'User: {self.user.username}'
+
+
+class PrivateApp(BaseModel):
+    class Meta(object):
+        verbose_name = _("Private APP", "私有化应用")
+        verbose_name_plural = _("Private APP", "私有化应用")
+
+    STATUS_CHOICES = (
+        ('install_success', _('Install Success', '安装成功')),
+        ('installing', _('Installing', '正在安装')),
+        ('install_fail', _('Install Fail', '安装失败')),
+    )
+
+    tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
+    name = models.CharField(max_length=128, verbose_name=_('name', '名称'))
+    url = models.CharField(max_length=1024,null=True,blank=True, verbose_name=_('url', '地址'))
+    logo = models.CharField(
+        max_length=1024, blank=True, null=True, default='', verbose_name=_('logo', '图标')
+    )
+    description = models.TextField(
+        blank=True, null=True, verbose_name=_('description', '描述')
+    )    
+    arkstore_category_id = models.IntegerField(default=None, null=True, verbose_name=_('ArkStore分类ID'))
+    arkstore_app_id = models.CharField(
+        max_length=1024, blank=True, null=True, default=None, verbose_name=_('Arkstore app id', '方舟商店应用标识')
+    )
+    status = models.CharField(
+        choices=STATUS_CHOICES,
+        default="installing",
+        max_length=100,
+        verbose_name=_('Status', "状态"),
+    )
+    values_data = models.TextField(
+        blank=True, null=True, verbose_name=_('Values Data', '配置')
+    ) 
+
+    def __str__(self) -> str:
+        return f'Tenant: {self.tenant.name}, PrivateApp: {self.name}'

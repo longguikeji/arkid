@@ -228,7 +228,8 @@ config_page.create_actions(
         'new': actions.CreateAction(
             path="/api/v1/tenant/{tenant_id}/extension/{extension_id}/config/",
             init_data={
-                'package': 'package'
+                'package': 'package',
+                # 'type': 'type'
             }
         ),
     },

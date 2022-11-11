@@ -189,8 +189,8 @@ class GlobalAuth(HttpBaseBearer):
 class ArkidApi(NinjaAPI):
     def create_response(self, request, *args, **kwargs):
             response = super().create_response(request, *args, **kwargs)
-            if request.META.get('request_id'):
-                response.headers['request_id'] = request.META.get('request_id')
+            if request.META.get('HTTP_REQUEST_ID'):
+                response.headers['request_id'] = request.META.get('HTTP_REQUEST_ID')
             return response
 
 
@@ -222,10 +222,10 @@ def operation(respnose_model=None, use_id=False, roles: Optional[List[str]] = No
 
         old_view_func = operation.view_func
         def func(request, *params, **kwargs):
-            request_id = request.META.get('request_id')
+            request_id = request.META.get('HTTP_REQUEST_ID')
             if not request_id and use_id:
                 request_id = uuid.uuid4().hex
-                request.META['request_id'] = request_id
+                request.META['HTTP_REQUEST_ID'] = request_id
             
             dispatch_event(Event(tag+'_pre', request.tenant, request=request, uuid=request_id))
             response = old_view_func(request=request, *params, **kwargs)

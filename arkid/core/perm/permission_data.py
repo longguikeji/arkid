@@ -31,7 +31,9 @@ class PermissionData(object):
         # 取得所有的系统权限
         return_change_group_info, return_change_sort_ids = self.update_arkid_system_permission()
         # 更新所有用户的系统权限
-        self.update_arkid_all_user_permission(change_sort_ids=return_change_sort_ids)
+        tenants = Tenant.valid_objects.all()
+        for tenant in tenants:
+            self.update_arkid_all_user_permission(str(tenant.id), change_sort_ids=return_change_sort_ids)
     
     def update_app_permission(self, tenant_id, app_id):
         '''
@@ -426,7 +428,7 @@ class PermissionData(object):
         else:
             tenant = Tenant.valid_objects.filter(id=tenant_id).first()
         # 取得当前租户的所有用户
-        auth_users = User.valid_objects.filter(tenant_id=tenant.id)
+        auth_users = tenant.users.all()
         # 区分出那些人是管理员
         systempermission = SystemPermission.objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
         userpermissionresults = UserPermissionResult.valid_objects.filter(
