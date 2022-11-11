@@ -44,8 +44,8 @@ class Tenant(BaseModel, ExpandModel):
     users = models.ManyToManyField(
         'User',
         blank=True,
-        related_name="tenant_user_set",
-        related_query_name="user",
+        related_name="all_tenant_set",
+        related_query_name="all_tenant",
     )
 
     def __str__(self) -> str:
@@ -156,8 +156,8 @@ class UserGroup(BaseModel, ExpandModel):
     users = models.ManyToManyField(
         'User',
         blank=True,
-        related_name="user_set",
-        related_query_name="user",
+        related_name="usergroup_set",
+        related_query_name="usergroup",
         verbose_name=_('User List', '用户列表'),
     )
     permission = models.ForeignKey(
@@ -247,8 +247,8 @@ class AppGroup(BaseModel, ExpandModel):
     apps = models.ManyToManyField(
         App,
         blank=True,
-        related_name="app_set",
-        related_query_name="app",
+        related_name="appgroup_set",
+        related_query_name="appgroup",
         verbose_name=_('APP List', '应用列表'),
     )
 

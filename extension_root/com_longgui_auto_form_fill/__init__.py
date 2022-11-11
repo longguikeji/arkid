@@ -21,6 +21,8 @@ from arkid.config import get_app_config
 from django.conf import settings
 from pathlib import Path
 from arkid.common.arkstore import get_app_config_from_arkstore
+from .schema import *
+from .models import AutoFormFillUser
 
 
 CURRENT_DIR = Path(__file__).resolve().parent
@@ -53,6 +55,11 @@ AutoFormFillConfigSchema = create_extension_schema(
         ('auto_login', bool, Field(default=False, title=_('Auto Login', '自动登录'))),
     ],
 )
+AutoFormFillSettingsConfigSchema = create_extension_schema(
+    'AutoFormFillSettingsConfigSchema',
+    __file__,
+    base_schema=AutoFormFillSettingsConfigSchema
+)
 
 
 class AutoFormFillExtension(AppProtocolExtension):
@@ -68,6 +75,8 @@ class AutoFormFillExtension(AppProtocolExtension):
         )
         self.register_api('/apps/', 'GET', self.app_list)
         self.register_api('/apps/{app_id}/', 'GET', self.app_config)
+        # self.register_api('/apps/{app_id}/', 'GET', self.app_config)
+        self.register_settings_schema(AutoFormFillSettingsConfigSchema)
         super().load()
 
     def create_app(self, event, **kwargs):
