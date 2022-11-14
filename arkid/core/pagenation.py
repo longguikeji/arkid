@@ -77,10 +77,14 @@ class ArstoreExtensionPagination(CustomPagination):
         installed_exts = Extension.valid_objects.filter()
         installed_ext_packages = {ext.package: ext for ext in installed_exts}
         for ext in items:
+            ext['arkstore_uuid'] = ext['uuid']
             if ext['package'] in installed_ext_packages:
-                if installed_ext_packages[ext['package']].version < ext['version']:
+                local_ext = installed_ext_packages[ext['package']]
+                ext['local_uuid'] = str(local_ext.id)
+                if local_ext.version < ext['version']:
                     ext['has_upgrade'] = True
             else:
+                ext['local_uuid'] = None
                 ext['installed'] = False
 
         tenant = request.tenant
