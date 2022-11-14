@@ -12,8 +12,8 @@ class ErrorCode(Enum):
     # SMS_CODE_MISMATCH = '10002'
     # EMAIL_CODE_MISMATCH = '10021'
     USERNAME_EXISTS_ERROR = ('10004', _('username already exists', '用户名已存在'))
-
-
+    USER_MANAGER_NOT_DELETE = ('10005', _('not delete manager', '不允许删除管理员'))
+    USER_NOT_EXISTS_ERROR = ('10006', _('user not exists', '用户不存在'))
     # TENANT_NO_ACCESS = '10003'
     # TENANT_NO_EXISTS = '10007'
     # CODE_EXISTS_ERROR = '10008'

@@ -27,7 +27,12 @@ from django.utils import timezone
 @paginate(CustomPagination)
 def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
     from arkid.core.perm.permission_data import PermissionData
-    users = User.expand_objects.filter(tenant_id=tenant_id, is_del=False)
+    tenant = request.tenant
+    tenant_users = tenant.users
+    tenant_user_ids = []
+    for tenant_user in tenant_users.all():
+        tenant_user_ids.append(tenant_user.id)
+    users = User.expand_objects.filter(id__in=tenant_user_ids, is_del=False)
     if query_data.username:
         users = users.filter(username__icontains=query_data.username)
     if query_data.nickname:
@@ -39,7 +44,7 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
     if query_data.order:
         users = users.order_by(query_data.order)
     login_user = request.user
-    tenant = request.tenant
+    # tenant = request.tenant
     pd = PermissionData()
     users = pd.get_manage_all_user(login_user, tenant, users)
     
@@ -54,12 +59,18 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
 # @paginate(CustomPagination)
 def user_list_no_super(request, tenant_id: str):
     from arkid.core.perm.permission_data import PermissionData
-    super_user_id = User.valid_objects.order_by('created').first().id
-    users = User.valid_objects.filter(tenant_id=tenant_id).exclude(id=super_user_id)
+    pd = PermissionData()
+    # super_user_id = User.valid_objects.order_by('created').first().id
+    tenant = request.tenant
+    user_managers = pd.get_tenant_managers(tenant)
+    exclude_ids = []
+    for user_manager in user_managers:
+        exclude_ids.append(user_manager.id)
+    users = tenant.users.filter(is_del=False)
+    if exclude_ids:
+        users = users.exclude(id__in=exclude_ids)
     # 如果当前登录的用户不是管理员，需要根据用户所拥有的分组进行区分
     login_user = request.user
-    tenant = request.tenant
-    pd = PermissionData()
     users = pd.get_manage_all_user(login_user, tenant, users)
     return {"data": list(users.all())}
 
@@ -102,9 +113,18 @@ def user_pull(request, tenant_id: str):
 @api.delete("/tenant/{tenant_id}/users/{id}/",response=UserDeleteOut, tags=['用户'])
 @operation(UserDeleteOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def user_delete(request, tenant_id: str,id:str):
-    user = get_object_or_404(User.valid_objects,tenant=request.tenant, id=id)
-    user.delete()
-    return {"error":ErrorCode.OK.value}
+    # user = get_object_or_404(User.valid_objects,tenant=request.tenant, id=id)
+    tenant = request.tenant
+    user = tenant.users.filter(id=id).first()
+    if user:
+        is_tenant_admin = tenant.has_admin_perm(user)
+        if is_tenant_admin:
+            return ErrorDict(ErrorCode.USER_MANAGER_NOT_DELETE)
+        else:
+            user.delete()
+        return ErrorDict(ErrorCode.OK)
+    else:
+        return ErrorDict(ErrorCode.USER_NOT_EXISTS_ERROR)
         
 # ------------- 更新用户接口 --------------
 @api.post("/tenant/{tenant_id}/users/{id}/",response=UserUpdateOut, tags=['用户'])
