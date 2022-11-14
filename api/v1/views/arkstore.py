@@ -92,6 +92,8 @@ class PAYMENT_TYPE(str, Enum):
 
 class ArkstoreItemSchemaOut(Schema):
     uuid: str = Field(hidden=True)
+    local_uuid: Optional[str] = Field(hidden=True, title=_('Local UUID', '插件本地UUID'))
+    arkstore_uuid: Optional[str] = Field(hidden=True, title=_('Arkstore UUID', '插件商店UUID'))
     name: str = Field(readonly=True)
     version: str = Field(readonly=True, title=_('Version', '版本'))
     author: str = Field(readonly=True, title=_('Author', '作者'))
@@ -457,13 +459,17 @@ def list_arkstore_purchased_and_installed_extensions(request, tenant_id: str, fi
     installed_ext_packages = {ext.package: ext for ext in installed_exts}
     purchased_exts = get_arkstore_list(request, True, 'extension', all=True, extra_params=extra_params)['items']
     for ext in purchased_exts:
+        ext['arkstore_uuid'] = ext['uuid']
         if ext['package'] in installed_ext_packages:
+            local_ext = installed_ext_packages[ext['package']]
+            ext['local_uuid'] = str(local_ext.id)
             ext['installed'] = True
-            ext['is_active'] = installed_ext_packages[ext['package']].is_active
-            ext['is_active_tenant'] = installed_ext_packages[ext['package']].is_active_tenant
-            if installed_ext_packages[ext['package']].version < ext['version']:
+            ext['is_active'] = local_ext.is_active
+            ext['is_active_tenant'] = local_ext.is_active_tenant
+            if local_ext.version < ext['version']:
                 ext['has_upgrade'] = True
         else:
+            ext['local_uuid'] = None
             ext['installed'] = False
 
     purchased_exts_packages = {ext['package']: ext for ext in purchased_exts}
@@ -472,6 +478,8 @@ def list_arkstore_purchased_and_installed_extensions(request, tenant_id: str, fi
         ext.uuid = str(ext.id)
         ext.labels = " ".join(ext.labels) if ext.labels else ""
         ext.is_default_extension = True
+        ext.local_uuid = str(ext.id)
+        ext.arkstore_uuid = None
 
     if filter.has_upgrade == True:
         return [ext for ext in purchased_exts if ext.get('has_upgrade') == True]
@@ -508,15 +516,20 @@ def list_arkstore_rented_extensions(request, tenant_id: str):
         for ext in extensions:
             ext.lease_useful_life = ["不限天数，不限人数"]
             ext.lease_state = '已租赁'
+            ext.local_uuid = str(ext.id)
+            ext.arkstore_uuid = None
         return extensions
 
     resp = get_arkstore_list(request, None, 'extension', rented=True, all=True)['items']
     extensions_rented = {ext['package']: ext for ext in resp}
     for ext in extensions:
+        ext.local_uuid = str(ext.id)
         if ext.package in extensions_rented:
-            ext.lease_useful_life = extensions_rented[ext.package]['lease_useful_life']
+            ext_arkstore = extensions_rented[ext.package]
+            ext.arkstore_uuid = ext_arkstore['uuid']
+            ext.lease_useful_life = ext_arkstore['lease_useful_life']
             ext.lease_state = '已租赁'
-            lease_records = extensions_rented[ext.package].get('lease_records') or []
+            lease_records = ext_arkstore.get('lease_records') or []
             # check_lease_records_expired
             if check_time_and_user_valid(lease_records, tenant):
                 tenant_extension, created = TenantExtension.objects.update_or_create(
@@ -524,6 +537,8 @@ def list_arkstore_rented_extensions(request, tenant_id: str):
                     extension=ext,
                     defaults={"is_rented": True}
                 )
+        else:
+            ext.arkstore_uuid = None
 
     return extensions
 
