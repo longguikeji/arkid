@@ -2545,6 +2545,27 @@ class PermissionData(object):
                         return True
         return False
     
+    def get_tenant_managers(self, tenant):
+        '''
+        取得当前租户所有的管理员
+        '''
+        systempermission = SystemPermission.valid_objects.filter(tenant=tenant, code=tenant.admin_perm_code, is_system=True).first()
+        userpermissionresults = UserPermissionResult.valid_objects.filter(
+            app=None,
+            tenant=tenant,
+        )
+        compress = Compress()
+        users = []
+        for userpermissionresult in userpermissionresults:
+            permission_result = compress.decrypt(userpermissionresult.result)
+            permission_result_arr = list(permission_result)
+            if len(permission_result_arr) > systempermission.sort_id:
+                check_result = int(permission_result_arr[systempermission.sort_id])
+                if check_result == 1 and userpermissionresult.user not in users:
+                    users.append(userpermissionresult.user)
+        return users
+
+    
     def create_tenant_admin_permission(self, tenant):
         '''
         创建租户管理员权限

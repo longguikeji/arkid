@@ -59,12 +59,18 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
 # @paginate(CustomPagination)
 def user_list_no_super(request, tenant_id: str):
     from arkid.core.perm.permission_data import PermissionData
-    super_user_id = User.valid_objects.order_by('created').first().id
+    pd = PermissionData()
+    # super_user_id = User.valid_objects.order_by('created').first().id
     tenant = request.tenant
-    users = tenant.users.filter(is_del=False).exclude(id=super_user_id)
+    user_managers = pd.get_tenant_managers(tenant)
+    exclude_ids = []
+    for user_manager in user_managers:
+        exclude_ids.append(user_manager.id)
+    users = tenant.users.filter(is_del=False)
+    if exclude_ids:
+        users = users.exclude(id__in=exclude_ids)
     # 如果当前登录的用户不是管理员，需要根据用户所拥有的分组进行区分
     login_user = request.user
-    pd = PermissionData()
     users = pd.get_manage_all_user(login_user, tenant, users)
     return {"data": list(users.all())}
 
