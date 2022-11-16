@@ -25,19 +25,10 @@ def auth(request, tenant_id: str, event_tag: str, data: AuthIn):
     # 生成 token
     token = refresh_token(user)
     dispatch_task.delay('async_get_arkstore_access_token', tenant.id.hex, token)
-    netloc = request.get_host().split(':')[0]
+    domain = request.get_host().split(':')[0]
 
-    is_ip_addr = False
-    ip_list = netloc.split('.')
-    if len(ip_list) == 4 and ''.join(ip_list).isdigit():
-        is_ip_addr = True
-    
-    domain = ('.'.join(netloc.split('.')[-2:]))
     response = JsonResponse({'error': ErrorCode.OK.value, 'data': {'user': {"id": user.id.hex, "username": user.username}, 'token': token}})
-    if is_ip_addr:
-        response.set_cookie("arkid_token", token, httponly=True)
-    else:
-        response.set_cookie("arkid_token", token, domain=domain, httponly=True)
+    response.set_cookie("arkid_token", token, domain=domain, httponly=True)
 
     return response
 

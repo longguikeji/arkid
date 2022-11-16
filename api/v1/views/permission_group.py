@@ -236,7 +236,8 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                         entry_permission = app.entry_permission
                     elif name and name in app.entry_permission.name:
                         entry_permission = app.entry_permission
-                    
+                    if category is None and operation_id is None and name is None and app.entry_permission:
+                        entry_permission = app.entry_permission
                     if app_name and app_name not in app.name:
                         entry_permission = None
                 # 需要过滤展示
