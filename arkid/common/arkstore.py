@@ -880,7 +880,7 @@ def refresh_admin_uesr_token():
     admin_user = User.active_objects.filter(
         username='admin', tenant=platform_tenant
     ).first()
-    token = ExpiringToken.active_objects.filter(user=admin_user).first()
+    token = ExpiringToken.objects.filter(user=admin_user).first()
     if not token.expired:
         return token.token
     
