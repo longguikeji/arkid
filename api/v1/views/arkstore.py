@@ -305,7 +305,7 @@ class ArkstoreAppQueryIn(Schema):
 
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
-@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
 @paginate(ArstoreExtensionPagination)
 def list_arkstore_extensions(request, tenant_id: str, query_data: ArkstoreExtensionQueryIn=Query(...)):
     query_data = query_data.dict()
@@ -329,7 +329,7 @@ def list_arkstore_private_apps(request, tenant_id: str, query_data: ArkstoreAppQ
 
 
 @api.get("/tenant/{tenant_id}/arkstore/categorys/", tags=['方舟商店'], response=ArkstoreCategoryListSchemaOut)
-@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN,NORMAL_USER])
 def list_arkstore_categorys(request, tenant_id: str, parent_id:str = None, type:str = 'app', show_local:int = 0):
     '''
     方舟商店分类列表
@@ -445,7 +445,7 @@ class ArkstoreStatusFilterIn(Schema):
     )
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased_and_installed/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
-@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN,NORMAL_USER])
 @paginate(CustomPagination)
 def list_arkstore_purchased_and_installed_extensions(request, tenant_id: str, filter: ArkstoreStatusFilterIn=Query(...)):
     extra_params = {}
