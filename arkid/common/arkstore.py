@@ -132,8 +132,6 @@ def get_arkstore_extensions(access_token, purchased=None, rented=False, type=Non
             url = '/api/v1/arkstore/extensions/purchased'
     elif type == 'app':
         url = '/api/v1/arkstore/apps/purchased'
-    elif type == 'private_app':
-        url = '/api/v1/arkstore/private_apps/purchased'
     elif type == 'category':
         url = '/api/v1/arkstore/app/categories'
     else:
