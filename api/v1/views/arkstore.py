@@ -315,6 +315,16 @@ class ArkstoreAppQueryIn(Schema):
     )
 
 
+class ArkstoreAllAppQueryIn(ArkstoreAppQueryIn):
+    type:str = Field(
+        default="",
+        title=_("应用类型")
+    )
+
+class OnShelveAppPurchaseResponse(ResponseSchema):
+    data: OnShelveAppPurchaseOut
+
+
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
 @operation(List[ArkstoreItemSchemaOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(ArstoreExtensionPagination)
@@ -344,19 +354,45 @@ def list_arkstore_private_apps(request, tenant_id: str, query_data: ArkstoreAppQ
 @api.get("/tenant/{tenant_id}/arkstore/all/apps/", tags=['方舟商店'], response=List[OnShelveAppPurchaseOut])
 @operation(List[OnShelveAppPurchaseOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(ArstoreAppPagination)
-def list_arkstore_all_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
+def list_arkstore_all_apps(request, tenant_id: str, query_data: ArkstoreAllAppQueryIn=Query(...)):
     query_data = query_data.dict()
-    query_data['type'] = 'all'
+    query_data['type'] = query_data.pop('type', None) or 'all'
     return get_arkstore_list(request, None, 'app', extra_params=query_data)
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/all/apps/", tags=['方舟商店'], response=List[OnShelveAppPurchaseOut])
 @operation(List[OnShelveAppPurchaseOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(ArstoreAppPagination)
-def list_arkstore_purchased_all_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
+def list_arkstore_purchased_all_apps(request, tenant_id: str, query_data: ArkstoreAllAppQueryIn=Query(...)):
     query_data = query_data.dict()
-    query_data['type'] = 'all'
+    query_data['type'] = query_data.pop('type', None) or 'all'
     return get_arkstore_list(request, True, 'app', extra_params=query_data)
+
+
+@api.get("/tenant/{tenant_id}/arkstore/purchased/all/apps/{arkstore_uuid}/", tags=['方舟商店'], response=OnShelveAppPurchaseResponse)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_arkstore_purchased_app(request, tenant_id: str, arkstore_uuid: str):
+    token = request.user.auth_token
+    tenant = request.tenant
+    access_token = get_arkstore_access_token(tenant, token)
+    app = get_arkstore_extension_detail(access_token, arkstore_uuid)
+
+    installed_private_app = PrivateApp.active_objects.filter(tenant=tenant, arkstore_app_id=arkstore_uuid).first()
+    installed_app = App.active_objects.filter(tenant=tenant, arkstore_app_id=arkstore_uuid).first()
+
+    app.pop('category', None)
+    app['arkstore_uuid'] = arkstore_uuid
+    if installed_app:
+        app['local_uuid'] = str(installed_app.id)
+        app['installed'] = True
+    elif installed_private_app:
+        app['installed'] = True
+        app['private_app_status'] = installed_private_app.status
+
+    if 'type' in app:
+        app['type'] = 'arkstore_' + app['type']
+
+    return {"data": app}
 
 
 @api.get("/tenant/{tenant_id}/arkstore/categorys/", tags=['方舟商店'], response=ArkstoreCategoryListSchemaOut)
