@@ -1,4 +1,3 @@
-from cmath import log
 from arkid.core.extension import Extension
 from arkid.core.translation import gettext_default as _
 from pydantic import Field
@@ -10,7 +9,8 @@ from arkid.config import get_app_config
 from typing import Optional
 from .template import NginxConfTemplate
 from urllib.parse import urlparse
-from arkid.core.models import ExpiringToken
+from arkid.core.models import ExpiringToken, Tenant, App
+from arkid.core.perm.permission_data import PermissionData
 
 
 class AppProxyNginxExtension(Extension):
@@ -37,25 +37,27 @@ class AppProxyNginxExtension(Extension):
             'api_v1_views_mine_get_mine_apps_with_group', self.change_desktop_apps_url
         )
         self.register_api(
-            f'/nginx_auth/',
+            '/nginx_auth/{app_id}',
             'GET',
             self.nginx_auth,
+            tenant_path=True,
             auth=None,
             response={200: None, 401: None},
         )
         super().load()
 
-    def nginx_auth(self, request):
+    def nginx_auth(self, request, tenant_id, app_id):
         token = request.COOKIES.get("arkid_token", "")
         if not token:
+            logger.info(f"No arkid_token found")
             return 401, None
         try:
-            token = ExpiringToken.objects.get(token=token)
+            exp_token = ExpiringToken.objects.get(token=token)
 
-            if not token.user.is_active:
+            if not exp_token.user.is_active:
                 raise Exception(_('User inactive or deleted', '用户无效或被删除'))
 
-            if token.expired(request.tenant):
+            if exp_token.expired(request.tenant):
                 raise Exception(_('Token has expired', '秘钥已经过期'))
 
         except ExpiringToken.DoesNotExist:
@@ -63,6 +65,25 @@ class AppProxyNginxExtension(Extension):
             return 401, None
         except Exception as err:
             logger.error(err)
+            return 401, None
+
+        user = exp_token.user
+        app = App.active_objects.filter(id=app_id).first()
+
+        if not app:
+            logger.info(f"No such app: {app_id}")
+            return 401, None
+
+        permissiondata = PermissionData()
+        permission = app.entry_permission
+        if not permission:
+            logger.info("没有找到入口权限")
+            return 401, None
+        result = permissiondata.permission_check_by_sortid(
+            permission, user, app, tenant_id
+        )
+        if not result:
+            logger.info("没有获得授权使用")
             return 401, None
 
         return 200, None
@@ -99,9 +120,9 @@ class AppProxyNginxExtension(Extension):
         app = event.data
         u = urlparse(frontend_url)
         app_server_name = f'{app.id.hex}.{u.hostname}'
-        port = u.port
-        if not port:
-            port = 80
+        tenant_id = event.tenant.id.hex
+        app_id = app.id.hex
+        port = 80
 
         if not app.is_intranet_url:
             logger.info(f'Not Intranet URL: is_intranet_url: {app.is_intranet_url}')
@@ -122,7 +143,7 @@ class AppProxyNginxExtension(Extension):
                     'app_server_name': app_server_name,
                     'port': port,
                     'app_proxy_url': app.url,
-                    'nginx_auth_url': f'http://{arkid_be_host}/api/v1/com_longgui_app_proxy_nginx/nginx_auth/',
+                    'nginx_auth_url': f'http://{arkid_be_host}/api/v1/tenant/{tenant_id}/com_longgui_app_proxy_nginx/nginx_auth/{app_id}',
                 }
                 content = NginxConfTemplate.substitute(values)
                 f.write(content)

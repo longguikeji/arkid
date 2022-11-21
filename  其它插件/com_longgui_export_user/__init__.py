@@ -1,9 +1,11 @@
 import json
 from ninja import Field, Query
 from typing import List, Optional
+from arkid.core import api as core_api
 from api.v1.pages.user_manage.user_list import page as user_list_page
 from api.v1.pages.user_manage.user_group import page as user_group_list_page
-from api.v1.schema.user import UserListItemOut, UserListQueryIn
+from api.v1.schema.user import UserItemOut, UserListQueryIn
+from api.v1.schema.user_group import UserGroupCreateIn
 from arkid.core.extension import create_extension_schema
 from arkid.core.translation import gettext_default as _
 from arkid.core.api import operation
@@ -102,10 +104,24 @@ class ExportUserExtension(Extension):
         '''
         用户分组模板导出
         '''
+        ug_fields = UserGroupCreateIn.__fields__
         result_list = []
+        key_list = []
         app = collections.OrderedDict()
-        app['name'] = 'name'
-        app['parent_id'] = 'parent_id'
+        for key,value in ug_fields.items():
+            if key == 'parent':
+                key = 'parent_id'
+            if value.field_info.title:
+                # 存在标题
+                if hasattr(value.type_, '__fields__') and key != 'parent_id':
+                    for field_value in value.type_.__fields__.values():
+                        field_title = field_value.field_info.title
+                        field_title = key + ':' + field_title
+                        key_list.append(field_title)
+                    continue
+            key_list.append(key)
+        for key in key_list:
+            app[key] = key
         result_list.append(app)
         # 找到数据
         extension = self.model
@@ -146,7 +162,11 @@ class ExportUserExtension(Extension):
             data_list = self.import_csv(response)
         else:
             data_list = self.import_excel(response)
-        exist_users = User.expand_objects.filter(tenant_id=tenant_id)
+        old_tenant_users = tenant.users.all()
+        old_tenant_ids = []
+        for old_tenant_user in old_tenant_users:
+            old_tenant_ids.append(old_tenant_user.id)
+        exist_users = User.expand_objects.filter(id__in=old_tenant_ids)
         usernames = []
         mobiles = []
         for exist_user in exist_users:
@@ -156,6 +176,21 @@ class ExportUserExtension(Extension):
                 usernames.append(username)
             if mobile:
                 mobiles.append(mobile)
+        # 准备请求头
+        ul_fields = UserItemOut.__fields__
+        head_dict = {}
+        for key,value in ul_fields.items():
+            if value.field_info.title:
+                # 存在标题
+                if hasattr(value.type_, '__fields__'):
+                    for field_value in value.type_.__fields__.values():
+                        field_title = field_value.field_info.title
+                        field_title = key + ':' + field_title
+                        head_dict[field_title] = {
+                            'base_name': value.name,
+                            'id': field_value.name
+                        }
+        # 结束准备请求
         for data_item in data_list:
             username = str(data_item.get('username', '')).replace('.0', '').strip()
             mobile = data_item.get('mobile', '')
@@ -166,13 +201,13 @@ class ExportUserExtension(Extension):
             if mobile in mobiles:
                 return self.error(ErrorCode.FIELDS_VALUE_REPEAT, field='mobile', value=mobile)
         for data_item in data_list:
-            username = str(data_item.get('username', '')).replace('.0', '').strip()
-            nickname = str(data_item.get('nickname', '')).replace('.0', '').strip()
-            mobile = data_item.get('mobile', '')
-            if mobile:
-                mobile = str(int(mobile)).strip()
-            password = str(data_item.get('password', '')).replace('.0', '').strip()
+            user_keys = data_item.keys()
 
+            username = str(data_item.pop('username', '')).replace('.0', '').strip() if 'username' in data_item else ''
+            nickname = str(data_item.pop('nickname', '')).replace('.0', '').strip() if 'nickname' in data_item else ''
+            mobile = str(data_item.pop('mobile', '')).replace('.0', '').strip() if 'mobile' in data_item else ''
+            password = str(data_item.pop('password', '')).replace('.0', '').strip() if 'password' in data_item else ''
+            email = str(data_item.pop('email', '')).replace('.0', '').strip() if 'email' in data_item else ''
             user = User(tenant=tenant)
             user.username = username
             if mobile:
@@ -181,6 +216,23 @@ class ExportUserExtension(Extension):
                 user.password = make_password(password)
             if nickname:
                 user.nickname = nickname
+            if email:
+                user.email = email
+            # 扩展字段
+            save_dict_value = {}
+            for key,value in data_item.items():
+                value = str(value).replace('.0', '').strip()
+                head_value = head_dict.get(key, None)
+                if head_value:
+                    if head_value.get('base_name') not in save_dict_value:
+                        save_dict_value[head_value.get('base_name')] = {
+                            head_value.get('id'): value
+                        }
+                    else:
+                        save_dict_value[head_value.get('base_name')][head_value.get('id')] = value
+            user.save()
+            for key,value in save_dict_value.items():
+                setattr(user,key,value)
             user.save()
             tenant.users.add(user)
             tenant.save()
@@ -198,15 +250,48 @@ class ExportUserExtension(Extension):
             data_list = self.import_csv(response)
         else:
             data_list = self.import_excel(response)
+        # 准备请求头
+        ul_fields = UserGroupCreateIn.__fields__
+        head_dict = {}
+        for key,value in ul_fields.items():
+            if key == 'parent':
+                key = 'parent_id'
+            if value.field_info.title:
+                # 存在标题
+                if hasattr(value.type_, '__fields__') and key != 'parent_id':
+                    for field_value in value.type_.__fields__.values():
+                        field_title = field_value.field_info.title
+                        field_title = key + ':' + field_title
+                        head_dict[field_title] = {
+                            'base_name': value.name,
+                            'id': field_value.name
+                        }
+        # 结束准备请求
         for data_item in data_list:
-            name = str(data_item.get('name', '')).replace('.0', '').strip()
-            parent_id = data_item.get('parent_id', '')
+            name = str(data_item.get('name', '')).replace('.0', '').strip() if 'name' in data_item else ''
+            parent_id = str(data_item.get('parent_id', '')).replace('.0', '').strip() if 'parent_id' in data_item else ''
 
             user_group = UserGroup()
             user_group.tenant = tenant
             user_group.name = name
             if parent_id:
                 user_group.parent_id = parent_id
+            # 扩展字段
+            save_dict_value = {}
+            for key,value in data_item.items():
+                value = str(value).replace('.0', '').strip()
+                head_value = head_dict.get(key, None)
+                if head_value:
+                    if head_value.get('base_name') not in save_dict_value:
+                        save_dict_value[head_value.get('base_name')] = {
+                            head_value.get('id'): value
+                        }
+                    else:
+                        save_dict_value[head_value.get('base_name')][head_value.get('id')] = value
+            user_group.save()
+
+            for key,value in save_dict_value.items():
+                setattr(user_group,key,value)
             user_group.save()
 
             systempermission = SystemPermission()
@@ -227,12 +312,31 @@ class ExportUserExtension(Extension):
         '''
         用户模板导出
         '''
+        ul_fields = UserItemOut.__fields__
+        key_list = []
         result_list = []
         app = collections.OrderedDict()
-        app['username'] = 'username'
-        app['nickname'] = 'nickname'
-        app['mobile'] = 'mobile'
-        app['password'] = 'password'
+        for key,value in ul_fields.items():
+            if value.field_info.title:
+                # 存在标题
+                if hasattr(value.type_, '__fields__'):
+                    if 'password' not in key_list:
+                        # 把密码列手动加到导出数据中
+                        key_list.append('password')
+                    # 头像不支持导入，所以要去掉
+                    if 'avatar' in key_list:
+                        key_list.remove('avatar')
+                    # 用户id不支持导入
+                    if 'id' in key_list:
+                        key_list.remove('id')
+                    for field_value in value.type_.__fields__.values():
+                        field_title = field_value.field_info.title
+                        field_title = key + ':' + field_title
+                        key_list.append(field_title)
+                    continue
+            key_list.append(key)
+        for key in key_list:
+            app[key] = key
         result_list.append(app)
         # 找到数据
         extension = self.model
@@ -256,29 +360,10 @@ class ExportUserExtension(Extension):
         用户分组导出
         '''
         from arkid.core.perm.permission_data import PermissionData
-        usergroups = UserGroup.valid_objects.filter(
+        usergroups = UserGroup.expand_objects.filter(
             tenant_id=tenant_id,
+            is_del=False
         )
-        login_user = request.user
-        tenant = request.tenant
-        pd = PermissionData()
-        usergroups = pd.get_manage_user_group(login_user, tenant, usergroups)
-        result_list = []
-        app = collections.OrderedDict()
-        app['id'] = 'id'
-        app['name'] = 'name'
-        app['parent_id'] = 'parent_id'
-        result_list.append(app)
-        for usergroup in usergroups:
-            app = collections.OrderedDict()
-            app['id'] = str(usergroup.id)
-            app['name'] = str(usergroup.name)
-            if usergroup.parent:
-                app['parent_id'] = str(usergroup.parent_id)
-            else:
-                app['parent_id'] = ''
-            result_list.append(app)
-        # 找到数据
         extension = self.model
         te = TenantExtension.valid_objects.filter(
             tenant_id=tenant_id,
@@ -288,8 +373,91 @@ class ExportUserExtension(Extension):
             export_format = te.settings.get('export_format','xls')
         else:
             export_format = 'xls'
+        login_user = request.user
+        tenant = request.tenant
+        pd = PermissionData()
+        ug_fields = UserGroupCreateIn.__fields__
+        usergroups = pd.get_manage_user_group(login_user, tenant, usergroups)
+        # 头数据
+        result_list = []
+        key_list = {}
+        head_data_dict = {}
+        app = collections.OrderedDict()
+        # app['id'] = 'id'
+        # app['name'] = 'name'
+        # app['parent_id'] = 'parent_id'
+        for key,value in ug_fields.items():
+            if export_format == 'xls':
+                if value.field_info.title:
+                    # 存在标题
+                    if key == 'parent':
+                        key = 'parent_id'
+                    key_list[key] = value.field_info.title
+                    if hasattr(value.type_, '__fields__') and key != 'parent_id':
+                        head_data_dict[key] = value.type_.__fields__
+                else:
+                    # 不存在标题
+                    key_list[key] = key
+            else:
+                if value.field_info.title:
+                    # 存在标题
+                    if key == 'parent':
+                        key = 'parent_id'
+                    if hasattr(value.type_, '__fields__') and key != 'parent_id':
+                        head_data_dict[key] = value.type_.__fields__
+                        for field_value in value.type_.__fields__.values():
+                            field_title = field_value.field_info.title
+                            field_title = key + ':' + field_title
+                            key_list[field_title] = field_title
+                    else:
+                        key_list[key] = value.field_info.title
+                else:
+                    # 不存在标题
+                    key_list[key] = key
+        for key,value  in key_list.items():
+            app[key] = value
+        result_list.append(app)
+        # 体数据
+        for usergroup in usergroups:
+            app = collections.OrderedDict()
+            for key in key_list.keys():
+                if export_format == 'xls':
+                    user_group_value = usergroup.get(key, None)
+                    if user_group_value:
+                        app[key] = str(user_group_value)
+                    else:
+                        app[key] = ''
+                else:
+                    if ':' in key:
+                        key_spilit_arr = key.split(':')
+                        custom_field = key_spilit_arr[0]
+                        custom_name_field = key_spilit_arr[1]
+                        usergroup_custom_value = usergroup.get(custom_field, None)
+                        head_data_item = head_data_dict.get(custom_field, None)
+                        if head_data_item and usergroup_custom_value:
+                            for head_key,head_value in head_data_item.items():
+                                head_value_title = head_value.field_info.title
+                                if head_value_title == custom_name_field:
+                                    app[key] = usergroup_custom_value.get(head_key, '')
+                                    break
+                        else:
+                            app[key] = ''
+                    else:
+                        user_group_value = usergroup.get(key, None)
+                        if user_group_value:
+                            app[key] = str(user_group_value)
+                        else:
+                            app[key] = ''
+            # app['id'] = str(usergroup.id)
+            # app['name'] = str(usergroup.name)
+            # if usergroup.parent:
+            #     app['parent_id'] = str(usergroup.parent_id)
+            # else:
+            #     app['parent_id'] = ''
+            result_list.append(app)
+        # 找到数据
         if export_format == 'xls':
-            response = self.export_excel(result_list, "user_group")
+            response = self.export_excel_head(result_list, "user_group", self.get_style(), head_data_dict=head_data_dict)
         else:
             response = self.export_csv(request, result_list, "user_group")
         return response
@@ -300,12 +468,12 @@ class ExportUserExtension(Extension):
         用户导出
         '''
         from arkid.core.perm.permission_data import PermissionData
-        users = User.expand_objects.filter(tenant=request.tenant).all()
+        users = User.expand_objects.filter(tenant=request.tenant, is_del=False).all()
         login_user = request.user
         tenant = request.tenant
         pd = PermissionData()
         users = pd.get_manage_all_user(login_user, tenant, users)
-        ul_fields = UserListItemOut.__fields__
+        ul_fields = UserItemOut.__fields__
         # 找到数据
         extension = self.model
         te = TenantExtension.valid_objects.filter(
@@ -317,29 +485,75 @@ class ExportUserExtension(Extension):
         else:
             export_format = 'xls'
         # 准备数据
+        # value.type_.__fields__
         # 头数据
         key_list = {}
         result_list = []
+        head_data_dict = {}
         app = collections.OrderedDict()
         for key,value in ul_fields.items():
-            if value.field_info.title:
-                key_list[key] = value.field_info.title
+            if export_format == 'xls':
+                # xls格式
+                if value.field_info.title:
+                    # 存在标题
+                    key_list[key] = value.field_info.title
+                    if hasattr(value.type_, '__fields__'):
+                        head_data_dict[key] = value.type_.__fields__
+                else:
+                    # 不存在标题
+                    key_list[key] = key
             else:
-                key_list[key] = key
-            app[key] = key_list[key]
+                # csv格式
+                if value.field_info.title:
+                    if hasattr(value.type_, '__fields__'):
+                        head_data_dict[key] = value.type_.__fields__
+                        for field_value in value.type_.__fields__.values():
+                            field_title = field_value.field_info.title
+                            field_title = key + ':' + field_title
+                            key_list[field_title] = field_title
+                            # app[field_title] = key_list[field_title]
+                    else:
+                        key_list[key] = value.field_info.title
+                else:
+                    key_list[key] = key
+            # app[key] = key_list[key]
+        for key,value  in key_list.items():
+            app[key] = value
         result_list.append(app)
         # 体数据
         for user in users:
             app = collections.OrderedDict()
             for key in key_list.keys():
-                user_value = user.get(key, None)
-                if user_value:
-                    app[key] = str(user_value)
+                if export_format == 'xls':
+                    user_value = user.get(key, None)
+                    if user_value:
+                        app[key] = str(user_value)
+                    else:
+                        app[key] = ''
                 else:
-                    app[key] = ''
+                    if ':' in key:
+                        key_spilit_arr = key.split(':')
+                        custom_field = key_spilit_arr[0]
+                        custom_name_field = key_spilit_arr[1]
+                        user_custom_value = user.get(custom_field, None)
+                        head_data_item = head_data_dict.get(custom_field, None)
+                        if head_data_item and user_custom_value:
+                            for head_key,head_value in head_data_item.items():
+                                head_value_title = head_value.field_info.title
+                                if head_value_title == custom_name_field:
+                                    app[key] = user_custom_value.get(head_key, '')
+                                    break
+                        else:
+                            app[key] = ''
+                    else:
+                        user_value = user.get(key, None)
+                        if user_value:
+                            app[key] = str(user_value)
+                        else:
+                            app[key] = ''
             result_list.append(app)
         if export_format == 'xls':
-            response = self.export_excel(result_list, "user")
+            response = self.export_excel_head(result_list, "user", self.get_style() ,head_data_dict=head_data_dict)
         else:
             response = self.export_csv(request, result_list, "user")
         return response
@@ -363,7 +577,7 @@ class ExportUserExtension(Extension):
         return list
     
     def import_csv(self, response):
-        decoded_content = response.decode('utf-8')
+        decoded_content = response.decode('utf-8-sig')
         cr = csv.reader(decoded_content.splitlines(), delimiter=',')
         my_list = list(cr)
         list_result = []
@@ -430,5 +644,85 @@ class ExportUserExtension(Extension):
         output.seek(0)
         response.write(output.getvalue())
         return response
+
+    def export_excel_head(self, list, name="", style=None, head_data_dict=None):
+        # 文件名信息
+        ts = int(time.time())
+        key_file = '{}_{}.{}'.format(name, ts, 'xls') if name else 'excel_{}.{}'.format(ts, 'xls')
+        # 返回信息
+        response = HttpResponse(content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment;filename={}'.format(key_file)
+        # 创建一个文件对象
+        xls = xlwt.Workbook(encoding='utf8')
+        sheet = xls.add_sheet("reserver", cell_overwrite_ok=True)
+        # 计算列宽
+        length_list = [0 for i in list[0]] if list else []
+        for index1, i in enumerate(list):
+            for index2, key in enumerate(i):
+                try:
+                    # 如果是json(不要计算字符串长度，改为直接按标题长度算)
+                    eval(i[key])
+                    length = 0
+                except:
+                    # 如果不是json正常计算
+                    length = len(i[key]) + (len(i[key].encode('utf-8')) - len(i[key])) / 2 + 1
+                if length > length_list[index2]:
+                    length_list[index2] = length
+        for index, i in enumerate(length_list):
+            # 防止单元格宽度太多
+            width = int(256 * i)
+            if width > 10000:
+                width = 10000
+            sheet.col(index).width = width
+
+        if not style:
+            style = xlwt.XFStyle()
+        for row, i in enumerate(list):
+            for col, key in enumerate(i):
+                field = i[key]
+                if row == 0:
+                    if key in head_data_dict:
+                        # 自定义字段
+                        field_infos = head_data_dict.get(key, [])
+                        # sheet.write(row, col, field, style)
+                        sheet.write_merge(0,0,col,col+(len(field_infos)-1),field,style)
+                        for index, field_info in enumerate(field_infos.values()):
+                            sheet.write(1, col+index, field_info.field_info.title, style)
+                    else:
+                        # 非自定义字段
+                        sheet.write_merge(0,1,col,col,field,style)
+                else:
+                    if key in head_data_dict:
+                        # 自定义字段
+                        field_infos = head_data_dict.get(key, [])
+                        json_field = {}
+                        if field:
+                            try:
+                                json_field = eval(field)
+                            except:
+                                pass
+                        for index, field_key in enumerate(field_infos.keys()):
+                            sheet.write(row+1, col+index, json_field.get(field_key, ''), style)
+                    else:
+                        # 非自定义字段
+                        sheet.write(row+1, col, field, style)
+        output = BytesIO()
+        xls.save(output)
+        # 重新定位到开始
+        output.seek(0)
+        response.write(output.getvalue())
+        return response
+
+    def get_style(self):
+        alignment = xlwt.Alignment()
+        # 左右的对其，水平居中 May be: HORZ_GENERAL, HORZ_LEFT, HORZ_CENTER,
+        # HORZ_RIGHT, HORZ_FILLED, HORZ_JUSTIFIED,
+        # HORZ_CENTER_ACROSS_SEL, HORZ_DISTRIBUTED
+        alignment.horz = xlwt.Alignment.HORZ_CENTER
+        # 上下对齐 May be: VERT_TOP, VERT_CENTER, VERT_BOTTOM, VERT_JUSTIFIED, VERT_DISTRIBUTED
+        alignment.vert = xlwt.Alignment.VERT_CENTER
+        style = xlwt.XFStyle()  # 创建一个样式对象
+        style.alignment = alignment  # 将格式Alignment对象加入到样式对象
+        return style
 
 extension = ExportUserExtension()

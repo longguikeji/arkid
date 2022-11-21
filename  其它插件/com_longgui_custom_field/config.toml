@@ -1,0 +1,7 @@
+package='com.longgui.custom.field'
+name="自定义字段插件"
+version='1.0'
+labels='field'
+homepage='https://www.company.com'
+logo=''
+author='case@company.com'
