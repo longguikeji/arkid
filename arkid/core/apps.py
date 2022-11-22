@@ -47,8 +47,6 @@ class CoreConfig(AppConfig):
             ip = os.environ.get('POD_IP')
             if ip:
                 from arkid.core.models import Node
-                nodes = Node.objects.all()
-                url = f"http://{ip}"
-                Node.objects.get_or_create(url=url)
+                Node.objects.get_or_create(ip=ip)
         except Exception as e:
             print(e)

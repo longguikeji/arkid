@@ -907,4 +907,4 @@ class Node(BaseModel):
         verbose_name = _("ArkID Node", "ArkID节点")
         verbose_name_plural = _("ArkID Node", "ArkID节点")
 
-    url = models.CharField(max_length=128, unique=True, verbose_name=_('URL', '地址'))
+    ip = models.CharField(max_length=15, unique=True, verbose_name=_('IP', 'IP地址'))
