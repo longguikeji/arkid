@@ -949,3 +949,14 @@ def arkstore_app_click(request, tenant_id: str, id: str):
         return resp
     result = click_arkstore_app(access_token, app.arkstore_app_id)
     return resp
+
+
+@api.get("/restart/")
+# @operation(roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
+def arkstore_app_click(request):
+    import os
+    try:
+        print("新安装的插件有models需重启django, 正在重启django server!")
+        os.system("supervisorctl restart runserver")
+    except Exception as e:
+        print("未使用supervisor启动django server, 需手动重启django server!")

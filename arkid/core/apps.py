@@ -42,3 +42,13 @@ class CoreConfig(AppConfig):
                 settings.CSRF_TRUSTED_ORIGINS.append(config.frontend_url)
         except Exception as e:
             print(e)
+
+        try:
+            ip = os.environ.get('POD_IP')
+            if ip:
+                from arkid.core.models import Node
+                nodes = Node.objects.all()
+                url = f"http://{ip}"
+                Node.objects.get_or_create(url=url)
+        except Exception as e:
+            print(e)
