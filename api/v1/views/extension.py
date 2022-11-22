@@ -12,7 +12,7 @@ from django.conf import settings
 from arkid.core.constants import NORMAL_USER, PLATFORM_ADMIN, TENANT_ADMIN
 from arkid.core.extension import Extension
 from arkid.core.schema import ResponseSchema
-from arkid.extension.utils import import_extension, restart_celery
+from arkid.extension.utils import import_extension, restart_celery, restart_other_arkid
 from arkid.extension.models import TenantExtensionConfig, ArkStoreCategory ,Extension as ExtensionModel
 from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from ninja.pagination import paginate
@@ -262,6 +262,7 @@ def toggle_extension_active_status(request, id: str):
 
     extension.save()
     restart_celery()
+    restart_other_arkid()
     return ErrorDict(ErrorCode.OK)
 
 @api.post("/extensions/{id}/use_platform_config/toggle/", tags=["平台插件"])
