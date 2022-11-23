@@ -1,6 +1,6 @@
 from enum import Enum
 from logging.config import listen
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional, List, Union
 from pydantic import Field
 from ninja import Schema, Query, ModelSchema
 from arkid.core.event import Event, register_event, dispatch_event
@@ -49,6 +49,8 @@ class LOGIN_FORM_ITEM_TYPES(str, Enum):
     password = _('password', '密码')
     checkbox = _('checkbox', '复选框')
     hidden = _('hidden', '隐藏')
+    qrcode = _('qrcode', '二维码')
+    
 
 
 class LoginFormItemSchema(Schema):
@@ -59,6 +61,8 @@ class LoginFormItemSchema(Schema):
     append: Optional[ButtonSchema] = Field(title=_('append', '扩展按钮'))
     http: Optional[ButtonHttpSchema] = Field(title=_('http', 'http请求'))
     content: Optional[str] = Field(title=_('content', '内容'))
+    qrcode_get_url: Optional[str] = Field(title=_('QR Code Get URL', '二维码生成接口'))
+    qrcode_check_url: Optional[str] = Field(title=_('QR Code Check URL', '二维码状态检查接口'))
 
 class ScriptSchema(Schema):
     src: str
@@ -67,7 +71,7 @@ class ScriptSchema(Schema):
 class LoginFormSchema(Schema):
     label: str = Field(title=_('label', '表单名'))
     items: List[LoginFormItemSchema] = Field(title=_('items', '表单项'))
-    submit: ButtonSchema = Field(title=_('submit', '表单提交'))
+    submit: Optional[ButtonSchema] = Field(title=_('submit', '表单提交'))
     scripts: Optional[List[ScriptSchema]] = Field(title=_('scripts', '自定义表单脚本'))
 
 
