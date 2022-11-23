@@ -202,7 +202,7 @@ def list_extensions(request, query_data: ExtensionListQueryIn=Query(...)):
 class ExtensionItemOut(ModelSchema):
     class Config:
         model=ExtensionModel
-        model_fields=['id','type',"package","name"]
+        model_fields=['id','type',"package","name","is_active"]
         
 class ExtensionOut(ResponseSchema):
     data:ExtensionItemOut
