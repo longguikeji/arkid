@@ -56,8 +56,8 @@ class ArstorePagination(CustomPagination):
         return {
             'items': items,
             'count': count,
-            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page > 2 else "",
-            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < len(list(queryset)) else ""
+            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page >= 2 else "",
+            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < count else ""
         }
 
 
@@ -105,8 +105,8 @@ class ArstoreExtensionPagination(CustomPagination):
         return {
             'items': items,
             'count': count,
-            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page > 2 else "",
-            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < len(list(queryset)) else ""
+            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page >= 2 else "",
+            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < count else ""
         }
 
 
@@ -144,6 +144,6 @@ class ArstoreAppPagination(CustomPagination):
         return {
             'items': items,
             'count': count,
-            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page > 2 else "",
-            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < len(list(queryset)) else ""
+            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page >= 2 else "",
+            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < count else ""
         }
