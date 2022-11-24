@@ -133,7 +133,7 @@ class AutoFormFillUserMineListOut(ResponseSchema):
 
 class AutoFormFillUserMineIn(Schema):
 
-    username: str = Field(title=_('Account Name', '账户'))
+    username: str = Field(title=_('Account Name', '账户'), placeholder_url='/api/v1/com_longgui_auto_form_fill/apps/{app_id}/get_app_placeholder/')
     password: str = Field(title=_('password', '密码'))
     app: AutoFormFillUserAppSelectSchemaIn = Field(
         page=select_app_page.tag,
