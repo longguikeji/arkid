@@ -30,7 +30,7 @@ page.add_pages([
 
 price_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/arkstore/order/apps/{uuid}/',
+        path='/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/',
         method=actions.FrontActionMethod.GET
     ),
     local_actions={
@@ -42,13 +42,13 @@ price_page.create_actions(
 
 copies_page.create_actions(
     init_action=actions.DirectAction(
-        path="/api/v1/tenant/{tenant_id}/arkstore/order/apps/{uuid}/set_copies/",
+        path="/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/set_copies/",
         method=actions.FrontActionMethod.POST
     ),
     global_actions={
        'next': actions.NextAction(
             name="创建订单",
-            path="/api/v1/tenant/{tenant_id}/arkstore/order/apps/{uuid}/",
+            path="/api/v1/tenant/{tenant_id}/arkstore/order/extensions/{uuid}/",
             method=actions.FrontActionMethod.POST
         ),
     }
@@ -62,7 +62,7 @@ payment_page.create_actions(
     global_actions={
        'next': actions.NextAction(
             name="已支付",
-            path="/api/v1/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/apps/{uuid}/",
+            path="/api/v1/tenant/{tenant_id}/arkstore/purchase/order/{order_no}/payment_status/extensions/{uuid}/",
             method=actions.FrontActionMethod.GET
         ),
     }
