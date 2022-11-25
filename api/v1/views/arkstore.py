@@ -104,7 +104,6 @@ class ArkstoreItemSchemaOut(Schema):
     homepage: str = Field(readonly=True, title=_('Homepage', '官方网站'))
 
 
-
 class ArkstoreAppItemSchemaOut(ArkstoreItemSchemaOut):
     type: Optional[ITEM_TYPE] = Field(title=_('Access Type', '接入方式'), readonly=True)
     payment_mode: Optional[PAYMENT_TYPE] = Field(title=_('Payment Mode', '支付方式'), readonly=True)
@@ -356,7 +355,7 @@ def list_arkstore_private_apps(request, tenant_id: str, query_data: ArkstoreAppQ
 
 
 @api.get("/tenant/{tenant_id}/arkstore/all/apps/", tags=['方舟商店'], response=List[OnShelveAppPurchaseOut])
-@operation(List[OnShelveAppPurchaseOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(List[OnShelveAppPurchaseOut], roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(ArstoreAppPagination)
 def list_arkstore_all_apps(request, tenant_id: str, query_data: ArkstoreAllAppQueryIn=Query(...)):
     query_data = query_data.dict()
@@ -365,7 +364,7 @@ def list_arkstore_all_apps(request, tenant_id: str, query_data: ArkstoreAllAppQu
 
 
 @api.get("/tenant/{tenant_id}/arkstore/purchased/all/apps/", tags=['方舟商店'], response=List[OnShelveAppPurchaseOut])
-@operation(List[OnShelveAppPurchaseOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@operation(List[OnShelveAppPurchaseOut], roles=[NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN])
 @paginate(ArstoreAppPagination)
 def list_arkstore_purchased_all_apps(request, tenant_id: str, query_data: ArkstoreAllAppQueryIn=Query(...)):
     query_data = query_data.dict()
