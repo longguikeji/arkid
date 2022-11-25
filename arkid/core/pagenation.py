@@ -56,8 +56,8 @@ class ArstorePagination(CustomPagination):
         return {
             'items': items,
             'count': count,
-            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page > 2 else "",
-            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < len(list(queryset)) else ""
+            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page >= 2 else "",
+            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < count else ""
         }
 
 
@@ -105,6 +105,45 @@ class ArstoreExtensionPagination(CustomPagination):
         return {
             'items': items,
             'count': count,
-            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page > 2 else "",
-            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < len(list(queryset)) else ""
+            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page >= 2 else "",
+            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < count else ""
+        }
+
+
+class ArstoreAppPagination(CustomPagination):
+    def paginate_queryset(self, queryset, pagination: CustomPagination.Input, request, **params):
+
+        if isinstance(queryset,dict) and "error" in queryset.keys() and queryset.get("error") not in ["0",0]:
+            queryset["items"] = []
+            return queryset
+
+        page = pagination.page
+        page_size = pagination.page_size
+        items = queryset["items"]
+        count = queryset["count"]
+
+        from arkid.core.models import App, PrivateApp
+        tenant = request.tenant
+
+        installed_private_apps = PrivateApp.active_objects.filter(tenant=tenant, arkstore_app_id__isnull=False)
+        installed_private_apps_dict = {str(app.arkstore_app_id): app for app in installed_private_apps}
+        
+        installed_apps = App.active_objects.filter(tenant=tenant, arkstore_app_id__isnull=False)
+        installed_apps_dict = {str(app.arkstore_app_id): app for app in installed_apps}
+
+        for app in items:
+            app['arkstore_uuid'] = app['uuid']
+            if app['uuid'] in installed_apps_dict:
+                local_app = installed_apps_dict[app['uuid']]
+                app['local_uuid'] = str(local_app.id)
+                app['installed'] = True
+            elif app['uuid'] in installed_private_apps_dict:
+                app['installed'] = True
+                app['private_app_status'] = installed_apps_dict[app['uuid']].status
+
+        return {
+            'items': items,
+            'count': count,
+            "previous": f"{request.path}?page={page-1}&page_size={page_size}" if page >= 2 else "",
+            "next": f"{request.path}?page={page+1}&page_size={page_size}" if page * page_size < count else ""
         }

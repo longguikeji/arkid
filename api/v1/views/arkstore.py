@@ -44,7 +44,7 @@ from ninja import Schema, Query
 import enum
 from pydantic import Field
 from ninja.pagination import paginate
-from arkid.core.pagenation import CustomPagination, ArstorePagination, ArstoreExtensionPagination
+from arkid.core.pagenation import CustomPagination, ArstorePagination, ArstoreExtensionPagination, ArstoreAppPagination
 from arkid.extension.models import Extension, TenantExtension, ArkStoreCategory
 from arkid.core.translation import gettext_default as _
 from pydantic import condecimal, conint
@@ -81,7 +81,7 @@ class ITEM_TYPE(str, Enum):
     arkstore_auto_form_fill =  _("arkstore_auto_form_fill", "表单代填应用")
     arkstore_url =  _("arkstore_url", "推广链接")
     arkstore_custom =  _("arkstore_custom", "自定义")
-    arkstore_saas =  _("arkstore_private", "私有化应用")
+    arkstore_private =  _("arkstore_private", "私有化应用")
 
 
 class PAYMENT_TYPE(str, Enum):
@@ -136,10 +136,6 @@ class UserExtensionOut(Schema):
 
 
 class OnShelveExtensionPurchaseOut(ArkstoreExtensionItemSchemaOut):
-    # purchased: bool = False
-    # purchase_records: List[UserExtensionOut] = Field(
-    #     default=[], title=_("Purchase Records", "购买记录")
-    # )
     purchase_state: Optional[str] = Field(
         title=_('Purchase State', '购买状态')
     )
@@ -166,6 +162,21 @@ class OnShelveExtensionPurchaseOut(ArkstoreExtensionItemSchemaOut):
     )
     is_default_extension: Optional[bool] = Field(title=_("Is Default Extension", "是否系统自带插件"), default=False, hidden=True)
 
+
+class OnShelveAppPurchaseOut(ArkstoreExtensionItemSchemaOut):
+    type: Optional[ITEM_TYPE] = Field(title=_('Access Type', '接入方式'), readonly=True)
+    payment_mode: Optional[PAYMENT_TYPE] = Field(title=_('Payment Mode', '支付方式'), readonly=True)
+    purchase_state: Optional[str] = Field(
+        title=_('Purchase State', '购买状态')
+    )
+    purchase_useful_life: Optional[List[str]] = Field(
+        title=_('Purchase Useful Life', '有效期')
+    )
+    installed: Optional[bool] = Field(title=_("Installed", "已安装"), default=False, hidden=True)
+    has_upgrade: Optional[bool] = Field(title=_("Has Upgrade", "有升级"), default=False, hidden=True)
+    private_app_status: Optional[str] = Field(
+        title=_('Private App Status', "私有化应用安装状态")
+    )
 
 class OrderStatusSchema(Schema):
     purchased: bool
@@ -302,6 +313,20 @@ class ArkstoreAppQueryIn(Schema):
         default="",
         title=_("应用分类")
     )
+    search:str = Field(
+        default="",
+        title=_("任一字段")
+    )
+
+
+class ArkstoreAllAppQueryIn(ArkstoreAppQueryIn):
+    type:str = Field(
+        default="",
+        title=_("应用类型")
+    )
+
+class OnShelveAppPurchaseResponse(ResponseSchema):
+    data: OnShelveAppPurchaseOut
 
 
 @api.get("/tenant/{tenant_id}/arkstore/extensions/", tags=['方舟商店'], response=List[OnShelveExtensionPurchaseOut])
@@ -317,6 +342,7 @@ def list_arkstore_extensions(request, tenant_id: str, query_data: ArkstoreExtens
 @paginate(ArstorePagination)
 def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
     query_data = query_data.dict()
+    query_data['type'] = 'app'
     return get_arkstore_list(request, None, 'app', extra_params=query_data)
 
 
@@ -325,7 +351,52 @@ def list_arkstore_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Q
 @paginate(ArstorePagination)
 def list_arkstore_private_apps(request, tenant_id: str, query_data: ArkstoreAppQueryIn=Query(...)):
     query_data = query_data.dict()
-    return get_arkstore_list(request, None, 'private_app', extra_params=query_data)
+    query_data['type'] = 'private_app'
+    return get_arkstore_list(request, None, 'app', extra_params=query_data)
+
+
+@api.get("/tenant/{tenant_id}/arkstore/all/apps/", tags=['方舟商店'], response=List[OnShelveAppPurchaseOut])
+@operation(List[OnShelveAppPurchaseOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(ArstoreAppPagination)
+def list_arkstore_all_apps(request, tenant_id: str, query_data: ArkstoreAllAppQueryIn=Query(...)):
+    query_data = query_data.dict()
+    query_data['type'] = query_data.pop('type', None) or 'all'
+    return get_arkstore_list(request, None, 'app', extra_params=query_data)
+
+
+@api.get("/tenant/{tenant_id}/arkstore/purchased/all/apps/", tags=['方舟商店'], response=List[OnShelveAppPurchaseOut])
+@operation(List[OnShelveAppPurchaseOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(ArstoreAppPagination)
+def list_arkstore_purchased_all_apps(request, tenant_id: str, query_data: ArkstoreAllAppQueryIn=Query(...)):
+    query_data = query_data.dict()
+    query_data['type'] = query_data.pop('type', None) or 'all'
+    return get_arkstore_list(request, True, 'app', extra_params=query_data)
+
+
+@api.get("/tenant/{tenant_id}/arkstore/purchased/all/apps/{arkstore_uuid}/", tags=['方舟商店'], response=OnShelveAppPurchaseResponse)
+@operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def get_arkstore_purchased_app(request, tenant_id: str, arkstore_uuid: str):
+    token = request.user.auth_token
+    tenant = request.tenant
+    access_token = get_arkstore_access_token(tenant, token)
+    app = get_arkstore_extension_detail(access_token, arkstore_uuid)
+
+    installed_private_app = PrivateApp.active_objects.filter(tenant=tenant, arkstore_app_id=arkstore_uuid).first()
+    installed_app = App.active_objects.filter(tenant=tenant, arkstore_app_id=arkstore_uuid).first()
+
+    app.pop('category', None)
+    app['arkstore_uuid'] = arkstore_uuid
+    if installed_app:
+        app['local_uuid'] = str(installed_app.id)
+        app['installed'] = True
+    elif installed_private_app:
+        app['installed'] = True
+        app['private_app_status'] = installed_private_app.status
+
+    if 'type' in app:
+        app['type'] = 'arkstore_' + app['type']
+
+    return {"data": app}
 
 
 @api.get("/tenant/{tenant_id}/arkstore/categorys/", tags=['方舟商店'], response=ArkstoreCategoryListSchemaOut)
@@ -556,7 +627,8 @@ def list_arkstore_purchased_private_apps(request, tenant_id: str, category_id: s
     extra_params = {}
     if category_id and category_id != "" and category_id != "0":
         extra_params['category_id'] = category_id
-    arkstore_private_apps = get_arkstore_list(request, True, 'private_app', all=True, extra_params=extra_params)['items']
+    extra_params['type'] = 'private_app'
+    arkstore_private_apps = get_arkstore_list(request, True, 'app', all=True, extra_params=extra_params)['items']
     installed_apps = PrivateApp.active_objects.filter(tenant_id=tenant_id, arkstore_app_id__isnull=False)
     installed_apps_dict = {str(app.arkstore_app_id): app for app in installed_apps}
     for app in arkstore_private_apps:
@@ -574,7 +646,7 @@ def list_arkstore_purchased_apps(request, tenant_id: str, category_id: str = Non
     extra_params = {}
     if category_id and category_id != "" and category_id != "0":
         extra_params['category_id'] = category_id
-
+    extra_params['type'] = 'app'
     arkstore_apps = get_arkstore_list(request, None, 'app', all=True, extra_params=extra_params)['items']
     installed_apps = App.active_objects.filter(tenant_id=tenant_id, arkstore_app_id__isnull=False)
     installed_app_ids = set(str(app.arkstore_app_id) for app in installed_apps)
