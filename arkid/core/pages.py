@@ -32,6 +32,7 @@ class FrontPageType(Enum):
     GRID_PAGE = 'grid'
     STEP_PAGE = 'step'
     CHART_PAGE = 'chart'
+    SCAN_PAGE = 'scan'
 
 class FrontPage(DeepSN):
     """ 前端页面配置类
@@ -186,6 +187,13 @@ class FormPage(FrontPage):
 
     def __init__(self, *args, **kwargs):
         super().__init__(type=FrontPageType.FORM_PAGE, *args, **kwargs)
+
+class ScanPage(FrontPage):
+    """表单页面
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(type=FrontPageType.SCAN_PAGE, *args, **kwargs)
 
 
 class TablePage(SelectPage):

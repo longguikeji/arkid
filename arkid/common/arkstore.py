@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.db import transaction
 from arkid.core.models import Tenant
 from arkid.extension.models import TenantExtension, Extension
-from arkid.extension.utils import import_extension, unload_extension, load_extension_apps, restart_celery
+from arkid.extension.utils import import_extension, unload_extension, load_extension_apps, restart_celery, restart_other_arkid
 from pathlib import Path
 from arkid.common.logger import logger
 from django.core.cache import cache
@@ -132,8 +132,6 @@ def get_arkstore_extensions(access_token, purchased=None, rented=False, type=Non
             url = '/api/v1/arkstore/extensions/purchased'
     elif type == 'app':
         url = '/api/v1/arkstore/apps/purchased'
-    elif type == 'private_app':
-        url = '/api/v1/arkstore/private_apps/purchased'
     elif type == 'category':
         url = '/api/v1/arkstore/app/categories'
     else:
@@ -374,7 +372,6 @@ def download_arkstore_extension(tenant, token, extension_id, extension_detail):
         logger.exception(f'load download extension: {ext_package} failed: {str(e)}')
         return {'success': 'failed'}
 
-    restart_celery()
     return {'success': 'true'}
 
 
@@ -422,6 +419,10 @@ def load_installed_extension(ext_dir, extension_detail):
         tenant = platform_tenant,
         extension = extension,
     )
+    
+    restart_celery()
+    restart_other_arkid()
+
     # 插件安装完成需要更新权限开始
     from arkid.core.tasks.celery import dispatch_task
     dispatch_task.delay('update_system_permission')
