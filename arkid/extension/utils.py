@@ -5,7 +5,7 @@ import importlib
 import shutil
 import string
 import sys
-
+import requests
 from django.apps import apps
 from django.conf import settings
 from arkid import core
@@ -190,3 +190,18 @@ def restart_celery():
     cache.set(key, value, timeout=timeout)
     from arkid.core.tasks.celery import dispatch_task_with_options
     dispatch_task_with_options.delay('restart', celery_options={"countdown": timeout})
+
+
+def restart_other_arkid():
+    ip = os.environ.get('POD_IP')
+    if not ip:
+        return
+
+    try:
+        from arkid.core.models import Node
+        nodes = Node.objects.exclude(ip=ip).all()
+        for node in nodes:
+            url = f"http://{node.ip}/api/v1/restart/"
+            requests.get(url, timeout=3)
+    except Exception as e:
+        print(e)

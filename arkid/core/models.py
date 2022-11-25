@@ -900,3 +900,11 @@ class PrivateApp(BaseModel):
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, PrivateApp: {self.name}'
+
+
+class Node(BaseModel):
+    class Meta(object):
+        verbose_name = _("ArkID Node", "ArkID节点")
+        verbose_name_plural = _("ArkID Node", "ArkID节点")
+
+    ip = models.CharField(max_length=15, unique=True, verbose_name=_('IP', 'IP地址'))
