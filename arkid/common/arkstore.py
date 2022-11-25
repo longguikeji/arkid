@@ -465,8 +465,35 @@ def get_arkstore_private_app_name(tenant, token, app_id):
 def install_arkstore_private_app(tenant, token, app_id, values_data=""):
     data = get_arkstore_private_app_data(tenant, token, app_id)
     download_url = data["download_url"]
-    app_name = get_arkstore_private_app_name(tenant, token, app_id)
+    oidc_values = data["oidc_values"]
+    app_name, app_info = get_arkstore_private_app_name(tenant, token, app_id)
     k8s_url = settings.K8S_INSTALL_APP_URL + f'/ahc/{tenant.id}/crdchart/' + app_name
+
+    # create_oidc_app
+    import yaml
+    from string import Template
+    redirect_uris = yaml.safe_load(oidc_values).get("arkid_oidc_redirect_uris", "")
+    data = {
+        "app_type":"OIDC",
+        "config":{
+            "skip_authorization":False,
+            "redirect_uris":redirect_uris,
+            "client_type":"confidential",
+            "grant_type":"authorization-code",
+            "algorithm":"RS256",
+            "client_id":"",
+            "client_secret":"",
+            "authorize":"",
+            "token":"",
+            "userinfo":"",
+            "logout":"",
+            "issuer_url":""
+        },
+        "package":"com.longgui.app.protocol.oidc"
+    }
+    app = create_oidc_app_for_private_app(tenant, app_info["name"], data)
+    oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
+    values_data = Template(values_data).substitute(oidc_config)
 
     data = {
         "chart": download_url,
@@ -526,7 +553,7 @@ def install_arkstore_private_app(tenant, token, app_id, values_data=""):
 
 
 def delete_arkstore_private_app(tenant, token, app_id):
-    app_name = get_arkstore_private_app_name(tenant, token, app_id)
+    app_name, app_info = get_arkstore_private_app_name(tenant, token, app_id)
     k8s_url = settings.K8S_INSTALL_APP_URL + f'/ahc/{tenant.id}/crdchart/' + app_name
 
     try:
@@ -887,3 +914,34 @@ def refresh_admin_uesr_token():
     
     token = refresh_token(admin_user)
     return token
+
+
+def create_oidc_app_for_private_app(request, name, data):
+    from arkid.core.event import APP_CONFIG_DONE, Event, register_event, dispatch_event
+    from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
+    from arkid.core.event import(
+        CREATE_APP_CONFIG, UPDATE_APP_CONFIG, DELETE_APP,
+        CREATE_APP, UPDATE_APP, SET_APP_OPENAPI_VERSION,
+        APP_SYNC_PERMISSION,
+    )
+
+    # 创建应用
+    app = App.objects.create(tenant=request.tenant, name=name, is_active=True)
+    dispatch_event(Event(tag=CREATE_APP, tenant=request.tenant, request=request, data=app))
+
+    # 创建应用协议配置
+    results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=request.tenant, request=request, data=data, packages=[data["package"]]))
+    for func, (result, extension) in results:
+        if result:
+            # 创建config
+            config = extension.create_tenant_config(request.tenant, data["config"], app.name, data["app_type"])
+            # 创建app
+            app.type = data["app_type"]
+            app.package = data["package"]
+            app.config = config
+            app.save()
+            # 创建app完成进行事件分发
+            dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=request.tenant, request=request, data=app, packages=[data["package"]]))
+            break
+
+    return app
