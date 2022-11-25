@@ -1,2 +1,2 @@
 -i https://mirrors.aliyun.com/pypi/simple
-pillow==9.2.0
+pillow==9.3.0
