@@ -28,12 +28,14 @@ class LoggingMiddleware:
         # the view (and later middleware) are called.
         start = time.time() # Calculated execution time.
         
-        try:
-            response = self.get_response(request)
-        except Exception as e:
+        response = self.get_response(request)
+        if response.status_code == 500:
+            try:
+                body_response = str(response.content.decode())
+            except:
+                body_response = ""
             exec_time = int((time.time() - start)*1000)
-            self.send_error_log_to_arkid_saas(request, exec_time, traceback.format_exc())
-            raise e
+            self.send_error_log_to_arkid_saas(request, exec_time, body_response)
         else:
             # Code to be executed for each request/response after
             # the view is called.
