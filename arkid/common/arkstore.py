@@ -491,9 +491,10 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
         },
         "package":"com.longgui.app.protocol.oidc"
     }
-    app = create_oidc_app_for_private_app(request, tenant, app_info, data)
-    oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
-    values_data = Template(values_data).substitute(oidc_config)
+    if oidc_values:
+        app = create_oidc_app_for_private_app(request, tenant, app_info, data)
+        oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
+        values_data = Template(values_data).substitute(oidc_config)
 
     data = {
         "chart": download_url,
@@ -507,6 +508,8 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
             return {'code': resp.status_code, 'message': resp.content.decode()}
         resp = resp.json()
         if resp['code'] != 0 and resp['code'] != 1:
+            # TODO
+            # resp['code'] == 1 update app in k8s
             logger.error(f"Install app to k8s failed: {resp['message']}")
             return resp
         
@@ -546,6 +549,8 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
 
         return resp
     except Exception as e:
+        # TODO
+        # delete app and private_app after install failed
         logger.error(f"Install app to k8s failed: {e}")
         return {'code': -1, 'message': str(e)}
 
@@ -919,7 +924,20 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data):
     from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP
 
     # 创建应用
-    app = App.objects.create(tenant=request.tenant, name=app_info["name"], is_active=True)
+    app, created = App.objects.update_or_create(
+        tenant=request.tenant,
+        arkstore_app_id=app_info["uuid"],
+        is_del=False,
+        defaults={"name": app_info["name"]}
+    )
+    if created:
+        app.is_active = False
+    app.arkstore_app_id = app_info["uuid"]
+    category_id = app_info.get('category_id', None)
+    if category_id:
+        app.arkstore_category_id = category_id
+    app.save()
+
     data["app"] = app
     dispatch_event(Event(tag=CREATE_APP, tenant=request.tenant, request=request, data=app))
 
@@ -938,9 +956,4 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data):
             dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=request.tenant, request=request, data=app, packages=[data["package"]]))
             break
     
-    app.arkstore_app_id = app_info["uuid"]
-    category_id = app_info.get('category_id', None)
-    if category_id:
-        app.arkstore_category_id = category_id
-    app.save()
     return app
