@@ -459,10 +459,10 @@ def get_arkstore_private_app_name(tenant, token, app_id):
     access_token = get_arkstore_access_token(tenant, token)
     res = get_arkstore_extension_detail(access_token, app_id)
     app_name = f"{res['name'][:55]}-{tenant.id.hex[-8:]}"
-    return app_name
+    return app_name, res
 
 
-def install_arkstore_private_app(tenant, token, app_id, values_data=""):
+def install_arkstore_private_app(request, tenant, token, app_id, values_data=""):
     data = get_arkstore_private_app_data(tenant, token, app_id)
     download_url = data["download_url"]
     oidc_values = data["oidc_values"]
@@ -491,7 +491,7 @@ def install_arkstore_private_app(tenant, token, app_id, values_data=""):
         },
         "package":"com.longgui.app.protocol.oidc"
     }
-    app = create_oidc_app_for_private_app(tenant, app_info["name"], data)
+    app = create_oidc_app_for_private_app(request, tenant, app_info, data)
     oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
     values_data = Template(values_data).substitute(oidc_config)
 
@@ -511,17 +511,15 @@ def install_arkstore_private_app(tenant, token, app_id, values_data=""):
             return resp
         
         # 正在成功
-        access_token = get_arkstore_access_token(tenant, token)
-        app = get_arkstore_extension_detail(access_token, app_id)
         private_app, created= PrivateApp.objects.update_or_create(
             tenant = tenant,
-            arkstore_app_id = app['uuid'],
+            arkstore_app_id = app_info['uuid'],
             defaults= dict(
-                url = app.get('url'),
-                name = app['name'],
-                description = app['description'],
-                logo = app['logo'],
-                arkstore_category_id = app.get('category_id'),
+                url = app_info.get('url'),
+                name = app_info['name'],
+                description = app_info['description'],
+                logo = app_info['logo'],
+                arkstore_category_id = app_info.get('category_id'),
                 values_data = values_data,
             )
         )
@@ -916,17 +914,13 @@ def refresh_admin_uesr_token():
     return token
 
 
-def create_oidc_app_for_private_app(request, name, data):
-    from arkid.core.event import APP_CONFIG_DONE, Event, register_event, dispatch_event
-    from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
-    from arkid.core.event import(
-        CREATE_APP_CONFIG, UPDATE_APP_CONFIG, DELETE_APP,
-        CREATE_APP, UPDATE_APP, SET_APP_OPENAPI_VERSION,
-        APP_SYNC_PERMISSION,
-    )
+def create_oidc_app_for_private_app(request, tenant, app_info, data):
+    from arkid.core.event import APP_CONFIG_DONE, Event, dispatch_event
+    from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP
 
     # 创建应用
-    app = App.objects.create(tenant=request.tenant, name=name, is_active=True)
+    app = App.objects.create(tenant=request.tenant, name=app_info["name"], is_active=True)
+    data["app"] = app
     dispatch_event(Event(tag=CREATE_APP, tenant=request.tenant, request=request, data=app))
 
     # 创建应用协议配置
@@ -943,5 +937,10 @@ def create_oidc_app_for_private_app(request, name, data):
             # 创建app完成进行事件分发
             dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=request.tenant, request=request, data=app, packages=[data["package"]]))
             break
-
+    
+    app.arkstore_app_id = app_info["uuid"]
+    category_id = app_info.get('category_id', None)
+    if category_id:
+        app.arkstore_category_id = category_id
+    app.save()
     return app

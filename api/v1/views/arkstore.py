@@ -893,7 +893,7 @@ def get_private_app_custom_values(request, tenant_id: str, uuid: str):
 def install_private_app_from_arkstore(request, tenant_id: str, uuid: str, data: CutomValuesData):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
-    result = install_arkstore_private_app(tenant, token, uuid, data.values_data)
+    result = install_arkstore_private_app(request, tenant, token, uuid, data.values_data)
     if result['code'] == 0:
         return {'error': ErrorCode.OK.value, 'data': {}}
     if result['code'] == 1:
