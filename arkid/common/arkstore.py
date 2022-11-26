@@ -469,29 +469,29 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
     app_name, app_info = get_arkstore_private_app_name(tenant, token, app_id)
     k8s_url = settings.K8S_INSTALL_APP_URL + f'/ahc/{tenant.id}/crdchart/' + app_name
 
-    # create_oidc_app
-    import yaml
-    from string import Template
-    redirect_uris = yaml.safe_load(oidc_values).get("arkid_oidc_redirect_uris", "")
-    data = {
-        "app_type":"OIDC",
-        "config":{
-            "skip_authorization":False,
-            "redirect_uris":redirect_uris,
-            "client_type":"confidential",
-            "grant_type":"authorization-code",
-            "algorithm":"RS256",
-            "client_id":"",
-            "client_secret":"",
-            "authorize":"",
-            "token":"",
-            "userinfo":"",
-            "logout":"",
-            "issuer_url":""
-        },
-        "package":"com.longgui.app.protocol.oidc"
-    }
     if oidc_values:
+        # create_oidc_app
+        import yaml
+        from string import Template
+        redirect_uris = yaml.safe_load(oidc_values).get("arkid_oidc_redirect_uris", "")
+        data = {
+            "app_type":"OIDC",
+            "config":{
+                "skip_authorization":False,
+                "redirect_uris":redirect_uris,
+                "client_type":"confidential",
+                "grant_type":"authorization-code",
+                "algorithm":"RS256",
+                "client_id":"",
+                "client_secret":"",
+                "authorize":"",
+                "token":"",
+                "userinfo":"",
+                "logout":"",
+                "issuer_url":""
+            },
+            "package":"com.longgui.app.protocol.oidc"
+        }
         app = create_oidc_app_for_private_app(request, tenant, app_info, data)
         oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
         values_data = Template(values_data).substitute(oidc_config)
