@@ -153,6 +153,8 @@ class AutoFormFillExtension(AppProtocolExtension):
             id=app_id
         ).first()
         app_config = app.config
+        if app.arkstore_app_id:
+            app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
             account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
@@ -202,6 +204,8 @@ class AutoFormFillExtension(AppProtocolExtension):
         user_id = data.user.id
 
         app_config = autoformfill_user.app.config
+        if autoformfill_user.app.arkstore_app_id:
+            app_config = get_app_config_from_arkstore(request, autoformfill_user.app.arkstore_app_id)
         if app_config:
             account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
@@ -255,6 +259,8 @@ class AutoFormFillExtension(AppProtocolExtension):
             id=app_id
         ).first()
         app_config = app.config
+        if app.arkstore_app_id:
+            app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
             account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
@@ -305,6 +311,8 @@ class AutoFormFillExtension(AppProtocolExtension):
         app_id = data.app.id
 
         app_config = autoformfill_user.app.config
+        if autoformfill_user.app.arkstore_app_id:
+            app_config = get_app_config_from_arkstore(request, autoformfill_user.app.arkstore_app_id)
         if app_config:
             account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
@@ -416,6 +424,8 @@ class AutoFormFillExtension(AppProtocolExtension):
             save_type = tenant_extension.settings.get('save_type', 'web')
 
         app_config = app.config
+        if app.arkstore_app_id:
+            app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         placeholder = ''
         if app_config:
             account_type = app_config.config.get('account_type', '')
@@ -526,6 +536,8 @@ class AutoFormFillExtension(AppProtocolExtension):
         if not app:
             return self.error(ErrorCode.NOT_EXITST_APP)
         app_config = app.config
+        if app.arkstore_app_id:
+            app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
             account_type = app_config.config.get('account_type', '')
             if account_type == 'mobile_email':
@@ -620,6 +632,8 @@ class AutoFormFillExtension(AppProtocolExtension):
             return self.error(ErrorCode.NOT_EXITST_APP)
 
         app_config = app.config
+        if app.arkstore_app_id:
+            app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
             account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
@@ -673,6 +687,8 @@ class AutoFormFillExtension(AppProtocolExtension):
             return JsonResponse({'result': []})
         for app in all_apps:
             app_config = app.config
+            if app.arkstore_app_id:
+                app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
             placeholder = ''
             if app_config:
                 account_type = app_config.config.get('account_type', '')
