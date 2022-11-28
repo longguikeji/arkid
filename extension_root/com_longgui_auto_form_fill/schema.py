@@ -87,7 +87,7 @@ class AutoFormFillUserIn(Schema):
         page=select_user_page.tag,
         title=_("用户")
     )
-    username: str = Field(title=_('Account Name', '账户'), placeholder_url='/api/v1/com_longgui_auto_form_fill/apps/{app_id}/get_app_placeholder/')
+    username: str = Field(title=_('Account Name', '账户'), placeholder_url='/api/v1/com_longgui_auto_form_fill/apps/{app_id}/get_app_placeholder/',placeholder_url_params={'app_id':'app.id'})
     password: str = Field(title=_('Password', '密码'))
 
 class AutoFormFillUserDetailItemOut(ModelSchema):
@@ -133,7 +133,7 @@ class AutoFormFillUserMineListOut(ResponseSchema):
 
 class AutoFormFillUserMineIn(Schema):
 
-    username: str = Field(title=_('Account Name', '账户'), placeholder_url='/api/v1/com_longgui_auto_form_fill/apps/{app_id}/get_app_placeholder/')
+    username: str = Field(title=_('Account Name', '账户'), placeholder_url='/api/v1/com_longgui_auto_form_fill/apps/{app_id}/get_app_placeholder/',placeholder_url_params={'app_id':'app.id'})
     password: str = Field(title=_('password', '密码'))
     app: AutoFormFillUserAppSelectSchemaIn = Field(
         page=select_app_page.tag,
