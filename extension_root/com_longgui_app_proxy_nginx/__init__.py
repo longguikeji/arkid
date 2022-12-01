@@ -124,6 +124,8 @@ class AppProxyNginxExtension(Extension):
             return
         app = event.data
         nginx_app = NginxAPP.objects.filter(target=app).first()
+        if not nginx_app:
+            return
 
         frontend_url = get_app_config().get_frontend_host(schema=True)
         u = urlparse(frontend_url)
