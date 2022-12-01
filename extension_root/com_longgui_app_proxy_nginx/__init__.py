@@ -164,7 +164,7 @@ class AppProxyNginxExtension(Extension):
                 return
 
             arkid_be_host = os.environ.get("ARKIDBESVC")
-            be_url = f'http://{arkid_be_host}/api/v1/tenant/{tenant_id}/com_longgui_app_proxy_nginx/nginx_auth/{app_id}'
+            # be_url = f'http://{arkid_be_host}/api/v1/tenant/{tenant_id}/com_longgui_app_proxy_nginx/nginx_auth/{app_id}'
             portal_url = os.environ.get("ARKIDPORTALSVC")
             # if not portal_url:
             #     logger.info("没有配置ARKIDPORTALSVC环境变量")
@@ -174,7 +174,7 @@ class AppProxyNginxExtension(Extension):
                 json = {
                     "dest_url": app.url,
                     "server_name": app_server_name,
-                    "be_url": be_url,
+                    "be_url": arkid_be_host,
                 }
                 res = requests.post(create_url, json=json)
                 if res.json().get('code') == 0:
