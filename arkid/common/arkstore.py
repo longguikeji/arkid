@@ -474,6 +474,7 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
         import yaml
         from string import Template
         redirect_uris = yaml.safe_load(oidc_values).get("arkid_oidc_redirect_uris", "")
+
         data = {
             "app_type":"OIDC",
             "config":{
@@ -912,7 +913,7 @@ def refresh_admin_uesr_token():
         username='admin', tenant=platform_tenant
     ).first()
     token = ExpiringToken.objects.filter(user=admin_user).first()
-    if not token.expired:
+    if token and not token.expired:
         return token.token
     
     token = refresh_token(admin_user)
@@ -932,6 +933,11 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data):
     )
     if created:
         app.is_active = False
+        dispatch_event(Event(tag=CREATE_APP, tenant=request.tenant, request=request, data=app))
+
+    # enable app nginx proxy
+    enable_nginx_proxy_for_private_app(request, tenant, app)
+
     app.arkstore_app_id = app_info["uuid"]
     category_id = app_info.get('category_id', None)
     if category_id:
@@ -939,7 +945,6 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data):
     app.save()
 
     data["app"] = app
-    dispatch_event(Event(tag=CREATE_APP, tenant=request.tenant, request=request, data=app))
 
     # 创建应用协议配置
     results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=request.tenant, request=request, data=data, packages=[data["package"]]))
@@ -957,3 +962,11 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data):
             break
     
     return app
+
+
+def enable_nginx_proxy_for_private_app(request, tenant, app):
+    from arkid.core.event import APP_CONFIG_DONE, Event, dispatch_event
+    from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP, UPDATE_APP
+    app.is_intranet_url = True
+    app.save()
+    dispatch_event(Event(tag=UPDATE_APP, tenant=request.tenant, request=request, data=app))
