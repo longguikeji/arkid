@@ -168,8 +168,13 @@ class AppProxyNginxExtension(Extension):
             #     logger.info("没有配置ARKIDPORTALSVC环境变量")
             #     return
             try:
-                create_url = f"http://{portal_url}/create/nginxconf?dest_url={app.url}&server_name={app_server_name}&be_url={be_url}"
-                res = requests.post(create_url)
+                create_url = f"http://{portal_url}/create/nginxconf"
+                json = {
+                    "dest_url": app.url,
+                    "server_name": app_server_name,
+                    "be_url": be_url,
+                }
+                res = requests.post(create_url, json=json)
                 if res.json().get('code') == 0:
                     logger.info("Nginx 配置文件创建成功!")
                     nginx_app.nginx_config_created = True
