@@ -877,8 +877,15 @@ class CustomAppValuesOut(ResponseSchema):
 @api.get("/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/", tags=['方舟商店'], response=CustomAppValuesOut)
 @operation(roles=[PLATFORM_ADMIN])
 def get_private_app_custom_values(request, tenant_id: str, uuid: str):
+    token = request.user.auth_token
+    tenant = Tenant.objects.get(id=tenant_id)
     private_app = PrivateApp.active_objects.filter(arkstore_app_id=uuid).first()
-    return {"data": {"values_data": private_app.values_data or ""}}
+    if private_app:
+        values_data = private_app.values_data
+    else:
+        data = get_arkstore_private_app_data(tenant, token, uuid)
+        values_data = data.get("oidc_values")
+    return {"data": {"values_data": values_data or ""}}
 
 
 @api.post("/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/", tags=['方舟商店'], response=ResponseSchema)
@@ -886,7 +893,7 @@ def get_private_app_custom_values(request, tenant_id: str, uuid: str):
 def install_private_app_from_arkstore(request, tenant_id: str, uuid: str, data: CutomValuesData):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
-    result = install_arkstore_private_app(tenant, token, uuid, data.values_data)
+    result = install_arkstore_private_app(request, tenant, token, uuid, data.values_data)
     if result['code'] == 0:
         return {'error': ErrorCode.OK.value, 'data': {}}
     if result['code'] == 1:
