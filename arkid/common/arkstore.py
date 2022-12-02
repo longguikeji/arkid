@@ -1,5 +1,6 @@
 import json
 import requests
+from urllib.parse import urlparse
 from arkid.config import get_app_config
 from arkid.core import extension
 from oauth2_provider.models import Application
@@ -459,14 +460,46 @@ def get_arkstore_private_app_name(tenant, token, app_id):
     access_token = get_arkstore_access_token(tenant, token)
     res = get_arkstore_extension_detail(access_token, app_id)
     app_name = f"{res['name'][:55]}-{tenant.id.hex[-8:]}"
-    return app_name
+    return app_name, res
 
 
-def install_arkstore_private_app(tenant, token, app_id, values_data=""):
+def install_arkstore_private_app(request, tenant, token, app_id, values_data=""):
     data = get_arkstore_private_app_data(tenant, token, app_id)
     download_url = data["download_url"]
-    app_name = get_arkstore_private_app_name(tenant, token, app_id)
+    oidc_values = data["oidc_values"]
+    app_name, app_info = get_arkstore_private_app_name(tenant, token, app_id)
     k8s_url = settings.K8S_INSTALL_APP_URL + f'/ahc/{tenant.id}/crdchart/' + app_name
+
+    if oidc_values:
+        # create_oidc_app
+        import yaml
+        from string import Template
+        redirect_uris = yaml.safe_load(oidc_values).get("arkid_oidc_redirect_uris", "")
+        login_url = yaml.safe_load(oidc_values).get("arkid_oidc_login_url", "")
+
+        data = {
+            "app_type":"OIDC",
+            "config":{
+                "skip_authorization":False,
+                "redirect_uris":redirect_uris,
+                "client_type":"confidential",
+                "grant_type":"authorization-code",
+                "algorithm":"RS256",
+                "client_id":"",
+                "client_secret":"",
+                "authorize":"",
+                "token":"",
+                "userinfo":"",
+                "logout":"",
+                "issuer_url":""
+            },
+            "package":"com.longgui.app.protocol.oidc"
+        }
+
+        app = create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, login_url)
+        oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
+        oidc_config["arkid_oidc_root_url"] = get_app_proxy_url(app)
+        values_data = Template(values_data).substitute(oidc_config)
 
     data = {
         "chart": download_url,
@@ -480,21 +513,21 @@ def install_arkstore_private_app(tenant, token, app_id, values_data=""):
             return {'code': resp.status_code, 'message': resp.content.decode()}
         resp = resp.json()
         if resp['code'] != 0 and resp['code'] != 1:
+            # TODO
+            # resp['code'] == 1 update app in k8s
             logger.error(f"Install app to k8s failed: {resp['message']}")
             return resp
         
         # 正在成功
-        access_token = get_arkstore_access_token(tenant, token)
-        app = get_arkstore_extension_detail(access_token, app_id)
         private_app, created= PrivateApp.objects.update_or_create(
             tenant = tenant,
-            arkstore_app_id = app['uuid'],
+            arkstore_app_id = app_info['uuid'],
             defaults= dict(
-                url = app.get('url'),
-                name = app['name'],
-                description = app['description'],
-                logo = app['logo'],
-                arkstore_category_id = app.get('category_id'),
+                url = app_info.get('url'),
+                name = app_info['name'],
+                description = app_info['description'],
+                logo = app_info['logo'],
+                arkstore_category_id = app_info.get('category_id'),
                 values_data = values_data,
             )
         )
@@ -521,12 +554,14 @@ def install_arkstore_private_app(tenant, token, app_id, values_data=""):
 
         return resp
     except Exception as e:
+        # TODO
+        # delete app and private_app after install failed
         logger.error(f"Install app to k8s failed: {e}")
         return {'code': -1, 'message': str(e)}
 
 
 def delete_arkstore_private_app(tenant, token, app_id):
-    app_name = get_arkstore_private_app_name(tenant, token, app_id)
+    app_name, app_info = get_arkstore_private_app_name(tenant, token, app_id)
     k8s_url = settings.K8S_INSTALL_APP_URL + f'/ahc/{tenant.id}/crdchart/' + app_name
 
     try:
@@ -610,7 +645,8 @@ def create_tenant_oidc_app(tenant, url, name, description='', logo=''):
             tenant=tenant,
             name=name,
             url=url,
-            defaults={"description": description, "logo": logo, 'is_del': False, 'is_active': True}
+            is_del=False,
+            defaults={"description": description, "logo": logo, 'is_active': True}
         )
 
     if app.entry_permission is None:
@@ -882,8 +918,73 @@ def refresh_admin_uesr_token():
         username='admin', tenant=platform_tenant
     ).first()
     token = ExpiringToken.objects.filter(user=admin_user).first()
-    if not token.expired:
+    if token and not token.expired:
         return token.token
     
     token = refresh_token(admin_user)
     return token
+
+
+def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, login_url):
+    from arkid.core.event import APP_CONFIG_DONE, Event, dispatch_event
+    from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP
+
+    # 创建应用
+    app, created = App.objects.update_or_create(
+        tenant=request.tenant,
+        arkstore_app_id=app_info["uuid"],
+        url=f"http://{app_name}.{app_name}:80{login_url}",
+        is_del=False,
+        defaults={"name": app_info["name"]}
+    )
+    if created:
+        app.is_active = False
+        dispatch_event(Event(tag=CREATE_APP, tenant=request.tenant, request=request, data=app))
+
+    # enable app nginx proxy
+    # enable_nginx_proxy_for_private_app(request, tenant, app)
+    app_url = get_app_proxy_url(app)
+    data["config"]["redirect_uris"] = app_url + data["config"]["redirect_uris"]
+
+    app.arkstore_app_id = app_info["uuid"]
+    category_id = app_info.get('category_id', None)
+    if category_id:
+        app.arkstore_category_id = category_id
+    app.save()
+
+    data["app"] = app
+
+    # 创建应用协议配置
+    results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=request.tenant, request=request, data=data, packages=[data["package"]]))
+    for func, (result, extension) in results:
+        if result:
+            # 创建config
+            config = extension.create_tenant_config(request.tenant, data["config"], app.name, data["app_type"])
+            # 创建app
+            app.type = data["app_type"]
+            app.package = data["package"]
+            app.config = config
+            app.save()
+            # 创建app完成进行事件分发
+            dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=request.tenant, request=request, data=app, packages=[data["package"]]))
+            break
+    
+    return app
+
+
+def enable_nginx_proxy_for_private_app(request, tenant, app):
+    from arkid.core.event import APP_CONFIG_DONE, Event, dispatch_event
+    from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP, UPDATE_APP
+    app.is_intranet_url = True
+    app.save()
+    app.skip_verify_connection = True
+    dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=app))
+
+
+def get_app_proxy_url(app):
+    config = get_app_config()
+    frontend_url = config.get_frontend_host(schema=True)
+    u = urlparse(frontend_url)
+    netloc = f'{app.id.hex}.{u.netloc}'
+    app_url = u._replace(netloc=netloc).geturl()
+    return app_url
