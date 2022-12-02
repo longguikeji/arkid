@@ -942,7 +942,7 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, l
         dispatch_event(Event(tag=CREATE_APP, tenant=request.tenant, request=request, data=app))
 
     # enable app nginx proxy
-    enable_nginx_proxy_for_private_app(request, tenant, app)
+    # enable_nginx_proxy_for_private_app(request, tenant, app)
     app_url = get_app_proxy_url(app)
     data["config"]["redirect_uris"] = app_url + data["config"]["redirect_uris"]
 
