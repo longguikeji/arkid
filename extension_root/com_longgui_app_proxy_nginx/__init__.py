@@ -103,7 +103,7 @@ class AppProxyNginxExtension(Extension):
                 u = urlparse(frontend_url)
                 netloc = f'{app.id.hex}.{u.netloc}'
                 app_url = u._replace(netloc=netloc).geturl()
-                app.url = f'{app_url}'
+                app.url = f'{app_url}{urlparse(app.url).path}'
 
     def create_app(self, event, **kwargs):
         logger.info('App proxy nginx is handing create app...')

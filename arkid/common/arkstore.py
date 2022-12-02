@@ -475,6 +475,7 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
         import yaml
         from string import Template
         redirect_uris = yaml.safe_load(oidc_values).get("arkid_oidc_redirect_uris", "")
+        login_url = yaml.safe_load(oidc_values).get("arkid_oidc_login_url", "")
 
         data = {
             "app_type":"OIDC",
@@ -494,7 +495,8 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
             },
             "package":"com.longgui.app.protocol.oidc"
         }
-        app = create_oidc_app_for_private_app(request, tenant, app_info, data, app_name)
+
+        app = create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, login_url)
         oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
         oidc_config["arkid_oidc_root_url"] = get_app_proxy_url(app)
         values_data = Template(values_data).substitute(oidc_config)
@@ -923,7 +925,7 @@ def refresh_admin_uesr_token():
     return token
 
 
-def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name):
+def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, login_url):
     from arkid.core.event import APP_CONFIG_DONE, Event, dispatch_event
     from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP
 
@@ -931,7 +933,7 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name):
     app, created = App.objects.update_or_create(
         tenant=request.tenant,
         arkstore_app_id=app_info["uuid"],
-        url=f"http://{app_name}.{app_name}:80",
+        url=f"http://{app_name}.{app_name}:80{login_url}",
         is_del=False,
         defaults={"name": app_info["name"]}
     )
