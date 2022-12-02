@@ -173,8 +173,10 @@ class AppProxyNginxExtension(Extension):
             #     return
             try:
                 create_url = f"http://{portal_url}/create/nginxconf"
+                u = urlparse(app.url)
+                app_proxy_url = f"{u.scheme}://{u.netloc}"
                 json = {
-                    "dest_url": app.url,
+                    "dest_url": app_proxy_url,
                     "server_name": app_server_name,
                     "be_url": arkid_be_host,
                 }
