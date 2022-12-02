@@ -9,6 +9,8 @@ from ninja.pagination import paginate
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.models import UserGroup, User
 from django.shortcuts import get_list_or_404, get_object_or_404
+from arkid.core.translation import gettext_default as _
+
 from arkid.core.event import Event, dispatch_event
 from arkid.core.event import (
     CREATE_GROUP, UPDATE_GROUP, DELETE_GROUP,
@@ -26,6 +28,7 @@ class UserGroupPermissionListSelectSchemaOut(Schema):
     id: UUID = Field(default=None)
     in_current: bool
     name: str
+    
 
 @transaction.atomic
 @api.post("/tenant/{tenant_id}/user_groups/", response=UserGroupCreateOut, tags=['用户分组'])
@@ -61,20 +64,40 @@ def create_group(request, tenant_id: str, data: UserGroupCreateIn):
     return ErrorDict(ErrorCode.OK)
 
 
+
+class UserGroupSearchSchemaIn(Schema):
+    name__contains:str = Field(
+        title=_("分组名称"),
+        required=False,
+        default=''
+    )
+    parent_id: str = Field(
+        title=_("上级分组"),
+        hidden=True,
+        default=None
+    )
+
+
 @api.get("/tenant/{tenant_id}/user_groups/", response=UserGroupListOut, tags=['用户分组'])
 @operation(UserGroupListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-def list_groups(request, tenant_id: str,  parent_id: str = None):
+def list_groups(request, tenant_id: str, query_data: UserGroupSearchSchemaIn=Query(...)):
     '''
     分组列表
     '''
     from arkid.core.perm.permission_data import PermissionData
     usergroups = UserGroup.valid_objects.filter(
         tenant_id=tenant_id,
-        parent__id=parent_id
+        parent__id=query_data.parent_id,
+        name__contains=query_data.name__contains
     )
+    
+    # if query_data.name__contains:
+    #     usergroups.filter(name = query_data.name__contains)
+    
     login_user = request.user
     tenant = request.tenant
     pd = PermissionData()
+    print(usergroups.all())
     usergroups = pd.get_manage_user_group(login_user, tenant, usergroups)
     return {"data": list(usergroups.all())}
 
