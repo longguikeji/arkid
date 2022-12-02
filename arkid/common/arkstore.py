@@ -496,6 +496,7 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
         }
         app = create_oidc_app_for_private_app(request, tenant, app_info, data, app_name)
         oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
+        oidc_config["arkid_oidc_root_url"] = get_app_proxy_url(app)
         values_data = Template(values_data).substitute(oidc_config)
 
     data = {
@@ -940,11 +941,7 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name):
 
     # enable app nginx proxy
     enable_nginx_proxy_for_private_app(request, tenant, app)
-    config = get_app_config()
-    frontend_url = config.get_frontend_host(schema=True)
-    u = urlparse(frontend_url)
-    netloc = f'{app.id.hex}.{u.netloc}'
-    app_url = u._replace(netloc=netloc).geturl()
+    app_url = get_app_proxy_url(app)
     data["config"]["redirect_uris"] = app_url + data["config"]["redirect_uris"]
 
     app.arkstore_app_id = app_info["uuid"]
@@ -980,3 +977,12 @@ def enable_nginx_proxy_for_private_app(request, tenant, app):
     app.save()
     app.skip_verify_connection = True
     dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=app))
+
+
+def get_app_proxy_url(app):
+    config = get_app_config()
+    frontend_url = config.get_frontend_host(schema=True)
+    u = urlparse(frontend_url)
+    netloc = f'{app.id.hex}.{u.netloc}'
+    app_url = u._replace(netloc=netloc).geturl()
+    return app_url
