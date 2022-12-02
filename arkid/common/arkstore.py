@@ -1,5 +1,6 @@
 import json
 import requests
+from urllib.parse import urlparse
 from arkid.config import get_app_config
 from arkid.core import extension
 from oauth2_provider.models import Application
@@ -493,7 +494,7 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
             },
             "package":"com.longgui.app.protocol.oidc"
         }
-        app = create_oidc_app_for_private_app(request, tenant, app_info, data)
+        app = create_oidc_app_for_private_app(request, tenant, app_info, data, app_name)
         oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
         values_data = Template(values_data).substitute(oidc_config)
 
@@ -641,7 +642,8 @@ def create_tenant_oidc_app(tenant, url, name, description='', logo=''):
             tenant=tenant,
             name=name,
             url=url,
-            defaults={"description": description, "logo": logo, 'is_del': False, 'is_active': True}
+            is_del=False,
+            defaults={"description": description, "logo": logo, 'is_active': True}
         )
 
     if app.entry_permission is None:
@@ -920,7 +922,7 @@ def refresh_admin_uesr_token():
     return token
 
 
-def create_oidc_app_for_private_app(request, tenant, app_info, data):
+def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name):
     from arkid.core.event import APP_CONFIG_DONE, Event, dispatch_event
     from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP
 
@@ -928,6 +930,7 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data):
     app, created = App.objects.update_or_create(
         tenant=request.tenant,
         arkstore_app_id=app_info["uuid"],
+        url=f"http://{app_name}.{app_name}:80",
         is_del=False,
         defaults={"name": app_info["name"]}
     )
@@ -937,6 +940,12 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data):
 
     # enable app nginx proxy
     enable_nginx_proxy_for_private_app(request, tenant, app)
+    config = get_app_config()
+    frontend_url = config.get_frontend_host(schema=True)
+    u = urlparse(frontend_url)
+    netloc = f'{app.id.hex}.{u.netloc}'
+    app_url = u._replace(netloc=netloc).geturl()
+    data["config"]["redirect_uris"] = app_url + data["config"]["redirect_uris"]
 
     app.arkstore_app_id = app_info["uuid"]
     category_id = app_info.get('category_id', None)
@@ -969,4 +978,5 @@ def enable_nginx_proxy_for_private_app(request, tenant, app):
     from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP, UPDATE_APP
     app.is_intranet_url = True
     app.save()
-    dispatch_event(Event(tag=UPDATE_APP, tenant=request.tenant, request=request, data=app))
+    app.skip_verify_connection = True
+    dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=app))

@@ -152,16 +152,18 @@ class AppProxyNginxExtension(Extension):
             if parsed_url.scheme != "http":
                 logger.error(f"Wrong url Schema: {app.url}")
                 return
-            opener = urllib.request.build_opener()
-            opener.addheaders = [('User-agent', 'Mozilla/49.0.2')]
-            try:
-                opener.open(app.url)
-            except urllib.error.HTTPError:
-                logger.error('访问页面出错: {app.url}')
-                return
-            except urllib.error.URLError:
-                logger.error('访问页面出错: {app.url}')
-                return
+
+            if not hasattr(app, "skip_verify_connection") or not getattr(app, "skip_verify_connection"):
+                opener = urllib.request.build_opener()
+                opener.addheaders = [('User-agent', 'Mozilla/49.0.2')]
+                try:
+                    opener.open(app.url)
+                except urllib.error.HTTPError:
+                    logger.error('访问页面出错: {app.url}')
+                    return
+                except urllib.error.URLError:
+                    logger.error('访问页面出错: {app.url}')
+                    return
 
             arkid_be_host = os.environ.get("ARKIDBESVC")
             # be_url = f'http://{arkid_be_host}/api/v1/tenant/{tenant_id}/com_longgui_app_proxy_nginx/nginx_auth/{app_id}'
