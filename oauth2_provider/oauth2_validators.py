@@ -610,16 +610,28 @@ class OAuth2Validator(RequestValidator):
         id_token = token.get("id_token", None)
         if id_token:
             id_token = IDToken.objects.get(token=id_token)
-        return AccessToken.objects.create(
-            user=request.user,
-            tenant=request.user.current_tenant,
-            scope=token["scope"],
-            expires=expires,
-            token=token["access_token"],
-            id_token=id_token,
-            application=request.client,
-            source_refresh_token=source_refresh_token,
-        )
+        if request.user:
+            return AccessToken.objects.create(
+                user=request.user,
+                tenant=request.user.current_tenant,
+                scope=token["scope"],
+                expires=expires,
+                token=token["access_token"],
+                id_token=id_token,
+                application=request.client,
+                source_refresh_token=source_refresh_token,
+            )
+        else:
+            return AccessToken.objects.create(
+                # user=request.user,
+                # tenant=request.user.current_tenant,
+                scope=token["scope"],
+                expires=expires,
+                token=token["access_token"],
+                id_token=id_token,
+                application=request.client,
+                source_refresh_token=source_refresh_token,
+            )
 
     def _create_authorization_code(self, request, code, expires=None):
         if not expires:
