@@ -851,7 +851,7 @@ class PermissionData(object):
                     if not permission:
                         permission = Permission()
                         permission.app = app
-                        permission.category = 'group'
+                        permission.category = 'api'
                         permission.is_system = True
                         permission.code = 'api_{}'.format(uuid.uuid4())
                         permission.tenant = tenant
