@@ -6,7 +6,7 @@ from ninja import Query
 from ninja.pagination import paginate
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.pagenation import CustomPagination
-from arkid.core.models import Permission, SystemPermission
+from arkid.core.models import Permission, SystemPermission, OpenPermission
 from django.shortcuts import get_object_or_404
 from arkid.core.event import Event, dispatch_event
 from arkid.core.event import(
@@ -305,7 +305,7 @@ def list_user_group_last_permissions(request, tenant_id: str, query_data:UserGro
     '''
     from arkid.core.perm.permission_data import PermissionData
     permissiondata = PermissionData()
-    return permissiondata.get_user_group_last_permissions(tenant_id, query_data.usergroup_id, query_data.category, query_data.operation_id, query_data.name, query_data.app_name)
+    return permissiondata.get_user_group_last_permissions(tenant_id, query_data.usergroup_id, query_data.category, query_data.operation_id, query_data.name, query_data.app_name, query_data.app_id)
 
 # @api.post("/tenant/{tenant_id}/permission/{permission_id}/set_open", tags=['权限'])
 # @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
@@ -497,8 +497,8 @@ def permission_toggle_open(request, tenant_id: str, permission_id: str):
         return ErrorDict(ErrorCode.SYSTEM_PERMISSION_NOT_OPERATION)
     if permission is None:
         permission = Permission.valid_objects.filter(id=permission_id).first()
-        if str(permission.tenant_id) != tenant_id:
-            return ErrorDict(ErrorCode.PERMISSION_NOT_BELONG_TO_TENANT)
+    if str(permission.tenant_id) != tenant_id:
+        return ErrorDict(ErrorCode.PERMISSION_NOT_BELONG_TO_TENANT)
     if permission:
         is_open = permission.is_open
         if is_open:
@@ -567,6 +567,8 @@ def permission_toggle_other_user_open(request, tenant_id: str, permission_id: st
     '''
     切换权限是否开放给本租户其它用户
     '''
+    from arkid.core.perm.permission_data import PermissionData
+    tenant = request.tenant
     permission = SystemPermission.valid_objects.filter(
         id=permission_id
     ).first()
@@ -574,27 +576,40 @@ def permission_toggle_other_user_open(request, tenant_id: str, permission_id: st
         return ErrorDict(ErrorCode.SYSTEM_PERMISSION_NOT_OPERATION)
     if permission is None:
         permission = Permission.valid_objects.filter(id=permission_id).first()
-        if str(permission.tenant_id) != tenant_id:
-            return ErrorDict(ErrorCode.PERMISSION_NOT_BELONG_TO_TENANT)
+    # if str(permission.tenant_id) != tenant_id:
+    #     return ErrorDict(ErrorCode.PERMISSION_NOT_BELONG_TO_TENANT)
     if permission:
-        is_open_other_user = permission.is_open_other_user
-        if is_open_other_user:
-            # 原来是打开，现在是关闭
-            # 需要检查是否是分组如果是分组，需要多加几个
-            ids = []
-            if str(permission.id) not in ids:
-                ids.append(str(permission.id))
-            if permission.category == 'group' and permission.container.all():
-                for item in permission.container.all():
-                    if str(item.id) not in ids:
-                        ids.append(str(item.id))
-            if isinstance(permission, SystemPermission):
-                permissions = SystemPermission.valid_objects.filter(id__in=ids)
+        ids = []
+        ids.append(str(permission.id))
+        if permission.category == 'group' and permission.container.all():
+            for item in permission.container.all():
+                if str(item.id) not in ids:
+                    ids.append(str(item.id))
+        data = {
+            'ids': ids,
+            'tenant_id': tenant_id
+        }
+        if isinstance(permission, SystemPermission):
+            # 系统权限
+            permissions = SystemPermission.valid_objects.filter(id__in=ids)
+            isopen = OpenPermission.valid_objects.filter(
+                tenant=tenant,
+                system_permission=permission
+            ).exists()
+            OpenPermission.valid_objects.filter(
+                tenant=tenant,
+                system_permission__in=permissions
+            ).delete()
+            if isopen is False:
+                for item_permission in permissions:
+                    open_permission = OpenPermission()
+                    open_permission.tenant = tenant
+                    open_permission.system_permission = item_permission
+                    open_permission.save()
+                # 全部打开
+                dispatch_event(Event(tag=OPEN_OTHER_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=data))
             else:
-                permissions = Permission.valid_objects.filter(id__in=ids)
-            # 多加几个结束
-            permissions.update(is_open_other_user=False)
-            if isinstance(permission, SystemPermission):
+                # 全部关闭
                 system_permissions_info = {
                     'tenant_id': tenant_id,
                     'self_user_id': str(request.user.id)
@@ -604,7 +619,28 @@ def permission_toggle_other_user_open(request, tenant_id: str, permission_id: st
                     sort_ids.append(permission.sort_id)
                 system_permissions_info['sort_ids'] = sort_ids
                 dispatch_event(Event(tag=CLOSE_OTHER_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=system_permissions_info))
+        else:
+            # 应用权限
+            permissions = Permission.valid_objects.filter(id__in=ids)
+            isopen = OpenPermission.valid_objects.filter(
+                tenant=tenant,
+                permission=permission
+            ).exists()
+            OpenPermission.valid_objects.filter(
+                tenant=tenant,
+                permission__in=permissions
+            ).delete()
+            if isopen is False:
+                for item_permission in permissions:
+                    open_permission = OpenPermission()
+                    open_permission.tenant = tenant
+                    open_permission.permission = item_permission
+                    open_permission.save()
+                # 全部打开
+                data['app_id'] = str(permission.app.id)
+                dispatch_event(Event(tag=OPEN_OTHER_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=data))
             else:
+                # 全部关闭
                 app_permissions_info = {
                     'app_id': permission.app_id,
                     'tenant_id': tenant_id,
@@ -615,31 +651,6 @@ def permission_toggle_other_user_open(request, tenant_id: str, permission_id: st
                     sort_ids.append(permission.sort_id)
                 app_permissions_info['sort_ids'] = sort_ids
                 dispatch_event(Event(tag=CLOSE_OTHER_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=app_permissions_info))
-        else:
-            # 原来是关闭，现在是打开
-            # 需要检查是否是分组如果是分组，需要多加几个
-            ids = []
-            if str(permission.id) not in ids:
-                ids.append(str(permission.id))
-            if permission.category == 'group' and permission.container.all():
-                for item in permission.container.all():
-                    if str(item.id) not in ids:
-                        ids.append(str(item.id))
-            data = {
-                'ids': ids,
-                'tenant_id': tenant_id
-            }
-            if isinstance(permission, SystemPermission):
-                permissions = SystemPermission.valid_objects.filter(id__in=ids)
-            else:
-                permissions = Permission.valid_objects.filter(id__in=ids)
-                data['app_id'] = str(permission.app.id)
-            # 多加几个结束
-            permissions.update(is_open_other_user=True)
-            if isinstance(permission, SystemPermission):
-                dispatch_event(Event(tag=OPEN_OTHER_USER_SYSTEM_PERMISSION, tenant=request.tenant, request=request, data=data))
-            else:
-                dispatch_event(Event(tag=OPEN_OTHER_USER_APP_PERMISSION, tenant=request.tenant, request=request, data=data))
         return {'error': ErrorCode.OK.value}
     else:
         return ErrorDict(ErrorCode.PERMISSION_EXISTS_ERROR)

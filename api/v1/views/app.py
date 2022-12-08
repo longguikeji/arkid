@@ -35,9 +35,10 @@ def list_apps(request, tenant_id: str, query_data: AppListQueryIn=Query(...)):
     category_id = query_data.category_id
     name = query_data.name
     order = query_data.order
+    app_type = query_data.type
 
     apps = App.expand_objects.filter(
-        tenant_id=tenant_id,
+        Q(tenant_id=tenant_id)|Q(entry_permission__is_open=True),
         is_active=True,
         is_del=False
     )
@@ -46,6 +47,8 @@ def list_apps(request, tenant_id: str, query_data: AppListQueryIn=Query(...)):
         apps = apps.filter(arkstore_category_id=category_id)
     elif category_id == "-1":
         apps = apps.filter(arkstore_category_id=None, arkstore_app_id=None)
+    if app_type:
+        apps = apps.filter(type=app_type)
     if name:
         name = name.strip()
         apps = apps.filter(name__icontains=name)
