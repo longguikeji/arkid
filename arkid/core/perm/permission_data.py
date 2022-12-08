@@ -1789,7 +1789,7 @@ class PermissionData(object):
                 app__isnull=True,
             ).first()
         if userpermissionresult:
-            permission_result = self.get_permission_str_process(userpermissionresult, tenant_id, False)
+            permission_result = self.get_permission_str_process(userpermissionresult, tenant_id, False, False)
             # 将结果字符串转化为权限列表
             permission_result_list = list(permission_result)
             index_list = []
@@ -2277,7 +2277,7 @@ class PermissionData(object):
                     app_ids.append(value.id)
         return app_ids
 
-    def get_permission_str_process(self, userpermissionresult, tenant_id, is_64):
+    def get_permission_str_process(self, userpermissionresult, tenant_id, is_64, api_convert=True):
         '''
         对结果字符串加工
         '''
@@ -2330,11 +2330,17 @@ class PermissionData(object):
                     temp_database_dict['result'] = check_result
                     database_permission_dict[sort_id] = temp_database_dict
                 # 正确计算结果
-                result_str, result_str_64 = self.ditionairy_result(api_permission_dict, database_permission_dict)
-                if is_64:
-                    permission_result = result_str_64
+                if api_convert:
+                    result_str, result_str_64 = self.ditionairy_result(api_permission_dict, database_permission_dict)
+                    if is_64:
+                        permission_result = result_str_64
+                    else:
+                        permission_result = result_str
                 else:
-                    permission_result = result_str
+                    if is_64:
+                        permission_result = userpermissionresult.result
+                    else:
+                        permission_result = compress.decrypt(userpermissionresult.result)
             else:
                 if is_64:
                     permission_result = userpermissionresult.result
@@ -3406,12 +3412,14 @@ class PermissionData(object):
         for app_info in app_infos:
             app_id = app_info.get('app_id')
             app_tenant_id = app_info.get('app_tenant_id')
+            select_sort_ids = []
             if app_tenant_id == tenant_uid:
                 # 同一个租户
                 self.update_single_user_app_permission(tenant_uid, user_id, app_id)
             else:
                 # 不同租户
                 permissions = Permission.valid_objects.filter(app_id=app_id)
+                max_permission = permissions.order_by('-sort_id').first()
                 # 增加是否开放给本租户其它用户访问字段
                 if permissions:
                     openpermissions = OpenPermission.valid_objects.filter(
@@ -3426,20 +3434,23 @@ class PermissionData(object):
                             openpermissions_permission_ids.append(openpermission.permission_id)
                     for permission in permissions:
                         if permission.id in openpermissions_permission_ids:
+                            select_sort_ids.append(permission.sort_id)
                             permission.is_open_other_user = True
                         else:
                             permission.is_open_other_user = False
-                # max_permission = permissions.order_by('-sort_id').first()
                 compress = Compress()
                 user_str = ''
 
-                for permission in permissions:
-                    if permission.is_open_other_user is True:
+                # for permission in permissions:
+                #     if permission.is_open_other_user is True:
+                #         user_str = user_str+'1'
+                #     else:
+                #         user_str = user_str+'0'
+                for i in range(max_permission.sort_id+1):
+                    if i in select_sort_ids:
                         user_str = user_str+'1'
                     else:
                         user_str = user_str+'0'
-                # for i in range(max_permission.sort_id+1):
-                #     user_str = user_str+'0'
 
                 userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
                     is_del=False,
