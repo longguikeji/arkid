@@ -4,6 +4,7 @@ from arkid.core.models import (
     UserPermissionResult, SystemPermission, User,
     Tenant, App, Permission, UserGroup,
     ExpiringToken, GroupPermissionResult, AppPermissionResult,
+    OpenPermission,
 )
 from arkid.core.api import api
 from django.db.models import Q
@@ -617,6 +618,23 @@ class PermissionData(object):
         '''
         is_tenant_admin = tenant.has_admin_perm(auth_user)
         system_permissions = SystemPermission.objects.order_by('sort_id')
+        # -----增加是否开放给本租户其它用户访问字段
+        if system_permissions:
+            openpermissions = OpenPermission.valid_objects.filter(
+                tenant_id=tenant.id,
+                system_permission__in=system_permissions
+            )
+            openpermissions_permission_ids = []
+            for openpermission in openpermissions:
+                if openpermission.system_permission_id:
+                    openpermissions_permission_ids.append(openpermission.system_permission_id)
+                else:
+                    openpermissions_permission_ids.append(openpermission.permission_id)
+            for system_permission in system_permissions:
+                if system_permission.id in openpermissions_permission_ids:
+                    system_permission.is_open_other_user = True
+                else:
+                    system_permission.is_open_other_user = False
         data_dict = {}
         data_group_parent_child = {}
         for system_permission in system_permissions:
@@ -721,7 +739,7 @@ class PermissionData(object):
                     if container:
                         for item in container:
                             data_dict.get(item).is_pass = 1
-                elif data_item.is_open_other_user is True and data_item.tenant == auth_user.tenant:
+                elif data_item.is_open_other_user is True:
                     data_item.is_pass = 1
                     describe = data_item.describe
                     if describe:
@@ -1164,6 +1182,23 @@ class PermissionData(object):
         '''
         is_tenant_admin = tenant.has_admin_perm(auth_user)
         permissions = Permission.objects.filter(app=app).order_by('sort_id')
+        # -----增加是否开放给本租户其它用户访问字段
+        if permissions:
+            openpermissions = OpenPermission.valid_objects.filter(
+                tenant_id=tenant.id,
+                permission__in=permissions
+            )
+            openpermissions_permission_ids = []
+            for openpermission in openpermissions:
+                if openpermission.system_permission_id:
+                    openpermissions_permission_ids.append(openpermission.system_permission_id)
+                else:
+                    openpermissions_permission_ids.append(openpermission.permission_id)
+            for permission in permissions:
+                if permission.id in openpermissions_permission_ids:
+                    permission.is_open_other_user = True
+                else:
+                    permission.is_open_other_user = False
         data_dict = {}
         data_group_parent_child = {}
         for permission in permissions:
@@ -1268,7 +1303,7 @@ class PermissionData(object):
                         if container:
                             for item in container:
                                 data_dict.get(item).is_pass = 1
-                    elif data_item.is_open_other_user is True and data_item.tenant == auth_user.tenant:
+                    elif data_item.is_open_other_user is True:
                         data_item.is_pass = 1
                         describe = data_item.describe
                         if describe:
@@ -1771,7 +1806,6 @@ class PermissionData(object):
                 )
             else:
                 permissions = SystemPermission.valid_objects.filter()
-
             if category:
                 category = category.strip()
                 permissions = permissions.filter(category__icontains=category)
@@ -1804,22 +1838,49 @@ class PermissionData(object):
                     permission.in_current = True
                 else:
                     permission.in_current = False
+            if permissions:
+                if app_id != None:
+                    app = App.valid_objects.filter(id=app_id).first()
+                    entry_permission = app.entry_permission
+                    if entry_permission:
+                        entry_permission.in_current = False
+                        userpermissionresult = UserPermissionResult.valid_objects.filter(
+                            app=None,
+                            user=user,
+                            tenant_id=tenant_id
+                        ).first()
+                        permission_sort_ids = []
+                        if userpermissionresult:
+                            permission_result = compress.decrypt(userpermissionresult.result)
+                            permission_result_arr = list(permission_result)
+                            for index, item in enumerate(permission_result_arr):
+                                if int(item) == 1 and index == entry_permission.sort_id:
+                                    entry_permission.in_current = True
+                        permissions = list(permissions)
+                        permissions.insert(0, entry_permission)
             return permissions
-        else:
-            return []
 
-    def get_user_group_last_permissions(self, tenant_id, usergroup_id, category=None, operation_id=None, name=None, app_name=None):
+    def get_user_group_last_permissions(self, tenant_id, usergroup_id, category=None, operation_id=None, name=None, app_name=None, app_id=None):
         '''
         获取用户分组的最终权限
         '''
         permissions = Permission.valid_objects.filter(
-            tenant_id=tenant_id,
+            Q(tenant_id=tenant_id)|Q(is_open=True),
             app__is_del=False
         )
         systempermissions = SystemPermission.valid_objects.filter(
-            Q(tenant__isnull=True)|Q(tenant_id=tenant_id)
+            # Q(tenant__isnull=True)|Q(tenant_id=tenant_id)
         )
-
+        if app_id == 'arkid':
+            app_id = None
+            permissions = permissions.filter(id__isnull=True)
+        else:
+            app = App.valid_objects.filter(
+                id=app_id
+            ).first()
+            permissions = permissions.filter(app=app)
+            if app.entry_permission:
+                systempermissions = systempermissions.filter(id=app.entry_permission.id)
         if category:
             category = category.strip()
             permissions = permissions.filter(category__icontains=category)
@@ -2112,11 +2173,11 @@ class PermissionData(object):
         根据应用，用户分组，分类查权限(要根据分组身份显示正确的列表)
         '''
         permissions = Permission.valid_objects.filter(
-            tenant_id=tenant_id,
+            Q(tenant_id=tenant_id)|Q(is_open=True),
             app__is_del=False
         )
         systempermissions = SystemPermission.valid_objects.filter(
-            Q(tenant__isnull=True)|Q(tenant_id=tenant_id)
+            # Q(tenant__isnull=True)|Q(tenant_id=tenant_id)
         )
         compress = Compress()
         if app_name:
@@ -3350,11 +3411,36 @@ class PermissionData(object):
                 self.update_single_user_app_permission(tenant_uid, user_id, app_id)
             else:
                 # 不同租户
-                max_permission = Permission.objects.filter(app=app_id).order_by('-sort_id').first()
+                permissions = Permission.valid_objects.filter(app_id=app_id)
+                # 增加是否开放给本租户其它用户访问字段
+                if permissions:
+                    openpermissions = OpenPermission.valid_objects.filter(
+                        tenant_id=tenant_id,
+                        permission__in=permissions
+                    )
+                    openpermissions_permission_ids = []
+                    for openpermission in openpermissions:
+                        if openpermission.system_permission_id:
+                            openpermissions_permission_ids.append(openpermission.system_permission_id)
+                        else:
+                            openpermissions_permission_ids.append(openpermission.permission_id)
+                    for permission in permissions:
+                        if permission.id in openpermissions_permission_ids:
+                            permission.is_open_other_user = True
+                        else:
+                            permission.is_open_other_user = False
+                # max_permission = permissions.order_by('-sort_id').first()
                 compress = Compress()
                 user_str = ''
-                for i in range(max_permission.sort_id+1):
-                    user_str = user_str+'0'
+
+                for permission in permissions:
+                    if permission.is_open_other_user is True:
+                        user_str = user_str+'1'
+                    else:
+                        user_str = user_str+'0'
+                # for i in range(max_permission.sort_id+1):
+                #     user_str = user_str+'0'
+
                 userpermissionresult, is_create = UserPermissionResult.objects.get_or_create(
                     is_del=False,
                     user_id=user_id,
@@ -3407,6 +3493,15 @@ class PermissionData(object):
             obj = {
                 'app_id': app_id,
                 'app_tenant_id': upr.app.tenant.id
+            }
+            if obj not in items:
+                items.append(obj)
+        apps = App.valid_objects.filter(entry_permission__is_open=True)
+        for app in apps:
+            app_id = app.id
+            obj = {
+                'app_id': app_id,
+                'app_tenant_id': app.tenant.id
             }
             if obj not in items:
                 items.append(obj)

@@ -10,7 +10,10 @@ from arkid.core.pagenation import CustomPagination
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.api import api, operation
 from django.shortcuts import get_object_or_404
-from arkid.core.models import Permission, SystemPermission, App, Tenant
+from arkid.core.models import(
+    Permission, SystemPermission, App,
+    Tenant, OpenPermission,
+)
 from arkid.core.event import Event, dispatch_event
 from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN
 from arkid.core.event import (
@@ -145,6 +148,7 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
         if permission is None:
             permission = Permission.valid_objects.filter(id=permission_group_id).first()
         if permission:
+            # 权限
             result_items = permission.container.all()
             if category:
                 category = category.strip()
@@ -158,7 +162,8 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
             if app_name:
                 app_name = app_name.strip()
                 if isinstance(permission, SystemPermission):
-                    permissions = permissions.filter(app__name__icontains=app_name)
+                    pass
+                    # permissions = permissions.filter(app__name__icontains=app_name) 系统权限没有应用id
                 else:
                     filter_apps = App.valid_objects.filter(
                         name__icontains=app_name
@@ -170,8 +175,34 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                         result_items = result_items.filter(id__in=filter_ids)
                     else:
                         result_items = result_items.filter(id__isnull=True)
+            ### 增加是否开放给本租户其它用户访问字段
+            if result_items:
+                if isinstance(permission, SystemPermission):
+                    # 系统权限
+                    openpermissions = OpenPermission.valid_objects.filter(
+                        tenant_id=tenant_id,
+                        system_permission__in=result_items
+                    )
+                else:
+                    # 应用权限
+                    openpermissions = OpenPermission.valid_objects.filter(
+                        tenant_id=tenant_id,
+                        permission__in=result_items
+                    )
+                openpermissions_permission_ids = []
+                for openpermission in openpermissions:
+                    if openpermission.system_permission_id:
+                        openpermissions_permission_ids.append(openpermission.system_permission_id)
+                    else:
+                        openpermissions_permission_ids.append(openpermission.permission_id)
+                for result_item in result_items:
+                    if result_item.id in openpermissions_permission_ids:
+                        result_item.is_open_other_user = True
+                    else:
+                        result_item.is_open_other_user = False
             return result_items
         else:
+            # 应用
             app = App.valid_objects.filter(id=permission_group_id).first()
             items = []
             if app:
@@ -242,6 +273,32 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                         entry_permission = None
                 # 需要过滤展示
                 permissiondata = PermissionData()
+                ### 增加是否开放给本租户其它用户访问字段
+                if entry_permission:
+                    openpermission = OpenPermission.valid_objects.filter(
+                        tenant_id=tenant_id,
+                        system_permission=entry_permission
+                    ).exists()
+                    if openpermission:
+                        entry_permission.is_open_other_user = True
+                    else:
+                        entry_permission.is_open_other_user = False
+                if items:
+                    openpermissions = OpenPermission.valid_objects.filter(
+                        tenant_id=tenant_id,
+                        permission__in=items
+                    )
+                    openpermissions_permission_ids = []
+                    for openpermission in openpermissions:
+                        if openpermission.system_permission_id:
+                            openpermissions_permission_ids.append(openpermission.system_permission_id)
+                        else:
+                            openpermissions_permission_ids.append(openpermission.permission_id)
+                    for item in items:
+                        if item.id in openpermissions_permission_ids:
+                            item.is_open_other_user = True
+                        else:
+                            item.is_open_other_user = False
                 items = permissiondata.get_permissions_by_app_filter(tenant_id, app.id, items, entry_permission, request.user)
             return items
     else:
@@ -267,6 +324,22 @@ def get_permissions_from_group(request, tenant_id: str, permission_group_id: str
                 permissions = permissions.filter(id__in=filter_ids)
             else:
                 permissions = permissions.filter(id__isnull=True)
+        if permissions:
+            openpermissions = OpenPermission.valid_objects.filter(
+                tenant_id=tenant_id,
+                system_permission__in=permissions
+            )
+            openpermissions_permission_ids = []
+            for openpermission in openpermissions:
+                if openpermission.system_permission_id:
+                    openpermissions_permission_ids.append(openpermission.system_permission_id)
+                else:
+                    openpermissions_permission_ids.append(openpermission.permission_id)
+            for permission in permissions:
+                if permission.id in openpermissions_permission_ids:
+                    permission.is_open_other_user = True
+                else:
+                    permission.is_open_other_user = False
         # 只能看到自己拥有的权限
         permissiondata = PermissionData()
         return permissiondata.get_system_permission_by_filter(tenant_id, permissions, request.user)

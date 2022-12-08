@@ -100,6 +100,7 @@ class AppPermissionListQueryIn(Schema):
 
 class UserGroupLastPermQueryIn(Schema):
 
+    app_id: Optional[str] = Field(hidden=True, default=None)
     usergroup_id: Optional[str] = Field(hidden=True, default=None)
     app_name: Optional[str] = Field(title=_("应用名称"), default=None)
     category: Optional[PermissionCategory] = Field(title=_("分类"), default=None)

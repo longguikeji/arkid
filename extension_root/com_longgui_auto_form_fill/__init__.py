@@ -132,7 +132,7 @@ class AutoFormFillExtension(AppProtocolExtension):
         账密代填账号列表
         '''
         username = query_data.username
-        autoformfill_users = AutoFormFillUser.valid_objects.filter()
+        autoformfill_users = AutoFormFillUser.valid_objects.filter(tenant_id=tenant_id)
         if username:
             autoformfill_users = autoformfill_users.filter(username__icontains=username.strip())
         autoformfill_users = autoformfill_users.order_by('created')
@@ -238,7 +238,7 @@ class AutoFormFillExtension(AppProtocolExtension):
         账密代填账号列表(我的)
         '''
         username = query_data.username
-        autoformfill_users = AutoFormFillUser.valid_objects.filter(user=request.user)
+        autoformfill_users = AutoFormFillUser.valid_objects.filter(tenant_id=tenant_id, user=request.user)
         if username:
             autoformfill_users = autoformfill_users.filter(username__icontains=username.strip())
         autoformfill_users = autoformfill_users.order_by('created')

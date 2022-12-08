@@ -406,6 +406,30 @@ class Permission(PermissionAbstract):
     def children(self):
         return Permission.valid_objects.filter(parent=self).order_by('id')
 
+class OpenPermission(BaseModel):
+
+    class Meta(object):
+        verbose_name = _("OpenPermission", "开放权限")
+        verbose_name_plural = _("OpenPermission", "开放权限")
+
+    tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
+    system_permission = models.ForeignKey(
+        'SystemPermission',
+        blank=True,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT,
+    )
+    permission = models.ForeignKey(
+        'Permission',
+        blank=True,
+        null=True,
+        default=None,
+        on_delete=models.PROTECT,
+    )
+
+    def __str__(self) -> str:
+        return f'Tenant: {self.tenant.id.hex}'
 
 class UserPermissionResult(BaseModel, ExpandModel):
     class Meta(object):

@@ -17,6 +17,7 @@ class AppListItemOut(ModelSchema):
 
 class AppListQueryIn(Schema):
 
+    type: Optional[str] = Field(hidden=True, default=None)
     order: Optional[str] = Field(hidden=True, default=None)
     category_id: Optional[str] = Field(hidden=True, default=None)
     name: Optional[str] = Field(title=_("应用名称"), default=None)
