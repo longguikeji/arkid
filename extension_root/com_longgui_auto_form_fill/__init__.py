@@ -157,7 +157,7 @@ class AutoFormFillExtension(AppProtocolExtension):
             app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
             if app.arkstore_app_id:
-                account_type = app_config.get('config').get('account_type', 'mobile_email')
+                account_type = app_config.get('account_type', 'mobile_email')
             else:
                 account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
@@ -211,7 +211,7 @@ class AutoFormFillExtension(AppProtocolExtension):
             app_config = get_app_config_from_arkstore(request, autoformfill_user.app.arkstore_app_id)
         if app_config:
             if app.arkstore_app_id:
-                account_type = app_config.get('config').get('account_type', 'mobile_email')
+                account_type = app_config.get('account_type', 'mobile_email')
             else:
                 account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
@@ -269,7 +269,7 @@ class AutoFormFillExtension(AppProtocolExtension):
             app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
             if app.arkstore_app_id:
-                account_type = app_config.get('config').get('account_type', 'mobile_email')
+                account_type = app_config.get('account_type', 'mobile_email')
             else:
                 account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
@@ -324,7 +324,7 @@ class AutoFormFillExtension(AppProtocolExtension):
             app_config = get_app_config_from_arkstore(request, autoformfill_user.app.arkstore_app_id)
         if app_config:
             if app.arkstore_app_id:
-                account_type = app_config.get('config').get('account_type', 'mobile_email')
+                account_type = app_config.get('account_type', 'mobile_email')
             else:
                 account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
@@ -442,7 +442,7 @@ class AutoFormFillExtension(AppProtocolExtension):
         placeholder = ''
         if app_config:
             if app.arkstore_app_id:
-                account_type = app_config.get('config').get('account_type', 'mobile_email')
+                account_type = app_config.get('account_type', 'mobile_email')
             else:
                 account_type = app_config.config.get('account_type', 'mobile_email')
             if account_type == 'mobile_email':
@@ -556,7 +556,7 @@ class AutoFormFillExtension(AppProtocolExtension):
             app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
             if app.arkstore_app_id:
-                account_type = app_config.get('config').get('account_type', '')
+                account_type = app_config.get('account_type', '')
             else:
                 account_type = app_config.config.get('account_type', '')
             if account_type == 'mobile_email':
@@ -655,7 +655,7 @@ class AutoFormFillExtension(AppProtocolExtension):
             app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
             if app.arkstore_app_id:
-                account_type = app_config.get('config').get('account_type', 'mobile_email')
+                account_type = app_config.get('account_type', 'mobile_email')
             else:
                 account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
@@ -714,7 +714,7 @@ class AutoFormFillExtension(AppProtocolExtension):
             placeholder = ''
             if app_config:
                 if app.arkstore_app_id:
-                    account_type = app_config.get('config').get('account_type', '')
+                    account_type = app_config.get('account_type', '')
                 else:
                     account_type = app_config.config.get('account_type', '')
                 if account_type == 'mobile_email':
