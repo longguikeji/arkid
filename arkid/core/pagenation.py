@@ -139,7 +139,7 @@ class ArstoreAppPagination(CustomPagination):
                 app['installed'] = True
             elif app['uuid'] in installed_private_apps_dict:
                 app['installed'] = True
-                app['private_app_status'] = installed_apps_dict[app['uuid']].status
+                app['private_app_status'] = installed_private_apps_dict[app['uuid']].status
 
         return {
             'items': items,

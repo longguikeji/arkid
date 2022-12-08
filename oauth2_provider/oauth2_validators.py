@@ -920,13 +920,19 @@ class OAuth2Validator(RequestValidator):
         return self.get_oidc_claims(None, None, request)
 
     def get_additional_claims(self, request):
+        from arkid.core.models import UserGroup
         groups = []
         user = request.user
         tenant = user.current_tenant
-        # for group in user.groups.all():
-        #     groups.append(group.name)
+        usergroups = UserGroup.active_objects.filter(
+            users=user
+        )
+        for usergroup in usergroups:
+            groups.append(usergroup.name)
         if tenant.has_admin_perm(user) and 'tenant_admin' not in groups:
             groups.append('tenant_admin')
+        if tenant.is_platform_tenant and tenant.has_admin_perm(user) and 'platform_admin' not in groups:
+            groups.append('platform_admin')
         return {
             "sub": str(request.user.id),
             "sub_id": str(request.user.id),
@@ -934,7 +940,7 @@ class OAuth2Validator(RequestValidator):
             # 'nickname': request.user.nickname,
             # 'given_name': request.user.first_name,
             # 'family_name': request.user.last_name,
-            # 'email': request.user.email,
+            'email': request.user.email if hasattr(request.user, "email") else request.user.username + '@arkid.cc',
             'groups': groups,
             'tenant_id': str(request.user.current_tenant.id),
             "tenant_slug": request.user.current_tenant.slug,

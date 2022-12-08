@@ -103,7 +103,7 @@ class AppProxyNginxExtension(Extension):
                 u = urlparse(frontend_url)
                 netloc = f'{app.id.hex}.{u.netloc}'
                 app_url = u._replace(netloc=netloc).geturl()
-                app.url = f'{app_url}'
+                app.url = f'{app_url}{urlparse(app.url).path}'
 
     def create_app(self, event, **kwargs):
         logger.info('App proxy nginx is handing create app...')
@@ -124,6 +124,8 @@ class AppProxyNginxExtension(Extension):
             return
         app = event.data
         nginx_app = NginxAPP.objects.filter(target=app).first()
+        if not nginx_app:
+            return
 
         frontend_url = get_app_config().get_frontend_host(schema=True)
         u = urlparse(frontend_url)
@@ -150,16 +152,18 @@ class AppProxyNginxExtension(Extension):
             if parsed_url.scheme != "http":
                 logger.error(f"Wrong url Schema: {app.url}")
                 return
-            opener = urllib.request.build_opener()
-            opener.addheaders = [('User-agent', 'Mozilla/49.0.2')]
-            try:
-                opener.open(app.url)
-            except urllib.error.HTTPError:
-                logger.error('访问页面出错: {app.url}')
-                return
-            except urllib.error.URLError:
-                logger.error('访问页面出错: {app.url}')
-                return
+
+            if not hasattr(app, "skip_verify_connection") or not getattr(app, "skip_verify_connection"):
+                opener = urllib.request.build_opener()
+                opener.addheaders = [('User-agent', 'Mozilla/49.0.2')]
+                try:
+                    opener.open(app.url)
+                except urllib.error.HTTPError:
+                    logger.error('访问页面出错: {app.url}')
+                    return
+                except urllib.error.URLError:
+                    logger.error('访问页面出错: {app.url}')
+                    return
 
             arkid_be_host = os.environ.get("ARKIDBESVC")
             be_url = f'http://{arkid_be_host}/api/v1/tenant/{tenant_id}/com_longgui_app_proxy_nginx/nginx_auth/{app_id}'
@@ -169,8 +173,10 @@ class AppProxyNginxExtension(Extension):
             #     return
             try:
                 create_url = f"http://{portal_url}/create/nginxconf"
+                u = urlparse(app.url)
+                app_proxy_url = f"{u.scheme}://{u.netloc}"
                 json = {
-                    "dest_url": app.url,
+                    "dest_url": app_proxy_url,
                     "server_name": app_server_name,
                     "be_url": be_url,
                 }
