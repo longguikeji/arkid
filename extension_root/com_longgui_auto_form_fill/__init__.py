@@ -323,7 +323,7 @@ class AutoFormFillExtension(AppProtocolExtension):
         if autoformfill_user.app.arkstore_app_id:
             app_config = get_app_config_from_arkstore(request, autoformfill_user.app.arkstore_app_id)
         if app_config:
-             if app.arkstore_app_id:
+            if app.arkstore_app_id:
                 account_type = app_config.get('config').get('account_type', 'mobile_email')
             else:
                 account_type = app_config.config.get('account_type', 'mobile_email')
