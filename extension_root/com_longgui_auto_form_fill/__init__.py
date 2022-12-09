@@ -437,6 +437,8 @@ class AutoFormFillExtension(AppProtocolExtension):
 
         app_config = app.config
         if app.arkstore_app_id:
+            print('+++username:'+user.username)
+            print('+++token:'+str(user.auth_token))
             request.user = user
             app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         placeholder = ''
