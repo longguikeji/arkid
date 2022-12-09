@@ -51,7 +51,7 @@ pages.register_front_pages(select_app_page)
 
 select_app_page.create_actions(
     init_action=actions.DirectAction(
-        path='/api/v1/tenant/{tenant_id}/apps/',
+        path='/api/v1/tenant/{tenant_id}/apps/?type=AutoFormFill',
         method=actions.FrontActionMethod.GET
     )
 )

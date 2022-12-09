@@ -132,7 +132,7 @@ class AutoFormFillExtension(AppProtocolExtension):
         账密代填账号列表
         '''
         username = query_data.username
-        autoformfill_users = AutoFormFillUser.valid_objects.filter()
+        autoformfill_users = AutoFormFillUser.valid_objects.filter(tenant_id=tenant_id)
         if username:
             autoformfill_users = autoformfill_users.filter(username__icontains=username.strip())
         autoformfill_users = autoformfill_users.order_by('created')
@@ -156,7 +156,10 @@ class AutoFormFillExtension(AppProtocolExtension):
         if app.arkstore_app_id:
             app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
-            account_type = app_config.config.get('account_type', 'mobile_email')
+            if app.arkstore_app_id:
+                account_type = app_config.get('account_type', 'mobile_email')
+            else:
+                account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
                 return self.error(ErrorCode.USERNAME_FORMAT_ERROR)
 
@@ -207,7 +210,10 @@ class AutoFormFillExtension(AppProtocolExtension):
         if autoformfill_user.app.arkstore_app_id:
             app_config = get_app_config_from_arkstore(request, autoformfill_user.app.arkstore_app_id)
         if app_config:
-            account_type = app_config.config.get('account_type', 'mobile_email')
+            if app.arkstore_app_id:
+                account_type = app_config.get('account_type', 'mobile_email')
+            else:
+                account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
                 return self.error(ErrorCode.USERNAME_FORMAT_ERROR)
 
@@ -238,7 +244,7 @@ class AutoFormFillExtension(AppProtocolExtension):
         账密代填账号列表(我的)
         '''
         username = query_data.username
-        autoformfill_users = AutoFormFillUser.valid_objects.filter(user=request.user)
+        autoformfill_users = AutoFormFillUser.valid_objects.filter(tenant_id=tenant_id, user=request.user)
         if username:
             autoformfill_users = autoformfill_users.filter(username__icontains=username.strip())
         autoformfill_users = autoformfill_users.order_by('created')
@@ -262,7 +268,10 @@ class AutoFormFillExtension(AppProtocolExtension):
         if app.arkstore_app_id:
             app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
-            account_type = app_config.config.get('account_type', 'mobile_email')
+            if app.arkstore_app_id:
+                account_type = app_config.get('account_type', 'mobile_email')
+            else:
+                account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
                 return self.error(ErrorCode.USERNAME_FORMAT_ERROR)
 
@@ -314,7 +323,10 @@ class AutoFormFillExtension(AppProtocolExtension):
         if autoformfill_user.app.arkstore_app_id:
             app_config = get_app_config_from_arkstore(request, autoformfill_user.app.arkstore_app_id)
         if app_config:
-            account_type = app_config.config.get('account_type', 'mobile_email')
+            if app.arkstore_app_id:
+                account_type = app_config.get('account_type', 'mobile_email')
+            else:
+                account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
                 return self.error(ErrorCode.USERNAME_FORMAT_ERROR)
 
@@ -425,10 +437,16 @@ class AutoFormFillExtension(AppProtocolExtension):
 
         app_config = app.config
         if app.arkstore_app_id:
+            print('+++username:'+user.username)
+            print('+++token:'+str(user.auth_token))
+            request.user = user
             app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         placeholder = ''
         if app_config:
-            account_type = app_config.config.get('account_type', '')
+            if app.arkstore_app_id:
+                account_type = app_config.get('account_type', 'mobile_email')
+            else:
+                account_type = app_config.config.get('account_type', 'mobile_email')
             if account_type == 'mobile_email':
                 placeholder = '请输入电话或邮箱'
             elif account_type == 'mobile':
@@ -539,7 +557,10 @@ class AutoFormFillExtension(AppProtocolExtension):
         if app.arkstore_app_id:
             app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
-            account_type = app_config.config.get('account_type', '')
+            if app.arkstore_app_id:
+                account_type = app_config.get('account_type', '')
+            else:
+                account_type = app_config.config.get('account_type', '')
             if account_type == 'mobile_email':
                 return self.success(data={'placeholder': _('please input mobile or email', '请输入电话或邮箱')})
             elif account_type == 'mobile':
@@ -635,7 +656,10 @@ class AutoFormFillExtension(AppProtocolExtension):
         if app.arkstore_app_id:
             app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
         if app_config:
-            account_type = app_config.config.get('account_type', 'mobile_email')
+            if app.arkstore_app_id:
+                account_type = app_config.get('account_type', 'mobile_email')
+            else:
+                account_type = app_config.config.get('account_type', 'mobile_email')
             if self.check_username(account_type, username) is False:
                 return self.error(ErrorCode.USERNAME_FORMAT_ERROR)
 
@@ -691,7 +715,10 @@ class AutoFormFillExtension(AppProtocolExtension):
                 app_config = get_app_config_from_arkstore(request, app.arkstore_app_id)
             placeholder = ''
             if app_config:
-                account_type = app_config.config.get('account_type', '')
+                if app.arkstore_app_id:
+                    account_type = app_config.get('account_type', '')
+                else:
+                    account_type = app_config.config.get('account_type', '')
                 if account_type == 'mobile_email':
                     placeholder = '请输入电话或邮箱'
                 elif account_type == 'mobile':

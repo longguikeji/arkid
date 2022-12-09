@@ -935,7 +935,7 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, l
         arkstore_app_id=app_info["uuid"],
         url=f"http://{app_name}.{app_name}:80{login_url}",
         is_del=False,
-        defaults={"name": app_info["name"]}
+        defaults={"name": app_info["name"], "logo": app_info["logo"], "description": app_info["description"]}
     )
     if created:
         app.is_active = False
