@@ -2,6 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 from ninja import Field, Schema
 from arkid.core.extension import create_extension_schema
+from arkid.core.models import Tenant
 from arkid.core.schema import ResponseSchema
 from arkid.core.translation import gettext_default as _
 
@@ -75,7 +76,7 @@ class LDAPServerDataSearchItemOut(Schema):
     attributes:dict
     
 class LDAPServerDataSearchBaseOut(ResponseSchema):
-    data:List[LDAPServerDataSearchItemOut]
+    data:Optional[List[LDAPServerDataSearchItemOut]]
     
 LDAPServerDataSearchOut = create_extension_schema(
     "LDAPServerDataSearchOut",
@@ -144,3 +145,17 @@ GroupFieldsOut = create_extension_schema(
     ],
     ResponseSchema
 )
+
+class LDAPTenantItemOut(Schema):
+    id:str
+    name:str
+    slug:str
+
+class LDAPSearchTenantOut(ResponseSchema):
+    data: Optional[List[LDAPTenantItemOut]] = []
+    
+class LDAPSearchTenantUserOut(ResponseSchema):
+    data: Optional[List] = []
+    
+class LDAPFindTenantOut(ResponseSchema):
+    pass

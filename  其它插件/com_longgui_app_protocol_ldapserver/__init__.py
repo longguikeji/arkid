@@ -13,21 +13,21 @@ from arkid.core.models import User, UserGroup
 from arkid.core.token import refresh_token
 from arkid.extension.models import TenantExtension, TenantExtensionConfig
 from arkid.core.constants import *
-from arkid.core import pages,actions, routers
+from arkid.core import pages, actions, routers
 from arkid.core.translation import gettext_default as _
 from .schema import *
 from .error import ErrorCode
 
 
 class LDAPServerExtension(AppProtocolExtension):
-    
+
     def load(self):
         # 加载相应的配置文件
         self.register_extension_api()
         self.create_extension_settings_schema()
         self.register_pages()
         super().load()
-        
+
     def create_app(self, event, **kwargs):
         pass
 
@@ -36,7 +36,7 @@ class LDAPServerExtension(AppProtocolExtension):
 
     def delete_app(self, event, **kwargs):
         pass
-    
+
     def create_extension_settings_schema(self):
         """ 创建插件配置schema描述
         """
@@ -63,7 +63,7 @@ class LDAPServerExtension(AppProtocolExtension):
                 )
             ]
         )
-        
+
         GroupAttributeMapping = create_extension_schema(
             "GroupAttributeMapping",
             __file__,
@@ -90,7 +90,7 @@ class LDAPServerExtension(AppProtocolExtension):
                 )
             ]
         )
-        
+
         LDAPApplicationSchema = create_extension_schema(
             'LDAPApplicationSchema',
             __file__,
@@ -104,16 +104,16 @@ class LDAPServerExtension(AppProtocolExtension):
                         type="array",
                         default=[
                             {
-                                "key":"cn",
-                                "value":"username"  
+                                "key": "cn",
+                                "value": "username"
                             },
                             {
-                                "key":"uid",
-                                "value":"id"  
+                                "key": "uid",
+                                "value": "id"
                             }
                         ]
                     )
-                 ),
+                ),
                 (
                     "group",
                     List[GroupAttributeMapping],
@@ -123,17 +123,17 @@ class LDAPServerExtension(AppProtocolExtension):
                         type="array",
                         default=[
                             {
-                                "key":"cn",
-                                "value":"id"  
+                                "key": "cn",
+                                "value": "id"
                             },
                             {
-                                "key":"name",
-                                "value":"name"  
+                                "key": "name",
+                                "value": "name"
                             }
                         ]
                     )
                 )
-                
+
             ],
             base_schema=LDAPApplicationSettingsSchema
         )
@@ -142,7 +142,7 @@ class LDAPServerExtension(AppProtocolExtension):
         )
 
     @operation(LDAPServerDataSearchOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-    def data_search(self,request,tenant_id:str,data:LDAPServerDataSearchIn):
+    def data_search(self, request, tenant_id: str, data: LDAPServerDataSearchIn):
         """数据搜索
 
         Args:
@@ -157,15 +157,15 @@ class LDAPServerExtension(AppProtocolExtension):
         tenant = request.tenant
         dn = data.dn
         scope = data.scope
-        
+
         res = []
         # 处理dn 去掉空格并分割
         dn.replace(" ", "")
         items = dn.split(",")
         item = items[0]
-        
+
         dc_suf = ","+",".join(items[1:])
-        
+
         match_params = re.findall("(.*)=(.*)", item)
         if match_params:
             match_params = match_params[0]
@@ -180,7 +180,7 @@ class LDAPServerExtension(AppProtocolExtension):
                             match_params[1],
                             dc_suf
                         )
-                    )    
+                    )
                 elif "ou=group" in dc_suf:
                     res.append(
                         self.group_find_by_id(
@@ -193,38 +193,50 @@ class LDAPServerExtension(AppProtocolExtension):
                 if match_params[1] == "people":
                     res.append(
                         {
-                            "dn":f"ou=people{dc_suf}",
+                            "dn": f"ou=people{dc_suf}",
                             "attributes": {
-                                "objectClass": ["organization"]
+                                "objectClass": ["container"],
+                                "hassubordinates": True,
                             }
                         }
                     )
                 elif match_params[1] == "group":
                     res.append(
                         {
-                            "dn":f"ou=group{dc_suf}",
+                            "dn": f"ou=group{dc_suf}",
                             "attributes": {
-                                "objectClass": ["organization"]
+                                "objectClass": ["container"],
+                                "hassubordinates": True,
                             }
                         }
                     )
+            elif match_params[0] == "o":
+                res.append(
+                    {
+                        "dn": f"o={match_params[1]}{dc_suf}",
+                        "attributes": {
+                            "objectClass": ["top", "root", "tenant"],
+                            "name": tenant.name,
+                            "slug": tenant.slug,
+                            "hassubordinates": True,
+                        }
+                    }
+                )
             elif match_params[0] == "dc":
                 res.append(
                     {
-                        "dn":f"dc={match_params[1]}{dc_suf}",
+                        "dn": f"dc={match_params[1]}{dc_suf}",
                         "attributes": {
-                            "objectClass": ["top","organization"]
+                            "objectClass": ["top", "root", "domain"],
+                            "hassubordinates": True,
                         }
                     }
-                )  
+                )
         elif scope == "one":
             # 查询次一级数据
             if match_params[0] == "cn":
                 if "ou=people" in dc_suf:
-                    # 暂不支持 抛出错误
-                    return self.error(
-                        ErrorCode.UNSUPPORTED_SCOPE
-                    )
+                    pass
                 elif "ou=group" in dc_suf:
                     res.extend(
                         self.group_users(
@@ -235,26 +247,38 @@ class LDAPServerExtension(AppProtocolExtension):
                     )
             elif match_params[0] == "ou":
                 if match_params[1] == "people":
-                    res.extend(self.find_all_users(tenant,dc_suf))
+                    res.extend(self.find_all_users(tenant, dc_suf))
                 elif match_params[1] == "group":
-                    res.extend(self.find_all_groups(tenant,dc_suf))
+                    res.extend(self.find_all_groups(tenant, dc_suf))
             elif match_params[0] == "dc":
                 res.append(
                     {
-                        "dn":f"ou=people,{match_params[0]}={match_params[1]}{dc_suf}",
+                        "dn": f"o={tenant_id}, {match_params[0]}={match_params[1]}{dc_suf}",
                         "attributes": {
-                            "objectClass": ["organization"]
+                            "objectClass": ["container"],
+                            "hassubordinates": True,
+                        }
+                    }
+                )
+            elif match_params[0] == "o":
+                res.append(
+                    {
+                        "dn": f"ou=people, {match_params[0]}={match_params[1]}{dc_suf}",
+                        "attributes": {
+                            "objectClass": ["container"],
+                            "hassubordinates": True,
                         }
                     }
                 )
                 res.append(
                     {
-                        "dn":f"ou=group,{match_params[0]}={match_params[1]}{dc_suf}",
+                        "dn": f"ou=group, {match_params[0]}={match_params[1]}{dc_suf}",
                         "attributes": {
-                            "objectClass": ["organization"]
+                            "objectClass": ["container"],
+                            "hassubordinates": True,
                         }
                     }
-                ) 
+                )
         else:
             # 暂不支持 抛出错误
             return self.error(
@@ -263,8 +287,8 @@ class LDAPServerExtension(AppProtocolExtension):
         return self.success(
             data=res
         )
-    
-    def find_all_groups(self,tenant,base_dn):
+
+    def find_all_groups(self, tenant, base_dn):
         """查找租户下所有群组
 
         Args:
@@ -277,10 +301,10 @@ class LDAPServerExtension(AppProtocolExtension):
         groups = UserGroup.expand_objects.filter(tenant=tenant).all()
         return [{
             "dn": f"cn={group['id']},ou=group{base_dn}",
-            "attributes":self.get_attributes(tenant,group,"group")
-        } for group in groups]  
-        
-    def find_all_users(self,tenant,base_dn):
+            "attributes": self.get_attributes(tenant, group, "group")
+        } for group in groups]
+
+    def find_all_users(self, tenant, base_dn):
         """查找租户下所有用户
 
         Args:
@@ -291,12 +315,12 @@ class LDAPServerExtension(AppProtocolExtension):
             list[dict]: 用户描述列表
         """
         users = User.expand_objects.filter(tenant=tenant).all()
-        
+
         return [{
             "dn": f"cn={user['username']},ou=people{base_dn}",
-            "attributes":self.get_attributes(tenant,user,"people")
+            "attributes": self.get_attributes(tenant, user, "people")
         } for user in users]
-    
+
     def user_find_by_name(self, tenant, username, base_dn):
         """通过username寻找用户
 
@@ -308,17 +332,18 @@ class LDAPServerExtension(AppProtocolExtension):
         Returns:
             dict: 用户描述
         """
-        user = User.expand_objects.filter(tenant=tenant,username=username).first()
-        
+        user = User.expand_objects.filter(
+            tenant=tenant, username=username).first()
+
         if not user:
             return
-        
+
         return {
             "dn": f"cn={user['username']}{base_dn}",
-            "attributes":self.get_attributes(tenant,user,"people")
+            "attributes": self.get_attributes(tenant, user, "people")
         }
-        
-    def group_find_by_id(self, tenant, id,base_dn):
+
+    def group_find_by_id(self, tenant, id, base_dn):
         """通过id寻找群组
 
         Args:
@@ -330,13 +355,13 @@ class LDAPServerExtension(AppProtocolExtension):
             dict: 群组描述
         """
         group = UserGroup.expand_objects.get(id=id)
-        
+
         return {
             "dn": f"cn={group['id']}{base_dn}",
-            "attributes":self.get_attributes(tenant,group,"group")
+            "attributes": self.get_attributes(tenant, group, "group")
         }
-    
-    def group_users(self,tenant,id,base_dn):
+
+    def group_users(self, tenant, id, base_dn):
         """查找租户下指定群组所有用户
 
         Args:
@@ -352,13 +377,13 @@ class LDAPServerExtension(AppProtocolExtension):
         return [
             {
                 "dn": f"cn={user['username']}{base_dn}",
-                "attributes":self.get_attributes(tenant,user,"people")
+                "attributes": self.get_attributes(tenant, user, "people")
             } for user in User.expand_objects.filter(
-                id__in = [t.id for t in group.users.all()]
+                id__in=[t.id for t in group.users.all()]
             ).all()
         ]
-    
-    def get_attributes(self,tenant,obj,key):
+
+    def get_attributes(self, tenant, obj, key):
         """获取对象中指定的属性
 
         Args:
@@ -376,12 +401,19 @@ class LDAPServerExtension(AppProtocolExtension):
         )
         for k in attribute_mappings.keys():
             value = obj.get(attribute_mappings[k], None)
-            if isinstance(value,UUID):
-                value=value.hex
+            if isinstance(value, UUID):
+                value = value.hex
             attributes[k] = value
-        attributes["objectclass"] = ["organizationalUnit"]
+
+        if key == "people":
+            attributes["objectClass"] = ["person"]
+            attributes["hassubordinates"] = False
+        else:
+            attributes["objectClass"] = ["group"]
+            attributes["hassubordinates"] = True
+
         return attributes
-    
+
     def get_attribute_mappings(self, tenant, key="people"):
         """
         获取自定义字段
@@ -389,57 +421,58 @@ class LDAPServerExtension(AppProtocolExtension):
         extension = self.model
         settings = TenantExtension.active_objects.filter(
             extension=extension,
-            tenant = tenant
+            tenant=tenant
         ).first()
-        
-        settings_attribute_list = settings.settings.get(key,[])
+
+        settings_attribute_list = settings.settings.get(key, [])
         attribute_mappings = {}
         for item in settings_attribute_list:
             attribute_mappings[item["key"]] = item["value"]
         return attribute_mappings
-    
+
     @operation(LDAPServerLoginOut, use_id=True)
-    def login(self,request,tenant_id:str,data:LDAPServerLoginIn):
+    def login(self, request, tenant_id: str, data: LDAPServerLoginIn):
         """LDAP SERVER 登录请求
         """
         tenant = request.tenant
         request_id = request.META.get('request_id')
-        
+
         settings = TenantExtension.active_objects.filter(
             extension=self.model,
             tenant=tenant
         ).first()
-        
+
         if not settings:
             return self.error(
                 ErrorCode.NO_ACTIVE_EXTENSION_SETTINGS
             )
-        
+
         if not settings.settings["server"]["BASE_DN"] == data.basedn:
             return self.error(
                 ErrorCode.DN_NOT_MATCH
             )
-        
+
         login_config = TenantExtensionConfig.valid_objects.filter(
             tenant=tenant,
             type="password",
         ).first()
-        
+
         request.POST["config_id"] = login_config.id.hex
-    
-        responses = dispatch_event(Event(tag="com.longgui.auth.factor.password.auth", tenant=tenant, request=request, uuid=request_id))
+
+        responses = dispatch_event(Event(
+            tag="com.longgui.auth.factor.password.auth", tenant=tenant, request=request, uuid=request_id))
         if not responses:
             return ErrorDict(ErrorCode.AUTH_EXTENSION_IS_DISACTIVELY)
-        
+
         useless, (user, useless) = responses[0]
 
         # 生成 token
         token = refresh_token(user)
 
         return self.success({'token': token})
-    
-    @operation(LDAPServerSettingsOut,roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-    def settings(self,request,tenant_id:str):
+
+    @operation(LDAPServerSettingsOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+    def settings(self, request, tenant_id: str):
         """配置
         """
         settings = TenantExtension.active_objects.filter(
@@ -447,7 +480,7 @@ class LDAPServerExtension(AppProtocolExtension):
             tenant=request.tenant
         ).first()
 
-        if not (settings and settings.get("server",None)):
+        if not (settings and settings.settings.get("server", None)):
             return self.error(
                 ErrorCode.NO_ACTIVE_EXTENSION_SETTINGS
             )
@@ -455,11 +488,11 @@ class LDAPServerExtension(AppProtocolExtension):
         return self.success(
             data={
                 "ARKID_DOMAIN": get_app_config().get_host(),
-                "BASE_DN":settings.settings["server"]["BASE_DN"],
-                "LOGIN_USERNAME_FORMAT":"cn={username},ou=people,o="+request.tenant.id.hex+"," + settings.settings["server"]["BASE_DN"]
+                "BASE_DN": settings.settings["server"]["BASE_DN"],
+                "LOGIN_USERNAME_FORMAT": "cn={username}, ou=people, o="+request.tenant.id.hex+", " + settings.settings["server"]["BASE_DN"]
             }
         )
-    
+
     def register_extension_api(self):
         """注册插件API
         """
@@ -471,7 +504,7 @@ class LDAPServerExtension(AppProtocolExtension):
             auth=None,
             response=LDAPServerLoginOut,
         )
-        
+
         self.search_path = self.register_api(
             '/search/',
             'POST',
@@ -480,7 +513,7 @@ class LDAPServerExtension(AppProtocolExtension):
             auth=GlobalAuth(),
             response=LDAPServerDataSearchOut,
         )
-        
+
         self.settings_path = self.register_api(
             '/settings/',
             'GET',
@@ -489,7 +522,7 @@ class LDAPServerExtension(AppProtocolExtension):
             auth=GlobalAuth(),
             response=LDAPServerSettingsOut,
         )
-        
+
         self.user_fields_path = self.register_api(
             '/user_fields/',
             'GET',
@@ -498,7 +531,7 @@ class LDAPServerExtension(AppProtocolExtension):
             auth=GlobalAuth(),
             response=UserFieldsOut,
         )
-        
+
         self.group_fields_path = self.register_api(
             '/group_fields/',
             'GET',
@@ -507,7 +540,34 @@ class LDAPServerExtension(AppProtocolExtension):
             auth=GlobalAuth(),
             response=GroupFieldsOut,
         )
-        
+
+        self.tenant_search_path = self.register_api(
+            '/tenant_search/',
+            'POST',
+            self.search_tenant,
+            tenant_path=True,
+            auth=GlobalAuth(),
+            response=LDAPSearchTenantOut,
+        )
+
+        self.find_tenant_path = self.register_api(
+            '/find_tenant/',
+            'GET',
+            self.find_tenant,
+            tenant_path=True,
+            auth=GlobalAuth(),
+            response=LDAPFindTenantOut,
+        )
+
+        self.find_tenant_users_path = self.register_api(
+            '/find_tenant_users/',
+            'GET',
+            self.find_tenant_users,
+            tenant_path=True,
+            auth=GlobalAuth(),
+            response=LDAPSearchTenantUserOut,
+        )
+
     def register_pages(self):
         data_sync_page = pages.FormPage(
             name=_("LDAP SERVER")
@@ -519,28 +579,68 @@ class LDAPServerExtension(AppProtocolExtension):
             ),
         )
         self.register_front_pages(data_sync_page)
-        data_sync_router =  routers.FrontRouter(
+        data_sync_router = routers.FrontRouter(
             path="ldap_server",
             name=_("LDAP SERVER"),
             page=data_sync_page,
             icon='sync',
         )
         from api.v1.pages.data_source_manage import router
-        self.register_front_routers(data_sync_router,router)
-    
+        self.register_front_routers(data_sync_router, router)
+
     @operation(UserFieldsOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-    def user_fields(self,request):
+    def user_fields(self, request):
         """用户模型字段列表
         """
         data = ["id"]
-        data.extend([key for key,value in User.key_fields.items()])
+        data.extend([key for key, value in User.key_fields.items()])
         return self.success(data)
-    
+
     @operation(GroupFieldsOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
-    def group_fields(self,request):
+    def group_fields(self, request):
         """组模型字段列表
         """
-        data = ["id","name"]
+        data = ["id", "name"]
         return self.success(data)
-    
+
+    @operation(LDAPSearchTenantOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
+    def search_tenant(self, request, tenant_id: str):
+        if (request.tenant.is_platform_tenant):
+            # 返回所有可用租户
+            rs = [
+                {
+                    "id": str(tenant.id.hex),
+                    "name": tenant.name,
+                    "slug": tenant.slug
+                } for tenant in Tenant.valid_objects.all()
+            ]
+            return self.success(data=rs)
+
+        else:
+            # 返回当前租户
+            return self.success(data=[{
+                "id": str(request.tenant.id.hex),
+                "name": request.tenant.name,
+                "slug": request.tenant.slug
+            }])
+
+    @operation(LDAPSearchTenantUserOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
+    def find_tenant_users(self, request, tenant_id: str):
+        users = request.tenant.users.filter(is_active=True, is_del=False).all()
+        # 返回当前租户
+        return self.success(data=[{
+            "id": str(user.id.hex),
+            "username": user.username,
+            "avatar": user.avatar
+        } for user in users])
+
+    @operation(LDAPFindTenantOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN, NORMAL_USER])
+    def find_tenant(self, request, tenant_id: str):
+        return self.success(data={
+            "id": str(request.tenant.id.hex),
+            "name": request.tenant.name,
+            "slug": request.tenant.slug
+        })
+
+
 extension = LDAPServerExtension()
