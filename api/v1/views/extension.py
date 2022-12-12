@@ -228,11 +228,21 @@ def get_extension_markdown(request, id: str):
     
     ext_model = ExtensionModel.valid_objects.get(id=id)
     import os
+    
+    # 添加多语言翻译
+    language = request.GET.get('FrontendLanguage') or '简体中文'
+    doc_dir = os.path.join(ext_model.ext_dir,f'docs/{language}')
+    base_path = ext_model.ext_dir
+    
     files = os.listdir(ext_model.ext_dir)
+    if os.path.exists(doc_dir) and os.listdir(doc_dir):
+        files = os.listdir(doc_dir)
+        base_path = doc_dir
+        
     data = {}
     for file in files:
         if file.endswith('.md'):
-            md_file = open(ext_model.ext_dir+"/"+file)
+            md_file = open(os.path.join(base_path,file))
             data[file] = md_file.read()
             md_file.close()
     return {"data": data}

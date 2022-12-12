@@ -9,8 +9,13 @@ from arkid.core.error import SuccessDict
 def get_docs(request,tenant_id):
     """ 
     """
+    language = request.GET.get('FrontendLanguage')
+    url = get_app_config().get_frontend_host() + "/api/v1/redoc"
+    if language:
+        url = url + f"?FrontendLanguage={language}"
+    
     return SuccessDict(
         data = {
-            "url": get_app_config().get_frontend_host() + "/api/v1/redoc"
+            "url": url
         }
     )
