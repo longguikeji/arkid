@@ -192,6 +192,14 @@ def restart_celery():
     dispatch_task_with_options.delay('restart', celery_options={"countdown": timeout})
 
 
+def restart_arkid():
+    import os
+    try:
+        os.system("supervisorctl restart runserver")
+    except Exception as e:
+        print("未使用supervisor启动django server, 需手动重启django server!")
+
+
 def restart_other_arkid():
     ip = os.environ.get('POD_IP')
     if not ip:
