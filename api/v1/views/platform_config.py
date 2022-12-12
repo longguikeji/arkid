@@ -157,3 +157,10 @@ def get_version(request, local_version=None):
 def restart(request):
     from arkid.extension.utils import restart_arkid
     restart_arkid()
+
+
+@api.delete("/restart/", tags=["平台配置"])
+@operation(roles=[PLATFORM_ADMIN])
+def restart(request):
+    from arkid.extension.utils import restart_arkid
+    restart_arkid()

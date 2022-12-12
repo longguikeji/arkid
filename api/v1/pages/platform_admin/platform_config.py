@@ -28,7 +28,6 @@ page.create_actions(
        'restart': actions.DeleteAction(
             name="重启",
             path="/api/v1/restart/",
-            method=actions.FrontActionMethod.GET,
         ),
     }
 )
