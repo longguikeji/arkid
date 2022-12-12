@@ -8,7 +8,7 @@ from arkid.core.schema import ResponseSchema, UserSchemaOut
 class PlatformConfigIn(ModelSchema):
     class Config:
         model = Platform
-        model_fields = ['is_saas', 'is_need_rent']
+        model_fields = ['is_saas', 'is_need_rent', 'frontend_url']
 
 
 class PlatformConfigOut(ResponseSchema):

@@ -25,5 +25,9 @@ page.create_actions(
        'confirm': actions.ConfirmAction(
             path="/api/v1/platform_config/"
         ),
+       'restart': actions.DeleteAction(
+            name="重启",
+            path="/api/v1/restart/",
+        ),
     }
 )
