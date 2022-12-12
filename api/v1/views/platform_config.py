@@ -150,3 +150,10 @@ def get_version(request, local_version=None):
             "update_url": update_url
         }
     )
+
+
+@api.get("/restart/", tags=["平台配置"])
+@operation(roles=[PLATFORM_ADMIN])
+def restart(request):
+    from arkid.extension.utils import restart_arkid
+    restart_arkid()
