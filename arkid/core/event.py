@@ -400,6 +400,8 @@ UPDATE_LOCAL_ARKID_VERSION = 'UPDATE_LOCAL_ARKID_VERSION'
 
 EXCLUDE_PATHS = 'EXCLUDE_PATHS'
 
+CREATE_USER = 'CREATE_USER'
+
 # register events
 register_event(
     CREATE_LOGIN_PAGE_AUTH_FACTOR, _('create login page by auth factor', '认证因素生成登录页面')
@@ -503,3 +505,5 @@ register_event(GET_STATISTICS_CHARTS, _('GET_STATISTICS_CHARTS', 'Django请求�
 register_event(UPDATE_LOCAL_ARKID_VERSION, _('UPDATE_LOCAL_ARKID_VERSION', '更新本地ArkID版本'))
 
 register_event(EXCLUDE_PATHS, _('EXCLUDE_PATHS', '排除的路径'))
+
+register_event(CREATE_USER,_('CREATE_USER', '创建用户'))
