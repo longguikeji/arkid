@@ -57,6 +57,7 @@ class UserGroupCreateIn(ModelSchema):
     parent: Optional[UserGroupCreateParentIn] = Field(
         title=_("上级用户分组"),
         page=select_usergroup_parent_page.tag,
+        sort_index = 1
     )
 
     class Config:
