@@ -182,7 +182,7 @@ def get_group_users(request, tenant_id: str, user_group_id: str):
     获取分组用户
     '''
     group = get_object_or_404(UserGroup.valid_objects, id=user_group_id)
-    users = User.expand_objects.filter(id__in=group.users.all()).all()
+    users = User.expand_objects.filter(id__in=group.users.all(),is_active=True,is_del=False).all()
     return users
 
 
@@ -253,7 +253,7 @@ def get_exclude_users(request, tenant_id: str, user_group_id: str,query_data:Use
     group = get_object_or_404(UserGroup.active_objects, id=user_group_id)
     group_users = group.users.all()
     super_user_id = User.valid_objects.order_by('created').first().id
-    users = users.exclude(id__in=group_users).exclude(id=super_user_id).all()
+    users = users.filter(is_active=True,is_del=False).exclude(id__in=group_users).exclude(id=super_user_id).all()
     if query_data.username:
         users = User.expand_objects.filter(id__in=users,username__contains=query_data.username).all()
     else:

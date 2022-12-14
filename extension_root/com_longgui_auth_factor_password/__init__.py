@@ -210,7 +210,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
             else:
                 filter_params = Q(**temp)
             
-        users = tenant.users.filter(is_active=True, is_del=False).filter(filter_params)
+        users = tenant.users.filter(is_del=False).filter(filter_params)
         if len(users) > 1:
             logger.error(f'{username}在{login_enabled_field_names}中匹配到多个用户')
             return self.auth_failed(event, data=self.error(ErrorCode.CONTACT_MANAGER))
@@ -221,7 +221,7 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
             user_password = user.get("password")
             if user_password:
                 if check_password(password, user_password):
-                    user = User.active_objects.get(id=user.get("id"))
+                    user = User.valid_objects.get(id=user.get("id"))
                     return self.auth_success(user, event)
         
         return self.auth_failed(event, data=self.error(ErrorCode.USERNAME_PASSWORD_MISMATCH))
