@@ -14,7 +14,14 @@ from django.utils import timezone
 from django.db import transaction
 from arkid.core.models import Tenant
 from arkid.extension.models import TenantExtension, Extension
-from arkid.extension.utils import import_extension, unload_extension, load_extension_apps, restart_celery, restart_other_arkid
+from arkid.extension.utils import (
+    import_extension,
+    unload_extension,
+    load_extension_apps,
+    restart_arkid,
+    restart_celery,
+    restart_other_arkid
+)
 from pathlib import Path
 from arkid.common.logger import logger
 from django.core.cache import cache
@@ -428,15 +435,13 @@ def load_installed_extension(ext_dir, extension_detail):
     from arkid.core.tasks.celery import dispatch_task
     dispatch_task.delay('update_system_permission')
     # 插件安装完成需要更新权限结束
-    # 如果新安装的插件有models需重启django
+
+    # 如果新安装的插件有models或requirements需重启django
     extension_models= Path(ext_dir) / 'models.py'
-    if extension_models.exists():
-        import os
-        try:
-            print("新安装的插件有models需重启django, 正在重启django server!")
-            os.system("supervisorctl restart runserver")
-        except Exception as e:
-            print("未使用supervisor启动django server, 需手动重启django server!")
+    extension_requirements = Path(ext_dir) / 'requirements.txt'
+    if extension_models.exists() or extension_requirements.exists():
+        print("新安装的插件有models或requirements需重启django, 正在重启django server!")
+        restart_arkid()
 
     ext.start()
 
@@ -512,9 +517,14 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
             logger.error(f'Install app to k8s failed: {resp.status_code}')
             return {'code': resp.status_code, 'message': resp.content.decode()}
         resp = resp.json()
+        if resp['code'] == 1:
+            # update app in k8s
+            resp = requests.put(k8s_url, json=data, timeout=30)
+            if resp.status_code != 200:
+                logger.error(f'Install app to k8s failed: {resp.status_code}')
+                return {'code': resp.status_code, 'message': resp.content.decode()}
+            resp = resp.json()
         if resp['code'] != 0 and resp['code'] != 1:
-            # TODO
-            # resp['code'] == 1 update app in k8s
             logger.error(f"Install app to k8s failed: {resp['message']}")
             return resp
         
