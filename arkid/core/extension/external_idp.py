@@ -205,9 +205,13 @@ class ExternalIdpExtension(Extension):
                 )
             except Exception as e:
                 logger.error(e)
-                return JsonResponse({"error_msg": "授权码失效", "code": ["invalid"]})
+                args = e.args
+                if len(args) == 1 and isinstance(args[0], dict):
+                    return JsonResponse(e.args[0], json_dumps_params={'ensure_ascii': False})
+                else:
+                    return JsonResponse({"error_msg": str(e)}, json_dumps_params={'ensure_ascii': False})
         else:
-            return JsonResponse({"error_msg": "授权码丢失", "code": ["required"]})
+            return JsonResponse({"error_msg": "授权码丢失", "code": ["required"]}, json_dumps_params={'ensure_ascii': False})
 
         context = self.get_arkid_token(ext_id, ext_name, ext_icon, config)
         query_string = urlencode(context)
