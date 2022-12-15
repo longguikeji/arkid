@@ -8,11 +8,10 @@ from django.conf import settings
 from datetime import datetime, timedelta
 import jwt
 import uuid
-from arkid.core.models import User, App, PrivateApp
+from arkid.core.models import User, App, PrivateApp, Tenant, Platform
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from django.db import transaction
-from arkid.core.models import Tenant
 from arkid.extension.models import TenantExtension, Extension
 from arkid.extension.utils import (
     import_extension,
@@ -381,6 +380,38 @@ def download_arkstore_extension(tenant, token, extension_id, extension_detail):
         return {'success': 'failed'}
 
     return {'success': 'true'}
+
+
+def get_arkstore_cd_key(tenant, token, extension_id):
+    access_token = get_arkstore_access_token(tenant, token)
+    url = settings.ARKSTOER_URL + f'/api/v1/arkstore/extensions/{extension_id}/cd_key'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {'platform_id': str(Platform.get_config().id)}
+    resp = requests.get(url, headers=headers, params=params)
+    if resp.status_code == 402:
+        resp = resp.json()
+        raise Exception(f"error: download failed, msg: {resp.get('msg')}")
+    if resp.status_code != 200:
+        raise Exception('error: download failed')
+
+    resp = resp.json()
+    return resp
+
+
+def get_arkstore_all_cd_key(tenant, token):
+    access_token = get_arkstore_access_token(tenant, token)
+    url = settings.ARKSTOER_URL + f'/api/v1/arkstore/all/cd_key'
+    headers = {'Authorization': f'Token {access_token}'}
+    params = {'platform_id': str(Platform.get_config().id)}
+    resp = requests.get(url, headers=headers, params=params)
+    if resp.status_code == 402:
+        resp = resp.json()
+        raise Exception(f"error: download failed, msg: {resp.get('msg')}")
+    if resp.status_code != 200:
+        raise Exception('error: download failed')
+
+    resp = resp.json()
+    return resp
 
 
 def uninstall_extension(ext_dir):
@@ -839,32 +870,6 @@ def check_time_and_user_valid(data, tenant):
         return False
     else:
         return True
-
-
-# def get_arkstore_extensions_rented(access_token, offset=0, limit=10):
-#     url = '/api/v1/arkstore/extensions/leased'
-#     arkstore_extensions_url = settings.ARKSTOER_URL + url
-#     headers = {'Authorization': f'Token {access_token}'}
-#     # params = {'offset': offset, 'limit': limit}
-#     params = {'leased': 'true'}
-#     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
-#     if resp.status_code != 200:
-#         raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
-#     resp = resp.json()
-#     return resp
-
-
-# def get_arkstore_extensions_purchased(access_token, offset=0, limit=10):
-#     url = '/api/v1/arkstore/extensions/purchased'
-#     arkstore_extensions_url = settings.ARKSTOER_URL + url
-#     headers = {'Authorization': f'Token {access_token}'}
-#     # params = {'offset': offset, 'limit': limit}
-#     params = {'purchased': 'true'}
-#     resp = requests.get(arkstore_extensions_url, params=params, headers=headers)
-#     if resp.status_code != 200:
-#         raise Exception(f'Error get_arkstore_apps_and_extensions: {resp.status_code}')
-#     resp = resp.json()
-#     return resp
 
 
 def get_arkstore_extension_markdown(access_token, extension_id):

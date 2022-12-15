@@ -6,7 +6,6 @@ from arkid.core.constants import *
 from arkid.core.models import Platform, Tenant, App, PrivateApp
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.common.arkstore import (
-    check_arkstore_purcahsed_extension_expired,
     check_arkstore_rented_extension_expired,
     check_time_and_user_valid,
     get_arkstore_access_token,
