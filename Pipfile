@@ -25,6 +25,7 @@ pyjwt = "*"
 django-celery-beat = "*"
 django-cors-headers = "*"
 mkdocstrings-python-legacy = "*"
+pycryptodome = "*"
 
 [requires]
 python_version = "3.8"
