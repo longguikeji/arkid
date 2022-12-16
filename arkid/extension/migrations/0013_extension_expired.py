@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='extension',
             name='expired',
-            field=models.BooleanField(default=True, verbose_name='expired'),
+            field=models.BooleanField(default=False, verbose_name='expired'),
         ),
     ]

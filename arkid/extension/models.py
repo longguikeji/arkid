@@ -20,7 +20,7 @@ class Extension(BaseModel):
     logo = models.CharField(max_length=1024, blank=True, null=True, default="", verbose_name=_('Logo', '图标'))
     homepage = models.CharField(max_length=1024, blank=True, null=True, default="", verbose_name=_('Homepage', '官方网站'))
     is_active = models.BooleanField(default=True, verbose_name=_('是否启动'))
-    expired = models.BooleanField(default=True, verbose_name=_('expired', '是否过期'))
+    expired = models.BooleanField(default=False, verbose_name=_('expired', '是否过期'))
     profile = models.JSONField(blank=True, default=dict, verbose_name=_('Setup Profile','启动设置'))
     is_allow_use_platform_config = models.BooleanField(default=False, verbose_name=_('是否允许租户使用平台配置'))
     category_id = models.IntegerField(default=None, null=True, verbose_name=_('ArkStore分类ID'))

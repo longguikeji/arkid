@@ -707,6 +707,9 @@ def get_order_payment_status_arkstore_extension(request, tenant_id: str, order_n
     else:
         # install extension
         if resp.get('trade_state') == 'SUCCESS':
+            # 更新 cd_key
+            from arkid.core.tasks.celery import dispatch_task
+            dispatch_task.delay('check_extensions_and_apps_expired')
             install_arkstore_extension(tenant, token, uuid)
         return 200, resp
 
@@ -732,6 +735,9 @@ def get_order_payment_status_arkstore_extension_rent(request, tenant_id: str, or
     if resp.get('code') == '0' and not resp.get('appid'):
         return 202, {'data': resp}
     else:
+        # 更新 cd_key
+        from arkid.core.tasks.celery import dispatch_task
+        dispatch_task.delay('check_extensions_and_apps_expired')
         return 200, resp
 
 

@@ -917,10 +917,17 @@ def get_app_config_from_arkstore(request, arkstore_app_id):
 
 def get_admin_user_token():
     from django.core.cache import cache
-
+    from arkid.core.models import ExpiringToken
     key = "ADMIN_USER_TOKEN"
     value = refresh_admin_uesr_token
     timeout = 60*30
+    token = cache.get_or_set(key, value, timeout=timeout)
+    exp_token = ExpiringToken.objects.filter(token=token).first()
+    platform_tenant = Tenant.platform_tenant()
+    if exp_token and not exp_token.expired(platform_tenant):
+        return exp_token.token
+
+    cache.delete(key)
     token = cache.get_or_set(key, value, timeout=timeout)
     return token
 
@@ -933,7 +940,7 @@ def refresh_admin_uesr_token():
         username='admin', tenant=platform_tenant
     ).first()
     token = ExpiringToken.objects.filter(user=admin_user).first()
-    if token and not token.expired:
+    if token and not token.expired(platform_tenant):
         return token.token
     
     token = refresh_token(admin_user)
