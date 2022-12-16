@@ -262,9 +262,13 @@ def toggle_extension_active_status(request, id: str):
         platform_tenant = Tenant.platform_tenant()
         token = request.user.auth_token
         from arkid.common.arkstore import check_arkstore_purcahsed_extension_expired
-        if not check_arkstore_purcahsed_extension_expired(platform_tenant, token, extension.package):
-            # 插件过期或人数超过限制，请再次购买
-            return ErrorDict(ErrorCode.CAN_NOT_ACTIVATE_EXTENSION)
+        try:
+            if not check_arkstore_purcahsed_extension_expired(platform_tenant, token, extension.package):
+                # 插件过期或人数超过限制，请再次购买
+                return ErrorDict(ErrorCode.CAN_NOT_ACTIVATE_EXTENSION)
+        except:
+            if extension.expired:
+                return ErrorDict(ErrorCode.CAN_NOT_ACTIVATE_EXTENSION)
 
         ext = import_extension(extension.ext_dir)
         ext.start()
