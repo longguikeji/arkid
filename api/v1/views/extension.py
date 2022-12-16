@@ -273,6 +273,7 @@ def toggle_extension_active_status(request, id: str):
         ext = import_extension(extension.ext_dir)
         ext.start()
         extension.is_active = True
+        extension.expired = False
 
     extension.save()
     restart_celery()
