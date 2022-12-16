@@ -6,24 +6,23 @@ from typing import Optional
 from pydantic import Field
 
 class CLIENT_TYPE(str, Enum):
-    confidential = _('confidential', '私密')
+    confidential = _('confidential', '机密')
     public = _('public','公开')
 
 
 class GRANT_TYPE(str, Enum):
-    authorization_code = _('authorization-code', '私密')
-    implicit = _('implicit','公开')
-    password = _('password','密码')
-    client_credentials = _('client-credentials','客户端凭据')
-    openid_hybrid = _('openid-hybrid','OpenID链接')
-
+    authorization_code = _('authorization-code', '授权码模式')
+    implicit = _('implicit','简化模式')
+    password = _('password','密码模式')
+    client_credentials = _('client-credentials','客户端模式')
+    openid_hybrid = _('openid-hybrid','OpenID混合模式')
 
 class ConfigBaseSchema(Schema):
 
-    skip_authorization: bool = Field(title=_('skip authorization', '是否跳过验证'), default=False)
+    skip_authorization: bool = Field(title=_('skip authorization', '是否隐藏授权页'), default=False)
     redirect_uris: str = Field(title=_('redirect uris', '回调地址'))
-    client_type: CLIENT_TYPE = Field(title=_('client type','客户端是否公开'))
-    grant_type: GRANT_TYPE = Field(title=_('type','授权类型'))
+    client_type: CLIENT_TYPE = Field(title=_('client type','客户端类型'))
+    grant_type: GRANT_TYPE = Field(title=_('type','授权模式'))
 
 
 class Oauth2ConfigSchema(ConfigBaseSchema):

@@ -68,6 +68,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         return {
             "username": user.get("userName", ""),
             "is_active": active,
+            "is_del": False,
         }
 
     def _get_arkid_user(self, scim_user, tenant):
@@ -76,20 +77,22 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         arkid_user_attrs = self._get_arkid_user_attrs(scim_user)
         user_lookup = {
             "scim_external_id": scim_external_id,
-            "tenant": tenant,
             "username": username,
+            "tenant": tenant,
         }
-        arkid_user, _ = User.valid_objects.update_or_create(
+        arkid_user, _ = User.objects.update_or_create(
             defaults=arkid_user_attrs, **user_lookup
         )
+        tenant.users.add(arkid_user)
+
         # 更新arkid_user所属的group
-        arkid_user.user_set.clear()
+        arkid_user.usergroup_set.clear()
         for scim_group in scim_user.get("groups", []):
             scim_group_id = scim_group.get("value")
             arkid_group = self.scim_arkid_group_map.get(scim_group_id)
             if arkid_group:
-                arkid_user.user_set.add(arkid_group)
-        arkid_user.save()
+                arkid_user.usergroup_set.add(arkid_group)
+        # arkid_user.save()
         return arkid_user
 
     def _get_arkid_group(self, group, scim_arkid_map, tenant):
@@ -164,7 +167,10 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
             .exclude(scim_external_id__in=scim_user_ids)
         )
         logger.info(f"***** users to be deleted: {users_need_delete} ******")
-        users_need_delete.delete()
+        for u in users_need_delete:
+            u.usergroup_set.clear()
+            u.delete()
+            # users_need_delete.delete()
 
     def _get_scim_user(self, arkid_user):
         attr_map = {"id": "id", "username": "userName", "is_active": "active"}
@@ -181,7 +187,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
                 compose_core2_user(scim_user, scim_path, value)
 
         # 生成用户所在的组
-        parent_groups = arkid_user.user_set.filter(is_del=0)
+        parent_groups = arkid_user.usergroup_set.filter(is_del=0)
         for grp in parent_groups:
             scim_group = ScimUserGroup()
             scim_group.value = grp.id

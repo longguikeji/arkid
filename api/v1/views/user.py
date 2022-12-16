@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, List
 from django.shortcuts import get_object_or_404
 from pydantic import Field
 from ninja import Schema, Query, ModelSchema
-from arkid.core.event import Event, register_event, dispatch_event
+from arkid.core.event import CREATE_USER, Event, register_event, dispatch_event
 from arkid.core.api import api, operation
 from arkid.core.models import Tenant, User
 from arkid.core.translation import gettext_default as _
@@ -32,7 +32,7 @@ def user_list(request, tenant_id: str, query_data: UserListQueryIn=Query(...)):
     tenant_user_ids = []
     for tenant_user in tenant_users.all():
         tenant_user_ids.append(tenant_user.id)
-    users = User.expand_objects.filter(id__in=tenant_user_ids, is_del=False)
+    users = User.expand_objects.filter(id__in=tenant_user_ids, is_del=False,is_active=True)
     if query_data.username:
         users = users.filter(username__icontains=query_data.username)
     if query_data.nickname:
@@ -66,7 +66,7 @@ def user_list_no_super(request, tenant_id: str):
     exclude_ids = []
     for user_manager in user_managers:
         exclude_ids.append(user_manager.id)
-    users = tenant.users.filter(is_del=False)
+    users = tenant.users.filter(is_del=False,is_active=True)
     if exclude_ids:
         users = users.exclude(id__in=exclude_ids)
     # 如果当前登录的用户不是管理员，需要根据用户所拥有的分组进行区分
@@ -95,6 +95,7 @@ def user_create(request, tenant_id: str,data:UserCreateIn):
 
     tenant.users.add(user)
     tenant.save()
+    dispatch_event(Event(tag=CREATE_USER, tenant=tenant, request=request, data=user))
     return {"data":{"user":user.id.hex}}
 
 @api.get("/tenant/{tenant_id}/users/pull/",response=List[UserPullItemOut], tags=['用户'])

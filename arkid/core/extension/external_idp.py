@@ -21,7 +21,7 @@ from arkid.core import event as core_event
 class ExternalIdpBaseSchema(Schema):
     client_id: str = Field(title=_('Client ID', '客户端ID'))
     client_secret: str = Field(title=_('Client Secret', '客户端密钥'))
-    img_url: str = Field(title=_('Img URL', '图标URL'), readonly=True, default='')
+    img_url: str = Field(title=_('Img URL', '图标URL'), format='upload', default='')
     login_url: str = Field(title=_('Login URL', '登录URL'), readonly=True, default='')
     callback_url: str = Field(
         title=_('Callback URL', '回调URL'), readonly=True, default=''
@@ -205,9 +205,13 @@ class ExternalIdpExtension(Extension):
                 )
             except Exception as e:
                 logger.error(e)
-                return JsonResponse({"error_msg": "授权码失效", "code": ["invalid"]})
+                args = e.args
+                if len(args) == 1 and isinstance(args[0], dict):
+                    return JsonResponse(e.args[0], json_dumps_params={'ensure_ascii': False})
+                else:
+                    return JsonResponse({"error_msg": str(e)}, json_dumps_params={'ensure_ascii': False})
         else:
-            return JsonResponse({"error_msg": "授权码丢失", "code": ["required"]})
+            return JsonResponse({"error_msg": "授权码丢失", "code": ["required"]}, json_dumps_params={'ensure_ascii': False})
 
         context = self.get_arkid_token(ext_id, ext_name, ext_icon, config)
         query_string = urlencode(context)
@@ -298,11 +302,11 @@ class ExternalIdpExtension(Extension):
             f'api:{self.pname}:{self.pname}_bind',
             args=[config_created.id],
         )
-        img_url = self.get_img_url()
+        # img_url = self.get_img_url()
         config["login_url"] = login_url
         config["callback_url"] = callback_url
         config["bind_url"] = bind_url
-        config["img_url"] = img_url
+        # config["img_url"] = img_url
         config_created.config = config
         config_created.save()
         return config_created
@@ -323,11 +327,11 @@ class ExternalIdpExtension(Extension):
             f'api:{self.pname}:{self.pname}_bind',
             args=[config_created.id],
         )
-        img_url = self.get_img_url()
+        # img_url = self.get_img_url()
         config["login_url"] = login_url
         config["callback_url"] = callback_url
         config["bind_url"] = bind_url
-        config["img_url"] = img_url
+        # config["img_url"] = img_url
         config_created.config = config
         config_created.save()
         return config_created
@@ -339,7 +343,7 @@ class ExternalIdpExtension(Extension):
         for config in configs:
             img_url, redirect_url = self.get_img_and_redirect_url(config)
             if img_url and redirect_url:
-                buttons = [{"img": img_url, "redirect": {"url": redirect_url}, "tooltip":config.name}]
+                buttons = [{"img": config.config.get('img_url', img_url), "redirect": {"url": redirect_url}, "tooltip":config.name}]
                 data[config.id.hex] = {"login": {'extend': {"buttons": buttons}}}
 
         logger.info(f'{self.package} add idp login buttions end')
