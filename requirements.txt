@@ -65,3 +65,4 @@ wcwidth==0.2.5
 wheel==0.37.1
 wrapt==1.14.1
 zipp==3.8.1
+pycryptodome==3.16.0
