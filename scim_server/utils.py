@@ -104,15 +104,13 @@ def compose_phone_numbers(user, scim_path, value):
     sub_attribute = scim_path.sub_attributes[0]
     if sub_attribute.attribute_path != 'type':
         return
-    if sub_attribute.comparison_value not in ['fax', 'work', 'mobile']:
-        return
     phone = PhoneNumber()
     phone.type = sub_attribute.comparison_value
     phone.value = value
-    if user.phone_numbers:
-        user.phone_numbers.append(phone)
+    if user.phoneNumbers:
+        user.phoneNumbers.append(phone)
     else:
-        user.phone_numbers = [phone]
+        user.phoneNumbers = [phone]
 
 
 def compose_name(user, scim_path, value):
