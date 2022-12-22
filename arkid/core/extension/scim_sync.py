@@ -77,7 +77,7 @@ class ScimSyncExtension(Extension, ProviderBase):
         self.register_config_schema(schema, self.package + '_' + sync_type)
         self.register_composite_config_schema(schema, sync_type, exclude=['extension'])
 
-    def sync(self, config):
+    def sync(self, config, sync_log):
         """
         Args:
             config (arkid.extension.models.TenantExtensionConfig): Client模式创建的配置
@@ -88,8 +88,8 @@ class ScimSyncExtension(Extension, ProviderBase):
         groups, users = self.get_groups_users(config)
         if not groups or not users:
             return
-        self.sync_groups(groups, config)
-        self.sync_users(users, config)
+        self.sync_groups(groups, config, sync_log)
+        self.sync_users(users, config, sync_log)
 
     def get_data(self, url):
         logger.info(f"Getting data from {url}")
@@ -117,7 +117,7 @@ class ScimSyncExtension(Extension, ProviderBase):
         return groups, users
 
     @abstractmethod
-    def sync_groups(self, groups, config):
+    def sync_groups(self, groups, config, sync_log):
         """
         抽象方法
         Args:
@@ -127,7 +127,7 @@ class ScimSyncExtension(Extension, ProviderBase):
         pass
 
     @abstractmethod
-    def sync_users(self, users, config):
+    def sync_users(self, users, config, sync_log):
         """
         抽象方法
         Args:

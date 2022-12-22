@@ -71,7 +71,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
             "is_del": False,
         }
 
-    def _get_arkid_user(self, scim_user, tenant):
+    def _get_arkid_user(self, scim_user, tenant, sync_log):
         scim_external_id = scim_user["id"]
         username = scim_user["userName"]
         arkid_user_attrs = self._get_arkid_user_attrs(scim_user)
@@ -80,9 +80,14 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
             "username": username,
             "tenant": tenant,
         }
-        arkid_user, _ = User.objects.update_or_create(
-            defaults=arkid_user_attrs, **user_lookup
-        )
+        # arkid_user, _ = User.objects.update_or_create(
+        #     defaults=arkid_user_attrs, **user_lookup
+        # )
+        arkid_user = User.objects.filter(**user_lookup).first()
+        if not arkid_user:
+            user_lookup.update(arkid_user_attrs)
+            arkid_user = User.objects.create(**user_lookup)
+            sync_log.users_created += 1
         tenant.users.add(arkid_user)
 
         # 更新arkid_user所属的group
@@ -95,11 +100,17 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         # arkid_user.save()
         return arkid_user
 
-    def _get_arkid_group(self, group, scim_arkid_map, tenant):
+    def _get_arkid_group(self, group, scim_arkid_map, tenant, sync_log):
         scim_external_id = group["id"] if "id" in group else group["value"]
         if scim_external_id not in scim_arkid_map:
             group_lookup = {"scim_external_id": scim_external_id, "tenant": tenant}
-            arkid_group, _ = UserGroup.valid_objects.update_or_create(**group_lookup)
+            arkid_group = UserGroup.objects.filter(**group_lookup).first()
+            if not arkid_group:
+                arkid_group = UserGroup.objects.create(**group_lookup)
+                sync_log.groups_created += 1
+            else:
+                arkid_group.is_del = False
+                arkid_group.is_active = True
             scim_arkid_map[scim_external_id] = arkid_group
             return arkid_group
         else:
@@ -109,7 +120,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         arkid_group.name = scim_group.get("displayName")
         arkid_group.save()
 
-    def sync_groups(self, groups, config):
+    def sync_groups(self, groups, config, sync_log):
         """
         遍历groups中的SCIM 组织，逐一和ArkID中的组织匹配，如果不存在就创建，存在则更新，在此过程中
         同时遍历每个SCIM 组织中的members，同样的方式在ArkID中创建或更新组织，并且维护组织之间的父子关系，
@@ -123,12 +134,12 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         self.scim_arkid_group_map = {}
         for group in groups:
             parent_group = self._get_arkid_group(
-                group, self.scim_arkid_group_map, tenant
+                group, self.scim_arkid_group_map, tenant, sync_log
             )
             self._sync_group_attr(parent_group, group)
             for member in group.get("members", []):
                 sub_group = self._get_arkid_group(
-                    member, self.scim_arkid_group_map, tenant
+                    member, self.scim_arkid_group_map, tenant, sync_log
                 )
                 sub_group.parent = parent_group
 
@@ -139,9 +150,11 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
             .exclude(scim_external_id__in=self.scim_arkid_group_map.keys())
         )
         logger.info(f"******* groups to be deleted: {groups_need_delete} ********")
+        delete_count = len(groups_need_delete)
         groups_need_delete.delete()
+        sync_log.groups_deleted = delete_count
 
-    def sync_users(self, users, config):
+    def sync_users(self, users, config, sync_log):
         """
         遍历users中的SCIM 用户记录，逐一和ArkID中的用户匹配，如果不存在匹配的就创建，存在则更新，
         最后删除以前同步到ArkID但不在本次同步数据中的用户
@@ -155,7 +168,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         for user in users:
             scim_user_ids.append(user["id"])
             try:
-                arkid_user = self._get_arkid_user(user, tenant)
+                arkid_user = self._get_arkid_user(user, tenant, sync_log)
             except IntegrityError as e:
                 logger.error(e)
                 logger.error(f"sync user failed: {user}")
@@ -170,6 +183,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         for u in users_need_delete:
             u.usergroup_set.clear()
             u.delete()
+            sync_log.users_deleted += 1
             # users_need_delete.delete()
 
     def _get_scim_user(self, arkid_user):

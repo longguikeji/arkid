@@ -15,6 +15,7 @@ from django.shortcuts import get_object_or_404
 from uuid import UUID
 from arkid.core.error import ErrorCode, ErrorDict
 from arkid.core.pagenation import CustomPagination
+from arkid.core.models import ScimSyncLog
 
 from api.v1.schema.scim_sync import (
     ScimSyncCreateIn,
@@ -25,6 +26,7 @@ from api.v1.schema.scim_sync import (
     ScimSyncOut,
     ScimSyncUpdateIn,
     ScimSyncUpdateOut,
+    ScimSyncLogListItemOut,
 )
 import importlib
 
@@ -204,4 +206,36 @@ def start_scim_sync(request, tenant_id: str, id: str):
         except Exception as e:
             logger.exception(e)
 
+    return ErrorDict(ErrorCode.OK)
+
+
+@api.get(
+    "/tenant/{tenant_id}/scim_syncs/{id}/logs/",
+    response=List[ScimSyncLogListItemOut],
+    tags=[_("用户数据同步配置")],
+)
+@operation(List[ScimSyncLogListItemOut], roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+@paginate(CustomPagination)
+def get_scim_sync_logs(request, tenant_id: str, id: str):
+    """用户数据同步配置列表"""
+    config = TenantExtensionConfig.valid_objects.get(tenant_id=tenant_id, id=id)
+    if config.config.get("mode") == "server":
+        return []
+    else:
+        logs = ScimSyncLog.valid_objects.filter(config=config).order_by("-start_time")
+        return logs
+
+
+@api.delete(
+    "/tenant/{tenant_id}/scim_syncs/{id}/logs/",
+    response=ScimSyncDeleteOut,
+    tags=[_("用户数据同步配置")],
+)
+@operation(ScimSyncDeleteOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN])
+def delete_scim_sync_logs(request, tenant_id: str, id: str):
+    """用户数据同步配置列表"""
+    config = TenantExtensionConfig.valid_objects.get(tenant_id=tenant_id, id=id)
+    logs = ScimSyncLog.objects.filter(config=config)
+    if logs:
+        logs.all().delete()
     return ErrorDict(ErrorCode.OK)
