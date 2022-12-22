@@ -21,6 +21,7 @@ from arkid.core.pagenation import CustomPagination
 from arkid.core.models import Tenant
 from arkid.core.translation import gettext_default as _
 from arkid.common.arkstore import get_arkstore_access_token
+from arkid.common.logger import logger
 from .arkstore import get_arkstore_list
 
 
@@ -146,15 +147,15 @@ def list_extensions(request, query_data: ExtensionListQueryIn=Query(...)):
     if not bind:
         return qs
 
-    token = request.user.auth_token
-    # access_token = get_arkstore_access_token(tenant, token)
-    # resp = get_arkstore_extensions_purchased(access_token)
-    resp = get_arkstore_list(request, True, 'extension', all=True)['items']
-    extensions_purchased = {ext['package']: ext for ext in resp}
-    for ext in qs:
-        if ext.package in extensions_purchased:
-            ext.purchase_useful_life = extensions_purchased[ext.package].get('purchase_useful_life')
-            ext.purchase_state = extensions_purchased[ext.package].get('purchase_state')
+    try:
+        resp = get_arkstore_list(request, True, 'extension', all=True)['items']
+        extensions_purchased = {ext['package']: ext for ext in resp}
+        for ext in qs:
+            if ext.package in extensions_purchased:
+                ext.purchase_useful_life = extensions_purchased[ext.package].get('purchase_useful_life')
+                ext.purchase_state = extensions_purchased[ext.package].get('purchase_state')
+    except Exception as e:
+        logger.exception(f"get_arkstore_list failed: {e}")
     return qs
 
 

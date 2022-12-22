@@ -4,7 +4,7 @@ from enum import Enum
 from ninja import ModelSchema
 from arkid.core.constants import *
 from arkid.core.models import Platform, Tenant, App, PrivateApp
-from arkid.core.error import ErrorCode, ErrorDict
+from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 from arkid.common.arkstore import (
     check_arkstore_rented_extension_expired,
     check_time_and_user_valid,
@@ -1032,3 +1032,29 @@ def arkstore_app_click(request, tenant_id: str, id: str):
         return resp
     result = click_arkstore_app(access_token, app.arkstore_app_id)
     return resp
+
+
+class ImportCDKEYSchema(Schema):
+    cd_key: Optional[str] = Field(
+        title=_('CDKEY', 'CDKEY')
+    )
+
+
+@api.post("/tenant/{tenant_id}/arkstore/import_cdkey/", tags=['方舟商店'], response=ResponseSchema)
+@operation(roles=[PLATFORM_ADMIN])
+def import_arkstore_cd_key(request, tenant_id: str, data: ImportCDKEYSchema):
+    from tasks.tasks import import_cd_key
+    
+    resp, err = import_cd_key(data.cd_key)
+    if err == 'fail':
+        return ErrorDict(ErrorCode.CD_KEY_IMPORT_FAILED)
+    elif err == 'invalid':
+        return ErrorDict(ErrorCode.CD_KEY_INVALID)
+    elif err == 'duplicate':
+        return ErrorDict(ErrorCode.CD_KEY_ALREADY_IMPORTED)
+    
+    return SuccessDict(
+        data = {
+            "cd_key": resp
+        }
+    )

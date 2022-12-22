@@ -19,6 +19,7 @@ arkstore_markdown_page = pages.FormPage(name=_("文档"))
 order_page = pages.StepPage(name=_('Order', '购买'))
 trial_page = pages.FormPage(name=_('Trial', '试用'))
 bind_agent_page = pages.FormPage(name=_('Bind Agent', '绑定代理商'))
+import_cdkey = pages.FormPage(name=_('Import CDKEY', '导入CDKEY'))
 
 # purchased_page = pages.CardsPage(name='已购买')
 purchased_page = pages.TreePage(name=_("Purchased", "已购买"),show_vnode=True,show_page_if_no_node=False)
@@ -41,6 +42,7 @@ pages.register_front_pages(arkstore_markdown_page)
 pages.register_front_pages(order_page)
 pages.register_front_pages(trial_page)
 pages.register_front_pages(bind_agent_page)
+pages.register_front_pages(import_cdkey)
 pages.register_front_pages(purchased_page)
 pages.register_front_pages(purchased_cascade_page)
 pages.register_front_pages(history_page)
@@ -105,6 +107,12 @@ installed_cascade_page.create_actions(
         path='/api/v1/extensions/?category_id={category_id}',
         method=actions.FrontActionMethod.GET,
     ),
+    global_actions={
+       'bind_agent': actions.OpenAction(
+            name='导入CDKEY',
+            page=import_cdkey
+        ),
+    },
     local_actions={
         "markdown": actions.OpenAction(
             name='文档',
@@ -352,6 +360,19 @@ bind_agent_page.create_actions(
     },
 )
 
+import_cdkey.create_actions(
+    init_action=actions.DirectAction(
+        path='/api/v1/tenant/{tenant_id}/arkstore/import_cdkey/',
+        method=actions.FrontActionMethod.POST,
+    ),
+    global_actions={
+        "confirm": actions.DirectAction(
+            name='确定',
+            path='/api/v1/tenant/{tenant_id}/arkstore/import_cdkey/',
+            method=actions.FrontActionMethod.POST
+        ),
+    },
+)
 
 trial_page.create_actions(
     init_action=actions.DirectAction(
