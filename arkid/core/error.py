@@ -82,8 +82,11 @@ class ErrorCode(Enum):
     CAN_NOT_ACTIVATE_EXTENSION = ('17006', _('extension expired or beyond max user limit', '插件已过期或操作人数限制，请再次购买'))
     PRIVATE_APP_INSTALL_FAILED = ('17007', _('private app install failed', '私有化应用安装失败'))
     PRIVATE_APP_ALREADY_INSTALLED = ('17008', _('private app already installed', '私有化应用已安装，请勿重新安装'))
-    PRIVATE_APP_DELETE_FAILED = ('17007', _('private app delete failed', '私有化应用删除失败'))
-    
+    PRIVATE_APP_DELETE_FAILED = ('17009', _('private app delete failed', '私有化应用删除失败'))
+    CD_KEY_IMPORT_FAILED = ('17010', _('CDKEY import failed', 'CDKEY导入失败'))
+    CD_KEY_INVALID = ('17011', _('CDKEY invalid', 'CDKEY无效'))
+    CD_KEY_ALREADY_IMPORTED = ('17012', _('CDKEY already imported', 'CDKEY重复导入'))
+
     PASSWORD_NOT_CORRECT = ('18001', _('password not correct', '密码不正确'))
 
     STORAGE_NOT_EXISTS = ('18002', _('storage not exists', '存储插件未启用'))
