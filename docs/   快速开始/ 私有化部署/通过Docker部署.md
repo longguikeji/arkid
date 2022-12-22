@@ -1,32 +1,34 @@
+# docker-compose部署
 
-# 通过docker-compose部署
+### 配置阿里云dns域名解析：
+
+- arkid.xxx.xxx ==> docker-compose机器 ip
+
+### 部署arkid
 
 ```shell
-# 下载 arkid 部署文件
-git clone https://github.com/longguikeji/arkid-charts.git
+git clone --branch main --depth 1  https://github.com/longguikeji/arkid-charts.git
+
+##无法访问github的话，可以使用gitee仓库：https://gitee.com/longguikeji/arkid-charts.git
 
 cd arkid-charts/docker-compose
 
-# 启动
-docker-compose up -d
+## 1、修改 traefik.yml中 'certificatesResolvers: ali: acme: email:' 为你的邮件地址
+## 2、修改 .env 中 ALICLOUD_ACCESS_KEY 和 ALICLOUD_SECRET_KEY
+##    在阿里云账户下生成accesskey和accesssecret（赋予域名相关的权限，用于自动生成证书）
+## 3、修改 .env 中 MY_HOSTNAME，设置为阿里云dns中配置的域名
 
-# 打开 http://localhost:8989 (具体端口视 .env 中 HTTP_PORT 而定)
+## 之后启动
+
+sudo docker-compose up -d
+
+## 稍等片刻，浏览器访问：
+https://arkid.xxx.xxx
+
+## 注意：首次打开arkid，会有一个确认地址的输入框，在点完确认之后就不能再更改了！
+
 
 ```
-
-## 部署完成，初始化访问
-
-
-> 浏览器打开[http://localhost:8989](http://localhost:8989)，
-> 
-> 首次打开arkid，需要输入访问url，此url只能输入这一次，需要慎重！！！
-> 
-> 如果生产环境需要域名访问，那请配置好一切之后再填这个url！！！
-> 
-> 内置账号 admin / admin 登录，探索ArkID的完整功能。
-
-
-
 
 # 更新docker-compose部署版本
 ```shell
