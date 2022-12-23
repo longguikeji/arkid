@@ -9,16 +9,20 @@ from arkid.extension.models import TenantExtensionConfig, Extension
 from arkid.core.token import generate_token
 from typing import List
 
+
 class EmptyModel(models.Model):
     pass
 
+
 class Platform(BaseModel, ExpandModel):
     is_saas = models.BooleanField(default=False, verbose_name=_('SaaS Switch', '多租户开关'))
-    is_need_rent = models.BooleanField(default=False, verbose_name=_('Is Tenant Need Rent Extension', '租户是否需要租赁插件'))
+    is_need_rent = models.BooleanField(
+        default=False, verbose_name=_('Is Tenant Need Rent Extension', '租户是否需要租赁插件')
+    )
     frontend_url = models.URLField(
         verbose_name='ArkId访问地址', max_length=128, blank=True, null=True, default=None
     )
-    
+
     @classmethod
     def get_config(cls):
         config = Platform.objects.first()
@@ -26,13 +30,20 @@ class Platform(BaseModel, ExpandModel):
             config = Platform.objects.create()
         return config
 
+
 class Tenant(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _("tenant", "租户")
         verbose_name_plural = _("tenant", "租户")
 
     name = models.CharField(verbose_name=_('Name', '名字'), max_length=128)
-    slug = models.SlugField(verbose_name=_('Slug', '短链接标识'), unique=True, blank=True, null=True, max_length=24)
+    slug = models.SlugField(
+        verbose_name=_('Slug', '短链接标识'),
+        unique=True,
+        blank=True,
+        null=True,
+        max_length=24,
+    )
     icon = models.URLField(verbose_name=_('Icon', '图标'), blank=True, null=True)
 
     token_duration_minutes = models.IntegerField(
@@ -88,16 +99,19 @@ class Tenant(BaseModel, ExpandModel):
     def platform_tenant():
         return Tenant.valid_objects.filter(slug='').first()
 
+
 class User(BaseModel, ExpandModel):
-    
-    key_fields = {'username':'用户名'}
-    
+
+    key_fields = {'username': '用户名'}
+
     class Meta(object):
         verbose_name = _("user", "用户")
         verbose_name_plural = _("user", "用户")
         unique_together = [['username', 'tenant']]
 
-    username = models.CharField(max_length=128, blank=False, verbose_name=_("Username","用户名"))
+    username = models.CharField(
+        max_length=128, blank=False, verbose_name=_("Username", "用户名")
+    )
     avatar = models.URLField(verbose_name=_('Avatar', '头像'), blank=True, null=True)
     is_platform_user = models.BooleanField(
         default=False, verbose_name=_('Is Platform User', '是否是平台用户')
@@ -129,14 +143,13 @@ class User(BaseModel, ExpandModel):
             if self.id == User.valid_objects.order_by('created').first().id
             else False
         )
-    
+
     @property
     def user_of_platform(self):
         if self.tenant.slug == '':
             return True
         else:
             return False
-
 
 
 class UserGroup(BaseModel, ExpandModel):
@@ -185,7 +198,9 @@ class App(BaseModel, ExpandModel):
 
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
     name = models.CharField(max_length=128, verbose_name=_('name', '名称'))
-    url = models.CharField(max_length=1024,null=True,blank=True, verbose_name=_('url', '地址'))
+    url = models.CharField(
+        max_length=1024, null=True, blank=True, verbose_name=_('url', '地址')
+    )
     logo = models.CharField(
         max_length=1024, blank=True, null=True, default='', verbose_name=_('logo', '图标')
     )
@@ -219,11 +234,17 @@ class App(BaseModel, ExpandModel):
         blank=True,
         null=True,
         default=None,
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
     )
-    arkstore_category_id = models.IntegerField(default=None, null=True, verbose_name=_('ArkStore分类ID'))
+    arkstore_category_id = models.IntegerField(
+        default=None, null=True, verbose_name=_('ArkStore分类ID')
+    )
     arkstore_app_id = models.CharField(
-        max_length=1024, blank=True, null=True, default=None, verbose_name=_('Arkstore app id', '方舟商店应用标识')
+        max_length=1024,
+        blank=True,
+        null=True,
+        default=None,
+        verbose_name=_('Arkstore app id', '方舟商店应用标识'),
     )
 
     def __str__(self) -> str:
@@ -305,12 +326,13 @@ class PermissionAbstract(BaseModel, ExpandModel):
     )
     is_update = models.BooleanField(default=False, verbose_name='是否更新')
     is_open = models.BooleanField(
-        default=False, verbose_name=_('is open', '是否开放给其它租户访问'),
+        default=False,
+        verbose_name=_('is open', '是否开放给其它租户访问'),
     )
     is_open_other_user = models.BooleanField(
-        default=False, verbose_name=_('is open other user', '是否开放给本租户其它用户访问'),
+        default=False,
+        verbose_name=_('is open other user', '是否开放给本租户其它用户访问'),
     )
-
 
     def __str__(self):
         return '%s' % (self.name)
@@ -406,8 +428,8 @@ class Permission(PermissionAbstract):
     def children(self):
         return Permission.valid_objects.filter(parent=self).order_by('id')
 
-class OpenPermission(BaseModel):
 
+class OpenPermission(BaseModel):
     class Meta(object):
         verbose_name = _("OpenPermission", "开放权限")
         verbose_name_plural = _("OpenPermission", "开放权限")
@@ -430,6 +452,7 @@ class OpenPermission(BaseModel):
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.id.hex}'
+
 
 class UserPermissionResult(BaseModel, ExpandModel):
     class Meta(object):
@@ -459,7 +482,9 @@ class GroupPermissionResult(BaseModel, ExpandModel):
         verbose_name = _("GroupPermissionResult", "分组权限结果")
         verbose_name_plural = _("GroupPermissionResult", "分组权限结果")
 
-    user_group = models.ForeignKey(UserGroup, on_delete=models.CASCADE, verbose_name='用户分组')
+    user_group = models.ForeignKey(
+        UserGroup, on_delete=models.CASCADE, verbose_name='用户分组'
+    )
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
     app = models.ForeignKey(
         App,
@@ -489,7 +514,7 @@ class AppPermissionResult(BaseModel, ExpandModel):
         blank=True,
         on_delete=models.PROTECT,
         verbose_name='自身应用',
-        related_name='self_app'
+        related_name='self_app',
     )
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
     app = models.ForeignKey(
@@ -499,7 +524,7 @@ class AppPermissionResult(BaseModel, ExpandModel):
         blank=True,
         on_delete=models.PROTECT,
         verbose_name='App',
-        related_name='select_app'
+        related_name='select_app',
     )
     result = models.CharField(
         max_length=1024, blank=True, null=True, verbose_name='权限结果'
@@ -571,7 +596,9 @@ class ExpiringToken(models.Model):
         default=generate_token,
     )
     created = models.DateTimeField(_("Created", '创建时间'), auto_now=True)
-    active_date = models.DateField(_("Active Date", '活跃日期'), blank=True, null=True, default=None)
+    active_date = models.DateField(
+        _("Active Date", '活跃日期'), blank=True, null=True, default=None
+    )
 
     def expired(self, tenant):
         """Return boolean indicating token expiration."""
@@ -672,7 +699,9 @@ class ApproveRequest(BaseModel, ExpandModel):
     request_path = models.CharField(
         default='', verbose_name=_('Request Path', '请求路径'), max_length=255
     )
-    request_get = models.JSONField(default={}, null=True, verbose_name=_('Request GET', '请求路径参数'))
+    request_get = models.JSONField(
+        default={}, null=True, verbose_name=_('Request GET', '请求路径参数')
+    )
     request_post = models.JSONField(
         default={}, null=True, verbose_name=_('Request POST', '请求表单数据')
     )
@@ -739,8 +768,9 @@ class AccountLifeCrontab(BaseModel):
     config = models.JSONField(
         null=True, blank=True, default=dict, verbose_name=_('Config', '定时任务配置')
     )
-    
-class Message(BaseModel,ExpandModel):
+
+
+class Message(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _("message", "消息")
         verbose_name_plural = _("message", "消息")
@@ -749,35 +779,30 @@ class Message(BaseModel,ExpandModel):
         blank=True,
         null=True,
         default='',
-        verbose_name=_('title','标题'),
+        verbose_name=_('title', '标题'),
         max_length=256,
     )
-    
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name=_('User', '用户'),
     )
-    
+
     content = models.TextField(
         blank=True,
         null=True,
         default='',
-        verbose_name=_('content','内容'),
+        verbose_name=_('content', '内容'),
         max_length=256,
     )
-    
+
     readed_status = models.BooleanField(
-        default=False,
-        verbose_name=_("readed_status","是否已读")
+        default=False, verbose_name=_("readed_status", "是否已读")
     )
-    
-    url = models.URLField(
-        blank=True,
-        null=True,
-        verbose_name=_("url","链接")
-    )
-    
+
+    url = models.URLField(blank=True, null=True, verbose_name=_("url", "链接"))
+
     sender = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -785,15 +810,16 @@ class Message(BaseModel,ExpandModel):
         related_name="sent_messages",
         default=None,
         null=True,
-        blank=True
+        blank=True,
     )
+
 
 class TenantExpandAbstract(BaseModel):
     class Meta:
         abstract = True
 
     foreign_key = Tenant
-    
+
     target = models.OneToOneField(
         Tenant,
         blank=True,
@@ -806,8 +832,9 @@ class TenantExpandAbstract(BaseModel):
 class UserExpandAbstract(BaseModel):
     class Meta:
         abstract = True
+
     foreign_key = User
-        
+
     target = models.OneToOneField(
         User,
         blank=True,
@@ -815,14 +842,14 @@ class UserExpandAbstract(BaseModel):
         on_delete=models.PROTECT,
         related_name="%(app_label)s_%(class)s",
     )
-    
+
 
 class UserGroupExpandAbstract(BaseModel):
     class Meta:
         abstract = True
 
     foreign_key = UserGroup
-    
+
     target = models.OneToOneField(
         UserGroup,
         blank=True,
@@ -849,7 +876,7 @@ class AppExpandAbstract(BaseModel):
 class AppGroupExpandAbstract(BaseModel):
     class Meta:
         abstract = True
-        
+
     foreign_key = AppGroup
     target = models.OneToOneField(
         AppGroup,
@@ -859,10 +886,11 @@ class AppGroupExpandAbstract(BaseModel):
         related_name="%(app_label)s_%(class)s",
     )
 
+
 class MessageExpandAbstract(BaseModel):
     class Meta:
         abstract = True
-        
+
     foreign_key = Message
     target = models.OneToOneField(
         Message,
@@ -872,6 +900,7 @@ class MessageExpandAbstract(BaseModel):
         related_name="%(app_label)s_%(class)s",
     )
 
+
 class UserPersonalSettings(BaseModel, ExpandModel):
     class Meta(object):
         verbose_name = _("UserPersonalSettings", "用户个人设置")
@@ -879,10 +908,7 @@ class UserPersonalSettings(BaseModel, ExpandModel):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户')
     tenant = models.ForeignKey(Tenant, on_delete=models.PROTECT, verbose_name='租户')
-    settings = models.JSONField(
-        default={},
-        verbose_name=_("用户个人设置")
-    )
+    settings = models.JSONField(default={}, verbose_name=_("用户个人设置"))
 
     def __str__(self) -> str:
         return f'User: {self.user.username}'
@@ -901,16 +927,24 @@ class PrivateApp(BaseModel):
 
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
     name = models.CharField(max_length=128, verbose_name=_('name', '名称'))
-    url = models.CharField(max_length=1024,null=True,blank=True, verbose_name=_('url', '地址'))
+    url = models.CharField(
+        max_length=1024, null=True, blank=True, verbose_name=_('url', '地址')
+    )
     logo = models.CharField(
         max_length=1024, blank=True, null=True, default='', verbose_name=_('logo', '图标')
     )
     description = models.TextField(
         blank=True, null=True, verbose_name=_('description', '描述')
-    )    
-    arkstore_category_id = models.IntegerField(default=None, null=True, verbose_name=_('ArkStore分类ID'))
+    )
+    arkstore_category_id = models.IntegerField(
+        default=None, null=True, verbose_name=_('ArkStore分类ID')
+    )
     arkstore_app_id = models.CharField(
-        max_length=1024, blank=True, null=True, default=None, verbose_name=_('Arkstore app id', '方舟商店应用标识')
+        max_length=1024,
+        blank=True,
+        null=True,
+        default=None,
+        verbose_name=_('Arkstore app id', '方舟商店应用标识'),
     )
     status = models.CharField(
         choices=STATUS_CHOICES,
@@ -920,7 +954,7 @@ class PrivateApp(BaseModel):
     )
     values_data = models.TextField(
         blank=True, null=True, verbose_name=_('Values Data', '配置')
-    ) 
+    )
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, PrivateApp: {self.name}'
@@ -932,3 +966,45 @@ class Node(BaseModel):
         verbose_name_plural = _("ArkID Node", "ArkID节点")
 
     ip = models.CharField(max_length=15, unique=True, verbose_name=_('IP', 'IP地址'))
+
+
+class ScimSyncLog(BaseModel):
+    class Meta(object):
+        verbose_name = _("Scim Sync Logs", "SCIM同步日志记录")
+        verbose_name_plural = _("Scim Sync Logs", "SCIM同步日志记录")
+
+    config = models.ForeignKey(
+        TenantExtensionConfig,
+        on_delete=models.CASCADE,
+    )
+    start_time = models.DateTimeField(
+        auto_now_add=True, blank=True, null=True, verbose_name='创建时间'
+    )
+    end_time = models.DateTimeField(blank=True, null=True, verbose_name='更新时间')
+    users_created = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name=_('New Users Created', '新增用户数量'),
+    )
+    users_deleted = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name=_('Users Deleted', '删除用户数量'),
+    )
+    groups_created = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name=_('New Groups Created', '新增组织数量'),
+    )
+    groups_deleted = models.IntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        verbose_name=_('Groups Deleted', '删除组织数量'),
+    )
+    error = models.TextField(
+        blank=True, null=True, verbose_name=_('SCIM Sycn error', '同步错误')
+    )

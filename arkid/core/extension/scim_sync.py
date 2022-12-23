@@ -1,3 +1,4 @@
+from django import dispatch
 import requests
 from types import SimpleNamespace
 from typing import Literal, Union
@@ -21,6 +22,38 @@ from scim_server.views.groups_view import GroupsViewTemplate
 from scim_server.service.provider_base import ProviderBase
 from scim_server.exceptions import NotImplementedException
 from arkid.core import pages, actions
+from django.utils.decorators import method_decorator
+from django.http import HttpResponseForbidden
+import uuid
+import jwt
+
+
+def jwt_token_required(func):
+    def wrapper(request, *args, **kwargs):
+        headers = request.headers
+        auth_value = headers.get('Authorization')
+        token = None
+        if auth_value:
+            parts = auth_value.split(" ")
+            if parts[0].lower() == "jwt":
+                token = " ".join(parts[1:])
+        if token:
+            config_id = request.resolver_match.kwargs.get('config_id')
+            config = TenantExtensionConfig.valid_objects.get(id=config_id)
+            if not config:
+                return HttpResponseForbidden()
+            secret = config.config.get("secret", "")
+            try:
+                res = jwt.decode(token, secret, algorithms="HS256")
+                logger.info(res)
+            except Exception as e:
+                logger.info(e)
+                return HttpResponseForbidden()
+            return func(request, *args, **kwargs)
+        else:
+            return HttpResponseForbidden()
+
+    return wrapper
 
 
 class ScimSyncExtension(Extension, ProviderBase):
@@ -41,10 +74,18 @@ class ScimSyncExtension(Extension, ProviderBase):
             def provider(this):
                 return self
 
+            @method_decorator(jwt_token_required)
+            def dispatch(self, request, *args, **kwargs):
+                return super().dispatch(request, *args, **kwargs)
+
         class GroupsView(GroupsViewTemplate):
             @property
             def provider(this):
                 return self
+
+            @method_decorator(jwt_token_required)
+            def dispatch(self, request, *args, **kwargs):
+                return super().dispatch(request, *args, **kwargs)
 
         scim_server_urls = [
             re_path(
@@ -77,7 +118,7 @@ class ScimSyncExtension(Extension, ProviderBase):
         self.register_config_schema(schema, self.package + '_' + sync_type)
         self.register_composite_config_schema(schema, sync_type, exclude=['extension'])
 
-    def sync(self, config):
+    def sync(self, config, sync_log):
         """
         Args:
             config (arkid.extension.models.TenantExtensionConfig): Client模式创建的配置
@@ -88,12 +129,13 @@ class ScimSyncExtension(Extension, ProviderBase):
         groups, users = self.get_groups_users(config)
         if not groups or not users:
             return
-        self.sync_groups(groups, config)
-        self.sync_users(users, config)
+        self.sync_groups(groups, config, sync_log)
+        self.sync_users(users, config, sync_log)
 
-    def get_data(self, url):
+    def get_data(self, url, token):
         logger.info(f"Getting data from {url}")
-        r = requests.get(url)
+        headers = {"Authorization": f"jwt {token}"}
+        r = requests.get(url, headers=headers)
         if r.status_code == 200:
             return r.json()
         return {}
@@ -112,12 +154,13 @@ class ScimSyncExtension(Extension, ProviderBase):
             return None, None
         group_url = server_config.config["group_url"]
         user_url = server_config.config["user_url"]
-        groups = self.get_data(group_url).get("Resources")
-        users = self.get_data(user_url).get("Resources")
+        token = server_config.config["token"]
+        groups = self.get_data(group_url, token).get("Resources")
+        users = self.get_data(user_url, token).get("Resources")
         return groups, users
 
     @abstractmethod
-    def sync_groups(self, groups, config):
+    def sync_groups(self, groups, config, sync_log):
         """
         抽象方法
         Args:
@@ -127,7 +170,7 @@ class ScimSyncExtension(Extension, ProviderBase):
         pass
 
     @abstractmethod
-    def sync_users(self, users, config):
+    def sync_users(self, users, config, sync_log):
         """
         抽象方法
         Args:
@@ -156,6 +199,11 @@ class ScimSyncExtension(Extension, ProviderBase):
             )
             config["group_url"] = group_url
             config["user_url"] = user_url
+            # 生成用于认证的token和secret
+            secret = uuid.uuid4().hex
+            config["secret"] = secret
+            body = {"sub": config_created.id.hex}
+            config["token"] = jwt.encode(body, secret, algorithm="HS256")
             config_created.config = config
             config_created.save()
         return config_created
@@ -331,3 +379,6 @@ class BaseScimSyncServerSchema(Schema):
     mode: Literal["server"]
     user_url: str = Field(default="", title=_('User Url', '获取用户URL'), readonly=True)
     group_url: str = Field(default="", title=_('Group Url', '获取组URL'), readonly=True)
+    token: str = Field(
+        default="", title=_('Scim Server Token', '认证Token'), readonly=True
+    )

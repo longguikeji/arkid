@@ -1,16 +1,88 @@
+## k8s部署
 
-# 通过k8s部署
+> 比较纯净的集群，手动安装的k8s集群一般没有附加组件
+>
+> 至少三台以上的机器
 
-## 环境准备
+### 0、配置阿里云dns域名解析：
 
-* Kubernetes 1.12+
-* Helm 3.1.0
-* PV provisioner support in the underlying infrastructure
-* ReadWriteMany volumes for deployment scaling
+- arkid.xxx.xxx  ==>  k8s master ip 或者 负载均衡 ip
+- *.arkid.xxx.xxx ==> k8s master ip 或者 负载均衡 ip
 
-## 通过helm-controller安装
+### 1、存储：推荐 Rook-Ceph或者longhorn
 
-### 安装 CRD
+> 存储的选择必须很谨慎，Rook-Ceph 和 longhorn 都比较稳定，功能也非常强大，但是部署比较复杂，要求也比较高
+>
+> 请安装官网的文档操作。longhorn最好ubuntu+ext4; Rook-Ceph也推荐ubuntu，云原生最好ubuntu。
+
+### 2、网关：推荐ingress-nginx或者traefik
+
+> 如果安装traefik作为网关，就不需要再单独部署cert-manager和alidns webhook了
+>
+> https://kubernetes.github.io/ingress-nginx/deploy/
+>
+> 以下文档以ingress-nginx为例，traefik文档和`k3s部署`中的一样
+
+```shell
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.5.1/deploy/static/provider/cloud/deploy.yaml
+```
+
+### 3、证书管理：cert-manager + alidns webhook
+
+> https://artifacthub.io/packages/helm/cert-manager/cert-manager
+
+```shell
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.1/cert-manager.crds.yaml
+
+helm repo add jetstack https://charts.jetstack.io
+
+kubectl create namespace cert-manager
+helm install cert-manager --namespace cert-manager --version v1.10.1 jetstack/cert-manager
+```
+> https://github.com/pragkent/alidns-webhook
+```shell
+# 1、Install alidns-webhook
+curl -O https://raw.githubusercontent.com/pragkent/alidns-webhook/master/deploy/bundle.yaml
+## 修改bundle.yaml中 acme.yourcompany.com 修改为 acme.xxxx.com（自己公司的域名）！
+## 这个group名字后边的clusterissuer也要是相同的
+kubectl apply -f bundle.yaml
+
+# 2、 创建secret包含 alidns的凭据
+## 在阿里云账户下生成accesskey和accesssecret（赋予域名相关的权限）
+## 在 cert-manager 中创建secret
+kubectl -n cert-manager create secret alidns-secret \
+--from-literal=access-key=youraccesskey \
+--from-literal=secret-key=youraccesssecret
+
+# 3、创建 ClusterIssuer
+## groupName也要改成和上边一致的，email写自己的，其他不用改
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    email: xxxx@xxx.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - dns01:
+        webhook:
+          groupName: acme.xxxxx.com
+          solverName: alidns
+          config:
+            region: ""
+            accessKeySecretRef:
+              name: alidns-secret
+              key: access-key
+            secretKeySecretRef:
+              name: alidns-secret
+              key: secret-key
+```
+
+### 4、包管理：推荐helm-controller
+
 ```shell
 CHARTCRD=`kubectl get crd|grep helmcharts.helm.cattle.io`
 if [ -z "$CHARTCRD" ];then
@@ -18,30 +90,57 @@ if [ -z "$CHARTCRD" ];then
 fi
 ```
 
-### 部署 arkid
+### 5、部署arkid
+
 ```shell
+## 创建命名空间
 kubectl create ns arkid
-kubectl create -f https://gitee.com/longguikeji/arkid-charts/raw/main/arkid.yaml
+
+## 编辑文件 arkid.yaml
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: arkid
+  namespace: arkid
+spec:
+  chart: arkid
+  version: 3.2.14
+  repo: https://harbor.longguikeji.com/chartrepo/public
+  targetNamespace: arkid
+  valuesContent: |-
+    ingress:
+      enabled: true
+      tls: true
+      host:
+        name: arkid.xxxx.xxx ## 填正确的域名
+      annotations:
+        kubernetes.io/ingress.class: "nginx"    
+        cert-manager.io/clusterissuer: "letsencrypt-prod"
+    persistence:
+      init: true
+      accessMode: ReadWriteMany
+      size: 8Gi
+    mysql:
+      auth:
+        rootPassword: root
+        database: arkid
+        username: arkid
+        password: arkid
+
+## 安装 arkid
+kubectl apply -f arkid.yaml
+
+## 查看
+kubectl -n arkid get pods
+
+## 稍等片刻，浏览器访问：
+https://arkid.xxx.xxx
+
+## 注意：首次打开arkid，会有一个确认地址的输入框，在点完确认之后就不能再更改了！
+
 ```
 
-### 卸载 arkid
-```shell
-kubectl -n arkid delete helmcharts arkid
 
-```
-
-## nodeport 端口访问 arkid
-
-```shell
-
-打开浏览器访问: `http://{任意节点ip}:32580/`
-
-首次打开arkid，需要输入访问url，此url只能输入这一次，需要慎重！！！
-
-如果生产环境需要域名访问，那请配置好一切之后再填这个url！！！
-
-初始密码：`admin/admin`
-```
 
 
 
@@ -52,7 +151,7 @@ kubectl -n arkid edit helmcharts arkid
 ## 修改版本号，保存退出, 会自动更新
 spec:
   chart: arkid
-  version: 3.1.3
+  version: 3.2.14
 ```
 
 ## 更多配置
