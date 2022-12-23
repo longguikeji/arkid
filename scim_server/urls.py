@@ -17,17 +17,17 @@ urlpatterns = [
     # re_path(r'^$', views.SCIMView.as_view(implemented=False), name='root'),
     # re_path(r'^.search$', views.SearchView.as_view(implemented=False), name='search'),
     # re_path(r'^Users/.search$', views.UserSearchView.as_view(), name='users-search'),
-    re_path(
-        r'^scim/Users(?:/(?P<uuid>[^/]+))?$',
-        InMemoryUsersView.as_view(),
-        name='memory_users',
-    ),
-    # re_path(r'^Groups/.search$', views.GroupSearchView.as_view(), name='groups-search'),
-    re_path(
-        r'^scim/Groups(?:/(?P<uuid>[^/]+))?$',
-        InMemoryGroupsView.as_view(),
-        name='memory_groups',
-    ),
+    # re_path(
+    #     r'^scim/Users(?:/(?P<uuid>[^/]+))?$',
+    #     InMemoryUsersView.as_view(),
+    #     name='memory_users',
+    # ),
+    # # re_path(r'^Groups/.search$', views.GroupSearchView.as_view(), name='groups-search'),
+    # re_path(
+    #     r'^scim/Groups(?:/(?P<uuid>[^/]+))?$',
+    #     InMemoryGroupsView.as_view(),
+    #     name='memory_groups',
+    # ),
     # re_path(r'^Me$', views.SCIMView.as_view(implemented=False), name='me'),
     # re_path(
     #     r'^ServiceProviderConfig$',
