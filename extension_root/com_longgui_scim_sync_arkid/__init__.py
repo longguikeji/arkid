@@ -120,6 +120,18 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
         arkid_group.name = scim_group.get("displayName")
         arkid_group.save()
 
+    def delete_group_from_root(self, root):
+        logger.info(f"Delete Group {root.name} Start")
+        children = root.children.all()
+        if not children:
+            root.delete()
+            logger.info(f"delete group {root.name} success")
+            return
+        for item in children:
+            self.delete_group_from_root(item)
+        root.delete()
+        logger.info(f"delete group {root.name} success")
+
     def sync_groups(self, groups, config, sync_log):
         """
         遍历groups中的SCIM 组织，逐一和ArkID中的组织匹配，如果不存在就创建，存在则更新，在此过程中
@@ -145,13 +157,19 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
 
         logger.info("###### delete groups ######")
         groups_need_delete = (
-            UserGroup.objects.filter(tenant=config.tenant)
+            UserGroup.valid_objects.filter(tenant=config.tenant)
             .exclude(scim_external_id=None)
             .exclude(scim_external_id__in=self.scim_arkid_group_map.keys())
         )
         logger.info(f"******* groups to be deleted: {groups_need_delete} ********")
+        root_groups = []
+        for grp in groups_need_delete:
+            if (grp.parent is None) or (grp.parent not in groups_need_delete):
+                root_groups.append(grp)
+        for root in root_groups:
+            self.delete_group_from_root(root)
         delete_count = len(groups_need_delete)
-        groups_need_delete.delete()
+        # groups_need_delete.delete()
         sync_log.groups_deleted = delete_count
 
     def sync_users(self, users, config, sync_log):
@@ -175,7 +193,7 @@ class ScimSyncArkIDExtension(ScimSyncExtension):
 
         logger.info("###### delete users ######")
         users_need_delete = (
-            User.objects.filter(tenant=tenant)
+            tenant.users.filter(is_del=False)
             .exclude(scim_external_id=None)
             .exclude(scim_external_id__in=scim_user_ids)
         )

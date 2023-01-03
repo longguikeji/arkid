@@ -382,3 +382,6 @@ class BaseScimSyncServerSchema(Schema):
     token: str = Field(
         default="", title=_('Scim Server Token', '认证Token'), readonly=True
     )
+    secret: str = Field(
+        default="", title=_('Scim Server JWT Secret', '认证Secret'), readonly=True
+    )
