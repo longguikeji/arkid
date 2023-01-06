@@ -79,7 +79,8 @@ def update_auth_rule(request, tenant_id: str, id: str, data: AuthRuleUpdateIn):
         id=id
     )
     for attr, value in data.dict().items():
-        setattr(config, attr, value)
+        if attr not in ["id"]:
+            setattr(config, attr, value)
     config.save()
     return ErrorDict(ErrorCode.OK)
 

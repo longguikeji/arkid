@@ -320,6 +320,7 @@ CREATE_PERMISSION = 'CREATE_PERMISSION'
 UPDATE_PERMISSION = 'UPDATE_PERMISSION'
 DELETE_PERMISSION = 'DELETE_PERMISSION'
 USER_REGISTER = 'USER_REGISTER'
+BEFORE_USER_REGISTER = 'BEFORE_USER_REGISTER'
 CREATE_SYSTEM_TENANT = 'CREATE_SYSTEM_TENANT'
 SET_APP_OPENAPI_VERSION = 'SET_APP_OPENAPI_VERSION'
 UPDATE_APP_USER_API_PERMISSION = 'UPDATE_APP_USER_API_PERMISSION'
@@ -425,6 +426,7 @@ register_event(CREATE_PERMISSION, _('create permission', '创建权限'))
 register_event(UPDATE_PERMISSION, _('update permission', '修改权限'))
 register_event(DELETE_PERMISSION, _('delete permission', '删除权限'))
 register_event(USER_REGISTER, _('user register', '用户注册'))
+register_event(BEFORE_USER_REGISTER, _('before user register', '用户注册前'))
 register_event(SET_APP_OPENAPI_VERSION, _('set app openapi version', '设置应用接口和版本'))
 register_event(
     UPDATE_APP_USER_API_PERMISSION, _('update app user api permission', '更新应用的用户接口权限')
