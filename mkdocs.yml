@@ -58,6 +58,13 @@ extra:
     - icon: fontawesome/solid/link
       link: https://idaas.arkid.cc
       name: 官方IDaaS
+\  alternate:
+    - name: English
+      link: https://longguikeji.github.io/arkid/en/
+      lang: en
+    - name: 简体中文
+      link: /
+      lang: zh
 
 
 copyright: Copyright &copy; 2018 - 2022 龙归科技
