@@ -32,7 +32,25 @@ class CaseExtension(extension.Extension):
         pass
 ```
 #### 权限
-{todo}
+arkid对于API权限的控制，是通过定义角色的方式实现的，arkid支持4种角色分别为普通用户(NORMAL_USER)、租户管理员(TENANT_ADMIN)、平台管理员(PLATFORM_ADMIN)、平台用户(PLATFORM_USER)。通过在具体的方法装饰器上引入对应角色，可以实现对应角色的用户对于接口的访问
+
+``` py title="权限"
+...
+from arkid.core.constants import NORMAL_USER, TENANT_ADMIN, PLATFORM_ADMIN, PLATFORM_USER #引入角色
+from arkid.core.api import operation #引入操作装饰器
+...
+
+
+@api.get("/tenant/{tenant_id}/apps/", response=List[AppListItemOut], tags=['应用'])
+@operation(AppListOut, roles=[TENANT_ADMIN, PLATFORM_ADMIN]) # 引入了租户管理员身份，平台管理员身份
+@paginate(CustomPagination)
+def list_apps(request, tenant_id: str):
+    '''
+    公开app列表
+    '''
+    pass
+    return []
+```
 
 #### 分页
 
