@@ -52,17 +52,18 @@ def read_translating_files_tree(target_dir,tree):
         # 忽略软连接目录
         if file in ['assets', 'overrides', 'stylesheets',"bin","__pycache__"]:
             continue
-        translated_dir = translator.translate(file.replace(" ",""),target_lang).title()
+        
         if os.path.isdir(os.path.join(target_dir,file)):
             tree[file] = {
-                "name": translated_dir,
+                "name": translator.translate(file.replace(" ",""),target_lang).title() if target_lang not in translator.detect(file) else file,
                 "subfiles": {}
             }
             read_translating_files_tree(os.path.join(target_dir,file),tree[file]["subfiles"])
         else:
-            tree[file] = {
-                "name": translated_dir,
-            }
+            if ".md" in file:
+                tree[file] = {
+                    "name": translator.translate(file.replace(".md",""),target_lang).title().replace(" ","")+".md" if file != "index.md" else file,
+                }
 
 
 if __name__ == "__main__":
@@ -82,7 +83,7 @@ if __name__ == "__main__":
     template_dir = "templates"
     docs_template_dir = "templates/docs"
     
-    create_template_dir(docs_dir_path,docs_template_dir)
+    # create_template_dir(docs_dir_path,docs_template_dir)
 
     read_translating_files_tree(docs_template_dir,file_tree)
     print(file_tree)
