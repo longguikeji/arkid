@@ -1,0 +1,154 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST overcat <4catcode@gmail.com>, 2018.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: django-mama-cas\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-05-02 10:07+0800\n"
+"PO-Revision-Date: 2018-05-02 10:07+0800\n"
+"Last-Translator: overcat <4catcode@gmail.com>\n"
+"Language-Team: Personal\n"
+"Language:zh_cn\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+
+#: mama_cas/cas.py:106
+msgid "You have been successfully logged out"
+msgstr "你已经成功退出登录"
+
+#: mama_cas/forms.py:14
+msgid "Username"
+msgstr "用户名"
+
+#: mama_cas/forms.py:16
+msgid "Please enter your username"
+msgstr "请输入你的用户名"
+
+#: mama_cas/forms.py:17
+msgid "Password"
+msgstr "密码"
+
+#: mama_cas/forms.py:19
+msgid "Please enter your password"
+msgstr "请输入你的密码"
+
+#: mama_cas/forms.py:27
+msgid "Warn before automatic login to other services"
+msgstr "在自动登录其它服务前警告我"
+
+#: mama_cas/forms.py:45
+msgid "Internal error while authenticating user"
+msgstr "认证时服务器发生内部错误"
+
+#: mama_cas/forms.py:50
+msgid "The username or password is not correct"
+msgstr "用户名或密码不正确"
+
+#: mama_cas/forms.py:55
+msgid "This user account is disabled"
+msgstr "该用户不允许登录"
+
+#: mama_cas/forms.py:73
+msgid "Invalid username provided"
+msgstr "无效的用户名"
+
+#: mama_cas/models.py:162
+msgid "ticket"
+msgstr "ticket"
+
+#: mama_cas/models.py:163
+msgid "user"
+msgstr "用户"
+
+#: mama_cas/models.py:165
+msgid "expires"
+msgstr "过期时间"
+
+#: mama_cas/models.py:166
+msgid "consumed"
+msgstr "使用时间"
+
+#: mama_cas/models.py:229 mama_cas/models.py:269
+msgid "service"
+msgstr "服务"
+
+#: mama_cas/models.py:230
+msgid "primary"
+msgstr "主要的"
+
+#: mama_cas/models.py:235
+msgid "service ticket"
+msgstr "service ticket"
+
+#: mama_cas/models.py:236
+msgid "service tickets"
+msgstr "service tickets"
+
+#: mama_cas/models.py:271
+msgid "granted by proxy-granting ticket"
+msgstr "由 proxy-granting ticket 授权"
+
+#: mama_cas/models.py:275
+msgid "proxy ticket"
+msgstr "proxy ticket"
+
+#: mama_cas/models.py:276
+msgid "proxy tickets"
+msgstr "proxy tickets"
+
+#: mama_cas/models.py:343
+msgid "iou"
+msgstr "oiu"
+
+#: mama_cas/models.py:346
+msgid "granted by service ticket"
+msgstr "由 service ticket 授权"
+
+#: mama_cas/models.py:349
+msgid "granted by proxy ticket"
+msgstr "由 proxy ticket 授权"
+
+#: mama_cas/models.py:354
+msgid "proxy-granting ticket"
+msgstr ""
+
+#: mama_cas/models.py:355
+msgid "proxy-granting tickets"
+msgstr ""
+
+#: mama_cas/templates/mama_cas/__base.html:10
+#: mama_cas/templates/mama_cas/__login.html:6
+msgid "Central Authentication Service"
+msgstr "单点登录服务"
+
+#: mama_cas/templates/mama_cas/__login.html:23
+msgid "Login"
+msgstr "登录"
+
+#: mama_cas/templates/mama_cas/__warn.html:8
+msgid "Yes, continue"
+msgstr "是，继续"
+
+#: mama_cas/templates/mama_cas/__warn.html:9
+msgid "No, log me out"
+msgstr "否，退出登录"
+
+#: mama_cas/views.py:106
+#, python-format
+msgid "You are logged in as %s"
+msgstr "你已使用 %s 的身份登录"
+
+#: mama_cas/views.py:168
+#, fuzzy, python-format
+#| msgid "Do you want to access %s as %s?"
+msgid "Do you want to access %(service)s as %(user)s?"
+msgstr "你想访问 %(service)s（当前登录为 %(user)s）？"
+
+#~ msgid "The application provided this link to follow: %s"
+#~ msgstr "接下来的重定向服务为：%s"

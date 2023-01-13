@@ -1,0 +1,57 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>ArkID账密代填</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <!-- Place favicon.ico in the root directory -->
+
+    </head>
+    <body>
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">
+            You are using an <strong>outdated</strong> browser. Please
+            <a href="http://browsehappy.com/">upgrade your browser</a> to improve
+            your experience.
+            </p>
+        <![endif]-->
+        <div id="download-arkid-chrome-extension">
+            <p>检测到您当前浏览器没有安装ArkId自动表单代填chrome浏览器插件，请先下载安装</p>
+            <p><a href="{{download_url}}">下载链接</a></p>
+            <div id="extension-install-tutorial">
+                <p>插件安装步骤</p>
+                <div>
+                    <p>1. 点击下载链接，下载插件zip包到本地后解压缩</p>
+                    <a href="https://imgse.com/i/vqOR56"><img src="https://s1.ax1x.com/2022/09/09/vqOR56.png" alt="vqOR56.png" border="0" /></a>
+                    <p>2. 打开chrome管理扩展程序页面，打开开发者模式，点击加载已解压的扩展程序</p>
+                    <a href="https://imgse.com/i/vqXprj"><img src="https://s1.ax1x.com/2022/09/09/vqXprj.png" alt="vqXprj.png" border="0" /></a>
+                    <p>3. 选择步骤1中解压缩的插件目录</p>
+                    <a href="https://imgse.com/i/vqXEGT"><img src="https://s1.ax1x.com/2022/09/09/vqXEGT.png" alt="vqXEGT.png" border="0" /></a>
+                    <p>4. 固定插件到地址栏，方便使用</p>
+                    <a href="https://imgse.com/i/vqXMZR"><img src="https://s1.ax1x.com/2022/09/09/vqXMZR.png" alt="vqXMZR.png" border="0" /></a>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="error">
+            {{err_msg}}
+        </div>
+
+        <div id="account" style="display: none;">
+            <input id="app_uuid" value="{{app_uuid}}">
+            <input id="tenant_uuid" value="{{tenant_uuid}}">
+            <input id="user_uuid" value="{{user_uuid}}">
+            <input id="save_type" value="{{save_type}}">
+            <input id="token" value="{{token}}">
+            <input id="placeholder" value="{{placeholder}}">
+            <!-- <input id="username" value="{{username}}">
+            <input id="password" value="{{password}}"> -->
+        <div>
+
+    </body>
+</html>

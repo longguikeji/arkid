@@ -1,0 +1,7 @@
+package = 'com.longgui.scim.sync.arkid'
+name='ArkID用户数据同步'
+version='1.0'
+labels='arkid'
+homepage='http://longguikeji.gitee.io/arkid/%20%20%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_scim_sync_arkid/'
+logo=''
+author='fanhe@longguikeji.com'
