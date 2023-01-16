@@ -38,6 +38,6 @@ Specific tutorial reference：**[Plug -in release] (%20 Test and release/release
 
 ## need help？
 
-You need any help，You can contact us at any time by mail，email address：**support@Dragon Turtle Technology.com**
+You need any help，You can contact us at any time by mail，email address：**support@longguikeji.com**
 
-Can also be below**Comment**or **[github forum] (https://github.com/Dragon Turtle Technology/arkid/discussions)** Ask us to ask us questions or leave a message。
+Can also be below**Comment**or **[github forum] (https://github.com/longguikeji/arkid/discussions)** Ask us to ask us questions or leave a message。

@@ -42,7 +42,7 @@ The operator will be regarded as the agent of its tenant，That is, tenants purc
 
 ## Operating expenses
 
-In addition to the operator needs to purchase plug -in or apps directly from a plug -in or app store，In principle, Long Gui will not have any additional charges to operators，It does not rule out that the operator needs additional hosting，Operation and maintenance，Development service，This part can be sent to [BD@Dragon Turtle Technology.com] (Mailto:bd@Dragon Turtle Technology.com)，Inform your needs，We will contact you。
+In addition to the operator needs to purchase plug -in or apps directly from a plug -in or app store，In principle, Long Gui will not have any additional charges to operators，It does not rule out that the operator needs additional hosting，Operation and maintenance，Development service，This part can be sent to [BD@longguikeji.com] (Mailto:bd@longguikeji.com)，Inform your needs，We will contact you。
 
 ## Order and withdrawal
 

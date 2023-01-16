@@ -10,4 +10,4 @@ You can participate in and build the ARKID ecology through the following three m
 
 At the same time, we are also open to various types of cooperation methods，If you have any other thoughts，Welcome to contact us。
 
-Contact mailbox：[bd@Dragon Turtle Technology.com] (Mailto:bd@Dragon Turtle Technology.com)
+Contact mailbox：[bd@longguikeji.com] (Mailto:bd@longguikeji.com)

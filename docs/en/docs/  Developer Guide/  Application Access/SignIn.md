@@ -33,7 +33,7 @@ ArkStoreApplication access，We support the following methods：
 
 [![v6Kulj.md.jpg](https://s1.ax1x.com/2022/08/22/v6Kulj.md.jpg)](https://imgse.com/i/v6Kulj)
 
-3.In [ArkStore] (https://sheet.Dragon Turtle Technology.com/)，Click on developer-Application management-Add application，Add application
+3.In [ArkStore] (https://sheet.longguikeji.com/)，Click on developer-Application management-Add application，Add application
 
 [![v6uxYD.md.jpg](https://s1.ax1x.com/2022/08/22/v6uxYD.md.jpg)](https://imgse.com/i/v6uxYD)
 
@@ -52,7 +52,7 @@ Not from Arkid V2 migrate to V2.5
 
 [![v6uRe0.md.jpg](https://s1.ax1x.com/2022/08/22/v6uRe0.md.jpg)](https://imgse.com/i/v6uRe0)
 
-2.In [ArkStore] (https://sheet.Dragon Turtle Technology.com/)，Click on developer-Application management-Add application，Add application
+2.In [ArkStore] (https://sheet.longguikeji.com/)，Click on developer-Application management-Add application，Add application
 
 [![v6uxYD.md.jpg](https://s1.ax1x.com/2022/08/22/v6uxYD.md.jpg)](https://imgse.com/i/v6uxYD)
 
@@ -65,4 +65,4 @@ Application ID fields created by the application ID field，You can edit the app
 
 ### customize
 
-If your application does not want to access any of the following ways，If you want to access it with a self -defined protocol，Welcome to contact us： support@Dragon Turtle Technology.com
+If your application does not want to access any of the following ways，If you want to access it with a self -defined protocol，Welcome to contact us： support@longguikeji.com

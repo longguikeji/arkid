@@ -186,7 +186,7 @@
 
 
 !!! attention "Instructions for use"
-    1. The address must contain protocols、Domain name and port。for example`https://Ark.dev.Dragon Turtle Technology.com`
+    1. The address must contain protocols、Domain name and port。for example`https://Ark.dev.longguikeji.com`
     2. If the input address contains space at both ends，Will automatically remove。
     3. If the at the end of the input address is`/`character，It will also be removed automatically。
     4. If there is a space in the middle of the input address or a non -site string，Will not submit success。

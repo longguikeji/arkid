@@ -1,7 +1,7 @@
 download
 
 ```shell
-Open https://github.com/Dragon Turtle Technology/arkid/releases/tag/2.6.2 （Manual check the latest version，Clone's latest version tag）
+Open https://github.com/longguikeji/arkid/releases/tag/2.6.2 （Manual check the latest version，Clone's latest version tag）
 
 download arkid.zip Decompress，Get the following file
 ```

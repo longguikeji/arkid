@@ -7,9 +7,9 @@ title: Home
 * Easily integrate all your applications
 * Unified identity，Certification，Permissions management system
 
-[Official website] (https://arkid.cc){ .md-button .md-button--primary }
-[Official IDAAS] (https://Idas.arkid.cc){ .md-button }
-[Official document] (https://Dragon Turtle Technology.github.io/arkid/){ .md-button }
+[Official website](https://arkid.cc){ .md-button .md-button--primary }
+[Official IDAAS](https://Idas.arkid.cc){ .md-button }
+[Official document](https://longguikeji.github.io/arkid/){ .md-button }
 
 [![vsp3e1.png](https://s1.ax1x.com/2022/08/19/vsp3e1.png)](https://imgse.com/i/vsp3e1)
 

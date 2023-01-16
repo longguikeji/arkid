@@ -9,7 +9,7 @@
 ```shell
 git clone --branch main --depth 1  https://github.com/longguikeji/arkid-charts.git
 
-##If you can't access github，You can use a Gitee warehouse：https://gitee.com/Dragon Turtle Technology/arkid-charts.git
+##If you can't access github，You can use a Gitee warehouse：https://gitee.com/longguikeji/arkid-charts.git
 
 cd arkid-charts/docker-compose
 

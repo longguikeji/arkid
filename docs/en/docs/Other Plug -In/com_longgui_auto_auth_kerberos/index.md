@@ -2,7 +2,7 @@
 
 ## Features
 Via this plug -in，You can automatically log in to Arkid with an account in AD domain, The premise that the company has configured the AD domain environment，Employee computers are also under domain management
-Details on how to configure AD domain，See [AD domain configuration KERBEROS certification document] (HTTPS://www.Lack.com/Dragon Turtle Technology/Run/L 1 places)
+Details on how to configure AD domain，See [AD domain configuration KERBEROS certification document] (HTTPS://www.Lack.com/longguikeji/Run/L 1 places)
 
 ### ADCreate an ARKID service account in the domain
 

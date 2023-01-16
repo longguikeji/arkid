@@ -169,11 +169,11 @@ spec:
 ### arkidConfiguration
 | NAME | DESCRIPTION | DEFAULT VALUE |
 | --- | --- | --- |
-| fe.image | arkidFront -end mirror |  harbor.Dragon Turtle Technology.com/ark-releases/arkid-fe-In view of view:2.5.0 |
+| fe.image | arkidFront -end mirror |  harbor.longguikeji.com/ark-releases/arkid-fe-In view of view:2.5.0 |
 | fe.pullPolicy | IfNotPresent, Always | IfNotPresent |
 | fe.resources.requests | arkidRequests at the front end | {"cpu": "800m","memory": "1024Mi"} |
 | fe.resources.limits | arkidLimits at the front end | {} |
-| be.image | arkidBack -end mirror |  harbor.Dragon Turtle Technology.com/ark-releases/arkid:2.5.0  |
+| be.image | arkidBack -end mirror |  harbor.longguikeji.com/ark-releases/arkid:2.5.0  |
 | be.pullPolicy |  |  |
 | be.resources.requests | arkidRequests at the back end | {"cpu": "800m","memory": "1024Mi"} |
 | be.resources.limits | arkidLimits at the back end | {} |

@@ -2,7 +2,7 @@
 
 ## Features
 
-ldapProtocol plugin，Due to the particularity of the agreement, it needs to be matched with [ARKID_ldap_Server service Version：2.5.x](https://github.com/Dragon Turtle Technology/arkid_ldap_server/tree/Category.5-DEV) to implement the protocol function
+ldapProtocol plugin，Due to the particularity of the agreement, it needs to be matched with [ARKID_ldap_Server service Version：2.5.x](https://github.com/longguikeji/arkid_ldap_server/tree/Category.5-DEV) to implement the protocol function
 
 <b color="red">This plug -in is based on Arkid data，Implement the LDAP protocol certification and search function。</b>
 
@@ -10,7 +10,7 @@ ldapProtocol plugin，Due to the particularity of the agreement, it needs to be 
 
 ### arkid_ldap_serverServer deployment
     
-Contact the administrator or operation and maintenance staff to confirm that the [ARKID_ldap_Server service Version：2.5.x](https://github.com/Dragon Turtle Technology/arkid_ldap_server/tree/Category.5-DEV) deployment,Or refer to the following documents to deploy yourself by yourself：
+Contact the administrator or operation and maintenance staff to confirm that the [ARKID_ldap_Server service Version：2.5.x](https://github.com/longguikeji/arkid_ldap_server/tree/Category.5-DEV) deployment,Or refer to the following documents to deploy yourself by yourself：
     
 === "k8s helmThe installed Arkid，Add LDAP"
     + Create the yaml file required for LDAP
