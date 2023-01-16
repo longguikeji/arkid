@@ -1,7 +1,0 @@
-package='com.longgui.logging.mysql'
-name="Mysql日志插件"
-version='1.0'
-labels='logging'
-homepage='https://www.longguikeji.com'
-logo=''
-author='louis.law@hotmail.com'

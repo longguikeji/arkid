@@ -1,81 +1,81 @@
 ---
-Title: Home
+title: Home
 ---
 
-# ArkID: Enterprise IDaaS/IAM Platform System
-* Rich plug-ins to quickly build a dedicated IDaaS/IAM platform
+# ArkID ： Enterprise IDAAS/IAM platform system
+* Rich plug -in，Quickly build an exclusive IDAAS/IAM platform
 * Easily integrate all your applications
-* Unified identity, authentication, rights management system
+* Unified identity，Certification，Permissions management system
 
-[Official Site](https://arkid.cc){ .md-button .md-button--primary }
-[Official IDaaS](https://idaas.arkid.cc){ .md-button }
-[Official Document](https://longguikeji.github.io/arkid/){ .md-button }
+[Official website] (https://arkid.cc){ .md-button .md-button--primary }
+[Official IDAAS] (https://Idas.arkid.cc){ .md-button }
+[Official document] (https://Dragon Turtle Technology.github.io/arkid/){ .md-button }
 
 [![vsp3e1.png](https://s1.ax1x.com/2022/08/19/vsp3e1.png)](https://imgse.com/i/vsp3e1)
 
-## Functional features
+## Features
 
-### Plug-in
-* Extensible Bottom Layer Application Architecture Based on Plug-in
-* It can add new functions to the main program flexibly and quickly without changing the main program.
+### Plug -in
+* Based on PLUG-IN plug -in and scalable underlying application architecture
+* You can add new functions to the main program without changing the subject program
 
 ### Unified directory
-* Centralized and secure storage of enterprise organizational structure and massive personnel identity information
-* Establish corresponding relationships in multiple dimensions and securely integrate enterprise identity data sources
-* Realize the efficient and unified management of enterprise personnel, organizational structure and application information on one platform
+* Realize the centralized security storage of corporate organizational structure and massive personnel information
+* Multi -dimensional establishment corresponding relationship，Security integration enterprise identity data source
+* Realize on a platform to corporate personnel、Organization、Efficient and unified management of application information
 
-### Single sign-on
-* One set of usernames and passwords for access to all working systems
-* Support single sign-on protocols such as OIDC, OAuth2, CAS, SAML2, etc.
-* Support various proprietary protocols or non-standard protocols through plug-in orientation
-* Support the method of filling in the account password through the browser plug-in
+### sign in
+* You can access all working systems through a set of user names and passwords
+* Support such as OIDC，Oueth2，CAS，Suml2 and other single -point login protocols
+* Support various types of own or non -standard protocols through plug -in orientation
+* Support the method of filling in the accounts through the browser plug -in
 
 ### Account life cycle
-* Realize the automatic flow of identity information such as personnel transfer/organizational structure change in different application systems
-* Effectively improve the efficiency of account allocation and shorten the management time by 90 percent
+* Realize the transfer of staff/The automatic circulation of the identity information of organizational structure changes in different application systems
+* Effectively improve account configuration efficiency，Short management time of 90%
 * Increase audit efficiency
 
-### Multi-factor authentication
-* Support all kinds of authentication factors such as mobile phone, mailbox, face, fingerprint, scanning code, etc.
-* Support graphic verification code, dynamic verification code and other types of secondary authentication
-* Support WeChat, Dingding, enterprise WeChat and other third-party authentication
-* Intelligently evoke authentication rules in different combinations according to different business scenarios and security needs of customers
+### Multi -factor certification
+* Support mobile phone，Mail，human face，fingerprint，Various authentication factors such as code scan code
+* Support graphics verification code，Various secondary certifications such as dynamic verification code
+* Support WeChat，Nail，Corporate WeChat and other third -party certifications
+* Intelligent evoking the authentication rules of different combinations according to different business scenarios and security needs
 
-### Centralized authorization
-* Support RBAC and ABAC permission management
-* Support unified entry, storage and distribution of permission data
-* Unified permission verification, supporting integration of third-party permission system
+### Concentrate
+* Support RBAC，ABAC permissions management
+* Support authority data is uniformly entered，Storage and allocation
+* Unified authority verification，Support third -party permission system integration
 
-### Centralized approval
-* Support user-defined approval action
-* Support docking with third-party approval system
+### Concentrated approval
+* Support custom approval action
+* Support docking third -party approval system
 
-### Data synchronization
-* Support SCIM protocol to synchronize user and organization structure data across systems
-* Support all kinds of data synchronization including user, organizational structure, authentication, permission, etc.
-* Support the synchronization of multiple third-party systems in various combinations, such as synchronizing HR system data to AD or LDAP services
+### data synchronization
+* Support SCIM protocol，Cross -system synchronization user and organizational architecture data
+* Support to include users，Organization，Certification，Various data synchronization of permissions
+* Support the synchronization of multiple three -party systems in various combinations，If the HR system data is synchronized to the AD or LDAP service
 
-### Security audit
-* Record all request behaviors of users and administrators in real time
-* Support log reading to third-party data analysis or security analysis system
-* Support the direct display of charts of third-party data analysis systems in the system
-* Support the security analysis system to intervene in the authentication rules and authentication results, and realize the intelligent control of security
+### security audit
+* Real -time records of all request behaviors of users and administrators
+* Support log reading to third -party data analysis or security analysis system
+* Support the chart of the third -party data analysis system directly in the system
+* Support the security analysis system to intervene in certification rules and certification results，Intelligent control of safety
 
 ### Client
-* Built-in WEB page
-* Support all kinds of small programs, mobile phone client
-* Plugins present pages without writing front-end code
+* Comes with web page
+* Support all kinds of applets，Mobile client
+* The plugin can display the page without writing the front code
 
-### Cloud native
-* Support Docker development
-* Support Docker, K8S containerized deployment
+### Yunyuan
+* Support docker development
+* Support docker，K8S containerization deployment
 
-### Low-code development framework
-* Extend the OpenAPI so that front-end pages are driven by back-end configuration
+### Low code development framework
+* Expand OpenAPI，Make the front -end page drive from the back -end configuration
 * Quickly build page prototypes
-* Support for custom CSS themes
+* Support custom CSS theme
 
-### Plug-ins and App Store
-* Support developers to share and sell plug-ins
-* Support SaaS application pseudo-localization
-* Support agent agency and sharing
+### Plug -in and App Store
+* Support developer shared sale plug -in
+* Support Saas application pseudo -localization
+* Support agent agent and division

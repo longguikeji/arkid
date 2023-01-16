@@ -41,18 +41,6 @@ plugins:
       watch:
         - arkid/core
 
-nav:
-  - Home: 'index.md'
-  - Getting Start: 'getting_start/'
-  - Business Cooperation Guide: 'business_guide/'
-  - User Guide: 'user_guide/'
-  - Developer Guide:
-    - Developer Guide: 'developer_guide/index.md'
-    - Reference Documents: 
-      - OpenAPI Plus: 'developer_guide/参考文档/OpenAPI Plus.md'
-  - System Extensions: 'system_extensions/'
-  - Other Extensions: 'other_extensions/'
-  - About US: 'about_us/index.md'
 
 repo_url: https://github.com/longguikeji/arkid
 repo_name: longguikeji/arkid
@@ -66,7 +54,7 @@ extra:
       name: longguikeji/arkid
     - icon: fontawesome/solid/paper-plane
       link: mailto:support@longguikeji.com
-      name: Tech Support
+      name: Technical Support
     - icon: fontawesome/solid/link
       link: https://idaas.arkid.cc
       name: Official IDaaS

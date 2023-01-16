@@ -1,2 +1,0 @@
--i https://mirrors.aliyun.com/pypi/simple
-pyotp==2.7.0

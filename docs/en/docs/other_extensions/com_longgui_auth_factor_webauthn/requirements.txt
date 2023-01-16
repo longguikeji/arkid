@@ -1,2 +1,0 @@
--i https://mirrors.aliyun.com/pypi/simple
-webauthn==1.6.0

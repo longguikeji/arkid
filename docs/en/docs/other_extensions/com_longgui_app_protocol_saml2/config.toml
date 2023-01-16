@@ -1,7 +1,0 @@
-package='com.longgui.app.protocol.saml2'
-name='Saml2.0协议'
-version='1.0'
-labels=['saml2.0']
-homepage='http://longguikeji.gitee.io/arkid/%20%E5%85%B6%E5%AE%83%E6%8F%92%E4%BB%B6/com_longgui_app_protocol_saml2/'
-logo=''
-author='guancyxx@guancyxx.cn'
