@@ -66,7 +66,7 @@ title: Home
 * Support all kinds of applets，Mobile client
 * The plugin can display the page without writing the front code
 
-### Yunyuan
+### Cloud Native
 * Support docker development
 * Support docker，K8S containerization deployment
 
