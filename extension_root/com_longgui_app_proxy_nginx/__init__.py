@@ -50,6 +50,10 @@ class AppProxyNginxExtension(Extension):
 
     def nginx_auth(self, request, tenant_id, app_id):
         token = request.COOKIES.get("arkid_token", "")
+        app = App.active_objects.filter(id=app_id).first()
+        skip_token_verification = app.skip_token_verification
+        if skip_token_verification:
+            return 200, None
         if not token:
             logger.info(f"No arkid_token found")
             return 401, None
@@ -70,7 +74,6 @@ class AppProxyNginxExtension(Extension):
             return 401, None
 
         user = exp_token.user
-        app = App.active_objects.filter(id=app_id).first()
 
         if not app:
             logger.info(f"No such app: {app_id}")
@@ -153,7 +156,9 @@ class AppProxyNginxExtension(Extension):
                 logger.error(f"Wrong url Schema: {app.url}")
                 return
 
-            if not hasattr(app, "skip_verify_connection") or not getattr(app, "skip_verify_connection"):
+            if not hasattr(app, "skip_verify_connection") or not getattr(
+                app, "skip_verify_connection"
+            ):
                 opener = urllib.request.build_opener()
                 opener.addheaders = [('User-agent', 'Mozilla/49.0.2')]
                 try:
