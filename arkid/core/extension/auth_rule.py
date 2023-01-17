@@ -64,6 +64,11 @@ class AuthRuleExtension(Extension):
         """
         self.listen_event(CREATE_LOGIN_PAGE_RULES,self.check_rules)
 
+    def rise_errorcode(self,event, code:Enum):
+        core_event.remove_event_id(event)
+        core_event.break_event_loop(self.error(code))
+
+
 class MainAuthRuleSchema(Schema):
     """主认证因素描述SCHEMA
     """

@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional, List
 from ninja import Schema, Query, ModelSchema
-from arkid.core.event import register_event, dispatch_event, Event, USER_REGISTER
+from arkid.core.event import BEFORE_USER_REGISTER, register_event, dispatch_event, Event, USER_REGISTER
 from arkid.core.api import api, operation
 from arkid.core.models import Tenant, ExpiringToken, User
 from arkid.core.translation import gettext_default as _
@@ -31,6 +31,8 @@ class RegisterOut(ResponseSchema):
 def register(request, tenant_id: str, event_tag: str):
     tenant = request.tenant
     request_id = request.META.get('request_id')
+
+    dispatch_event(Event(tag=BEFORE_USER_REGISTER, tenant=tenant, request=request))
 
     # 认证
     responses = dispatch_event(Event(tag=event_tag, tenant=tenant, request=request, uuid=request_id))
