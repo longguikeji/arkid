@@ -180,7 +180,7 @@ class AppProxyNginxExtension(Extension):
             try:
                 # create_url = f"http://{portal_url}/create/nginxconf"
                 u = urlparse(app.url)
-                app_proxy_url = f"{u.scheme}://{u.netloc}"
+                # app_proxy_url = f"{u.scheme}://{u.netloc}"
                 # json = {
                 #     "dest_url": app_proxy_url,
                 #     "server_name": app_server_name,
@@ -205,14 +205,14 @@ class AppProxyNginxExtension(Extension):
                     "plugins": {
                         "forward-auth": {
                             "uri": be_url,
-                            "request_headers": ["Cookie"],
+                            "request_headers": ["cookie"],
                             # "upstream_headers": ["X-User-ID"],
                             # "client_headers": ["Location"]
                         }
                     },
                     "upstream": {
                         "nodes": {
-                            app_proxy_url: 1
+                            u.netloc: 1
                         },
                         "type": "roundrobin"
                     }
