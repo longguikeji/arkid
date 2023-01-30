@@ -198,7 +198,7 @@ class AppProxyNginxExtension(Extension):
                 headers = {
                     "X-API-KEY": apisix_key
                 }
-                route_url = f"{apisix_host}/apisix/admin/routes/{app.id.hex}"
+                route_url = f"http://{apisix_host}/apisix/admin/routes/{app.id.hex}"
                 body = {
                     "uri": "/*",
                     "host": app_server_name,
@@ -250,7 +250,7 @@ class AppProxyNginxExtension(Extension):
             headers = {
                 "X-API-KEY": apisix_key
             }
-            route_url = f"{apisix_host}/apisix/admin/routes/{app.id.hex}"
+            route_url = f"http://{apisix_host}/apisix/admin/routes/{app.id.hex}"
             res = requests.delete(route_url, headers=headers)
             if res.status_code == 200:
                 logger.info("apisix 配置文件删除成功!")
