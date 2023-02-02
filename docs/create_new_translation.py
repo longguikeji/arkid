@@ -14,7 +14,7 @@ file_tree = {}
 def create_template_dir(source_dir,target_dir):
     for file in os.listdir(source_dir):
 
-        if ".md" in file or ".py" in file:
+        if ".md" in file or ".py" in file or ".txt" in file:
             # markdown 文档
             if not os.path.exists(target_dir):
                 os.makedirs(target_dir)
@@ -140,7 +140,7 @@ def translate_line(line):
 
 
 def copy_or_trans_file(source_file:str,target_file:str):
-    if target_file.endswith(".py"):
+    if target_file.endswith(".py") or target_file.endswith(".txt"):
         # python文件  直接复制
         shutil.copyfile(source_file,target_file)
     elif target_file.endswith(".md"):

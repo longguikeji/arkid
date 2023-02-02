@@ -1,0 +1,2 @@
+-i https://mirrors.aliyun.com/pypi/simple
+cryptocode==0.1
