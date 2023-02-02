@@ -11,14 +11,12 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: ls
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.8
       - run: pip install --disable-pip-version-check -r requirements.txt;
       - run: python manage.py migrate
-      - run: mkdocs build -f docs/zh/mkdocs.yml
-      - run: ls docs/zh/site
-      - run: mkdocs gh-deploy -f docs/zh/mkdocs.yml -d site/zh -b gh-page-zh
-      - run: mkdocs gh-deploy -f docs/en/mkdocs.yml -d site/en -b gh-page-en
+      - run: mkdocs gh-deploy -f docs/zh/mkdocs.yml -b gh-page-zh
+      - run: mkdocs gh-deploy -f docs/en/mkdocs.yml -b gh-page-en
