@@ -18,3 +18,4 @@ jobs:
           python-version: 3.8
       - run: python manage.py migrate
       - run: mkdocs build -f docs/zh/mkdocs.yml
+      - run: ls site
