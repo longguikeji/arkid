@@ -1,0 +1,2 @@
+-i https://mirrors.aliyun.com/pypi/simple
+pymssql==2.2.5

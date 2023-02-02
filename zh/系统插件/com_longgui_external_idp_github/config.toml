@@ -1,0 +1,7 @@
+package = 'com.longgui.external.idp.github'
+name='Github第三方登录服务'
+version='1.1'
+labels='github'
+homepage='http://longguikeji.gitee.io/arkid/%20%20%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_external_idp_github/'
+logo=''
+author='fanhe@longguikeji.com'

@@ -1,7 +1,0 @@
-package = 'com.longgui.external.idp.wechatworkscan'
-name='企业微信扫码登录服务'
-version='1.1'
-labels='wechatworkscan'
-homepage='http://longguikeji.gitee.io/arkid/%20%E5%85%B6%E5%AE%83%E6%8F%92%E4%BB%B6/com_longgui_external_idp_wechatworkscan/'
-logo=''
-author='fanhe@longguikeji.com'

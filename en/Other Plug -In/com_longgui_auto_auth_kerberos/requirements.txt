@@ -1,0 +1,2 @@
+-i https://mirrors.aliyun.com/pypi/simple
+kerberos==1.3.1

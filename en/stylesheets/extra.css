@@ -1,0 +1,27 @@
+.md-grid {
+    /* max-width: 72rem; */
+    /* margin-left: 6rem;
+    margin-right: 6rem; */
+    max-width: none;
+}
+.md-sidebar {
+    min-width: 12rem;
+    /* max-width: 20rem; */
+    width: auto;
+}
+
+
+.nav-button {
+    border: 0.1rem solid;
+    border-radius: 0.1rem;
+    cursor: pointer;
+    display: inline-block;
+    font-weight: 700;
+    padding: 0.625em 2em;
+    margin-right: 2em;
+    transition: color 125ms,background-color 125ms,border-color 125ms;
+}
+
+a:hover {
+    color: inherit;
+}

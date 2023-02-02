@@ -1,0 +1,5413 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../assets/logo2.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.3.9">
+    
+    
+      
+        <title>MultiOTP第二因素认证 - ArkID</title>
+      
+    
+    
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1d29e8d0.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+      
+      
+    
+
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#multiotp" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--lifted" data-md-component="header">
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?322f43019d4e84e4aaee53c4e755300f";
+      var s = document.getElementsByTagName("script")[0]; 
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="https://longguikeji.github.io/arkid/" title="ArkID" class="md-header__button md-logo" aria-label="ArkID" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ArkID
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              MultiOTP第二因素认证
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Select language">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="/arkid/en/" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+                
+                <li class="md-select__item">
+                  <a href="/arkid/zh/" hreflang="zh" class="md-select__link">
+                    简体中文
+                  </a>
+                </li>
+                
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    <a class="nav-button" href="https://idaas.arkid.cc" target="_blank">官方IDaaS</a>
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/longguikeji/arkid" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    longguikeji/arkid
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      首页
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../%20%20%20%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/" class="md-tabs__link">
+           快速开始
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/" class="md-tabs__link">
+           用户指南
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../%20%20%E5%95%86%E4%B8%9A%E5%90%88%E4%BD%9C%E6%8C%87%E5%8D%97/" class="md-tabs__link">
+          商业合作指南
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/" class="md-tabs__link">
+          开发者指南
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../%E5%85%B3%E4%BA%8E%E6%88%91%E4%BB%AC/" class="md-tabs__link">
+        关于我们
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../com_longgui_account_active/" class="md-tabs__link md-tabs__link--active">
+        其他插件
+      </a>
+    </li>
+  
+
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/" class="md-tabs__link">
+        系统插件
+      </a>
+    </li>
+  
+
+      
+      <li class="md-tabs__item">
+        <a href="https://idaas.arkid.cc" target="_blank" class="md-tabs__link">
+          官方IDaaS
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="https://longguikeji.github.io/arkid/" title="ArkID" class="md-nav__button md-logo" aria-label="ArkID" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    ArkID
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/longguikeji/arkid" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    longguikeji/arkid
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        首页
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%20%20%20%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/">   快速开始</a>
+          
+            <label for="__nav_2">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="   快速开始" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+             快速开始
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2_2" type="checkbox" id="__nav_2_2" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2_2">
+           私有化部署
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label=" 私有化部署" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_2">
+          <span class="md-nav__icon md-icon"></span>
+           私有化部署
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/%20%E7%A7%81%E6%9C%89%E5%8C%96%E9%83%A8%E7%BD%B2/%E5%8E%9F%E7%94%9F%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        原生部署
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/%20%E7%A7%81%E6%9C%89%E5%8C%96%E9%83%A8%E7%BD%B2/%E9%80%9A%E8%BF%87ArkOS%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        通过ArkOS部署
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/%20%E7%A7%81%E6%9C%89%E5%8C%96%E9%83%A8%E7%BD%B2/%E9%80%9A%E8%BF%87Docker%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        docker-compose部署
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/%20%E7%A7%81%E6%9C%89%E5%8C%96%E9%83%A8%E7%BD%B2/%E9%80%9A%E8%BF%87k3s%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        通过k3s部署
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/%20%E7%A7%81%E6%9C%89%E5%8C%96%E9%83%A8%E7%BD%B2/%E9%80%9A%E8%BF%87k8s%E9%83%A8%E7%BD%B2/" class="md-nav__link">
+        通过k8s部署
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%20%20%20%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/%E7%89%88%E6%9C%AC%E5%8D%87%E7%BA%A7/">版本升级</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="版本升级" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          版本升级
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/">   用户指南</a>
+          
+            <label for="__nav_3">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="   用户指南" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+             用户指南
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3_2" type="checkbox" id="__nav_3_2" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E6%96%B0%E6%89%8B%E6%95%99%E7%A8%8B/">新手教程</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="新手教程" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          新手教程
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3_3" type="checkbox" id="__nav_3_3" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3_3">
+          用户手册
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="用户手册" data-md-level="2">
+        <label class="md-nav__title" for="__nav_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          用户手册
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%E7%99%BB%E5%BD%95%E4%B8%8E%E6%B3%A8%E5%86%8C/" class="md-nav__link">
+        注册与登录
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3_3_2" type="checkbox" id="__nav_3_3_2" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3_3_2">
+           普通用户
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label=" 普通用户" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_3_2">
+          <span class="md-nav__icon md-icon"></span>
+           普通用户
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7/%E4%B8%AA%E4%BA%BA%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        个人管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7/%E5%88%87%E6%8D%A2%E7%A7%9F%E6%88%B7/" class="md-nav__link">
+        切换租户
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7/%E5%AE%A1%E6%89%B9%E8%AF%B7%E6%B1%82/" class="md-nav__link">
+        审批请求
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7/%E6%88%91%E7%9A%84%E6%B6%88%E6%81%AF/" class="md-nav__link">
+        我的消息
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7/%E6%8E%88%E6%9D%83%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        授权管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7/%E6%A1%8C%E9%9D%A2/" class="md-nav__link">
+        桌面
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7/%E8%AE%A4%E8%AF%81%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        认证管理
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3_3_3" type="checkbox" id="__nav_3_3_3" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3_3_3">
+           租户管理员
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label=" 租户管理员" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_3_3">
+          <span class="md-nav__icon md-icon"></span>
+           租户管理员
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E5%9B%BE%E8%A1%A8%E5%88%86%E6%9E%90/" class="md-nav__link">
+        图表分析
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E5%AE%A1%E6%89%B9%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        审批管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E5%BA%94%E7%94%A8%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        应用管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E6%89%A9%E5%B1%95%E8%83%BD%E5%8A%9B/" class="md-nav__link">
+        扩展能力
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E6%8F%92%E4%BB%B6%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        插件管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E6%97%A5%E5%BF%97%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        日志管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        权限管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E7%94%A8%E6%88%B7%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        用户管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        租户管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E8%AE%A4%E8%AF%81%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        认证管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%20%E7%A7%9F%E6%88%B7%E7%AE%A1%E7%90%86%E5%91%98/%E8%BA%AB%E4%BB%BD%E6%95%B0%E6%8D%AE%E6%BA%90/" class="md-nav__link">
+        身份数据源
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3_3_4" type="checkbox" id="__nav_3_3_4" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3_3_4">
+          平台管理员
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="平台管理员" data-md-level="3">
+        <label class="md-nav__title" for="__nav_3_3_4">
+          <span class="md-nav__icon md-icon"></span>
+          平台管理员
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%E5%B9%B3%E5%8F%B0%E7%AE%A1%E7%90%86%E5%91%98/%E5%B9%B3%E5%8F%B0%E9%85%8D%E7%BD%AE/" class="md-nav__link">
+        平台配置
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%E5%B9%B3%E5%8F%B0%E7%AE%A1%E7%90%86%E5%91%98/%E5%BA%94%E7%94%A8%E5%95%86%E5%BA%97-%E7%A7%81%E6%9C%89%E5%8C%96%E5%BA%94%E7%94%A8/" class="md-nav__link">
+        应用商店-私有化应用
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%E5%B9%B3%E5%8F%B0%E7%AE%A1%E7%90%86%E5%91%98/%E6%8F%92%E4%BB%B6%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        平台插件管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%E5%B9%B3%E5%8F%B0%E7%AE%A1%E7%90%86%E5%91%98/%E7%A7%9F%E6%88%B7%E5%88%97%E8%A1%A8/" class="md-nav__link">
+        租户列表
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%E5%B9%B3%E5%8F%B0%E7%AE%A1%E7%90%86%E5%91%98/%E8%8F%9C%E5%8D%95%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        菜单管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%20%E7%94%A8%E6%88%B7%E6%8C%87%E5%8D%97/%E7%94%A8%E6%88%B7%E6%89%8B%E5%86%8C/%E5%B9%B3%E5%8F%B0%E7%AE%A1%E7%90%86%E5%91%98/%E8%AF%AD%E8%A8%80%E5%8C%85%E7%AE%A1%E7%90%86/" class="md-nav__link">
+        语言包管理
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%20%20%E5%95%86%E4%B8%9A%E5%90%88%E4%BD%9C%E6%8C%87%E5%8D%97/">  商业合作指南</a>
+          
+            <label for="__nav_4">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="  商业合作指南" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+            商业合作指南
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%95%86%E4%B8%9A%E5%90%88%E4%BD%9C%E6%8C%87%E5%8D%97/%20%E4%BB%A3%E7%90%86%E5%95%86/" class="md-nav__link">
+        ArkID代理商
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%95%86%E4%B8%9A%E5%90%88%E4%BD%9C%E6%8C%87%E5%8D%97/%20%E8%BF%90%E8%90%A5%E5%95%86/" class="md-nav__link">
+        ArkID运营商
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%95%86%E4%B8%9A%E5%90%88%E4%BD%9C%E6%8C%87%E5%8D%97/%E6%8A%80%E6%9C%AF%E5%92%A8%E8%AF%A2%E4%B8%8E%E6%94%AF%E6%8C%81/" class="md-nav__link">
+        技术咨询与支持
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%95%86%E4%B8%9A%E5%90%88%E4%BD%9C%E6%8C%87%E5%8D%97/%E6%94%B6%E7%9B%8A%E8%AE%A1%E7%AE%97%E5%99%A8/" class="md-nav__link">
+        收益计算器
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4_6" type="checkbox" id="__nav_4_6" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%20%20%E5%95%86%E4%B8%9A%E5%90%88%E4%BD%9C%E6%8C%87%E5%8D%97/%20%20ArkID%E5%BC%80%E5%8F%91%E5%95%86/">  ArkID开发商</a>
+          
+            <label for="__nav_4_6">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="  ArkID开发商" data-md-level="2">
+        <label class="md-nav__title" for="__nav_4_6">
+          <span class="md-nav__icon md-icon"></span>
+            ArkID开发商
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%95%86%E4%B8%9A%E5%90%88%E4%BD%9C%E6%8C%87%E5%8D%97/%20%20ArkID%E5%BC%80%E5%8F%91%E5%95%86/%20%E6%8F%92%E4%BB%B6/" class="md-nav__link">
+        插件接入
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%95%86%E4%B8%9A%E5%90%88%E4%BD%9C%E6%8C%87%E5%8D%97/%20%20ArkID%E5%BC%80%E5%8F%91%E5%95%86/%E5%BA%94%E7%94%A8/" class="md-nav__link">
+        应用接入
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/">  开发者指南</a>
+          
+            <label for="__nav_5">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="  开发者指南" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+            开发者指南
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5_2" type="checkbox" id="__nav_5_2" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%20%20%E9%85%8D%E7%BD%AE%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83/">   配置开发环境</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="   配置开发环境" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_2">
+          <span class="md-nav__icon md-icon"></span>
+             配置开发环境
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5_3" type="checkbox" id="__nav_5_3" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%20%E5%BA%94%E7%94%A8%E6%8E%A5%E5%85%A5/">  应用接入</a>
+          
+            <label for="__nav_5_3">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="  应用接入" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_3">
+          <span class="md-nav__icon md-icon"></span>
+            应用接入
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%20%E5%BA%94%E7%94%A8%E6%8E%A5%E5%85%A5/%20%E5%8D%95%E7%82%B9%E7%99%BB%E5%BD%95/" class="md-nav__link">
+        单点登录
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%20%E5%BA%94%E7%94%A8%E6%8E%A5%E5%85%A5/%20%E7%BB%9F%E4%B8%80%E6%9D%83%E9%99%90/" class="md-nav__link">
+        统一权限
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%20%E5%BA%94%E7%94%A8%E6%8E%A5%E5%85%A5/%E7%BB%9F%E4%B8%80%E5%AE%A1%E6%89%B9/" class="md-nav__link">
+        统一审批
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5_4" type="checkbox" id="__nav_5_4" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/"> 插件开发</a>
+          
+            <label for="__nav_5_4">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label=" 插件开发" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_4">
+          <span class="md-nav__icon md-icon"></span>
+           插件开发
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E5%BC%80%E5%8F%91%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%8F%92%E4%BB%B6/" class="md-nav__link">
+        开发第一个插件
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5_4_3" type="checkbox" id="__nav_5_4_3" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5_4_3">
+            插件指南
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="  插件指南" data-md-level="3">
+        <label class="md-nav__title" for="__nav_5_4_3">
+          <span class="md-nav__icon md-icon"></span>
+            插件指南
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%20%E6%8F%92%E4%BB%B6%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%9F%BA%E7%B1%BB/" class="md-nav__link">
+        插件基类
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%20%E6%8F%92%E4%BB%B6%E6%8C%87%E5%8D%97/API/" class="md-nav__link">
+        API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%20%E6%8F%92%E4%BB%B6%E6%8C%87%E5%8D%97/Pip%E4%BE%9D%E8%B5%96/" class="md-nav__link">
+        Pip依赖
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%20%E6%8F%92%E4%BB%B6%E6%8C%87%E5%8D%97/%E4%BA%8B%E4%BB%B6/" class="md-nav__link">
+        事件
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%20%E6%8F%92%E4%BB%B6%E6%8C%87%E5%8D%97/%E5%89%8D%E7%AB%AF/" class="md-nav__link">
+        前端
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%20%E6%8F%92%E4%BB%B6%E6%8C%87%E5%8D%97/%E5%A4%9A%E8%AF%AD%E8%A8%80/" class="md-nav__link">
+        多语言
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%20%E6%8F%92%E4%BB%B6%E6%8C%87%E5%8D%97/%E6%95%B0%E6%8D%AE%E5%BA%93/" class="md-nav__link">
+        数据库
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%20%E6%8F%92%E4%BB%B6%E6%8C%87%E5%8D%97/%E6%96%87%E6%A1%A3/" class="md-nav__link">
+        文档
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%20%E6%8F%92%E4%BB%B6%E6%8C%87%E5%8D%97/%E9%85%8D%E7%BD%AE/" class="md-nav__link">
+        配置
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%20%E6%8F%92%E4%BB%B6%E6%8C%87%E5%8D%97/%E9%94%99%E8%AF%AF/" class="md-nav__link">
+        错误
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5_4_4" type="checkbox" id="__nav_5_4_4" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5_4_4">
+           插件分类
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label=" 插件分类" data-md-level="3">
+        <label class="md-nav__title" for="__nav_5_4_4">
+          <span class="md-nav__icon md-icon"></span>
+           插件分类
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%20%E6%A6%82%E8%BF%B0/" class="md-nav__link">
+        概述
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E5%A4%9A%E8%AF%AD%E8%A8%80%E5%8C%85/" class="md-nav__link">
+        多语言包
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E5%AE%A1%E6%89%B9%E7%B3%BB%E7%BB%9F/" class="md-nav__link">
+        审批系统
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E5%BA%94%E7%94%A8%E5%8D%8F%E8%AE%AE/" class="md-nav__link">
+        应用协议
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E6%8E%88%E6%9D%83%E8%A7%84%E5%88%99/" class="md-nav__link">
+        授权规则
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E7%B3%BB%E7%BB%9F/" class="md-nav__link">
+        数据分析系统
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/" class="md-nav__link">
+        数据同步
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6/" class="md-nav__link">
+        消息中间件
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E7%9F%AD%E4%BF%A1/" class="md-nav__link">
+        短信
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E7%AC%AC%E4%B8%89%E6%96%B9%E7%99%BB%E5%BD%95/" class="md-nav__link">
+        第三方登录
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E7%BC%93%E5%AD%98/" class="md-nav__link">
+        缓存
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E8%87%AA%E5%8A%A8%E8%AE%A4%E8%AF%81/" class="md-nav__link">
+        自动认证
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E8%AE%A4%E8%AF%81%E5%9B%A0%E7%B4%A0/" class="md-nav__link">
+        认证因素
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E8%AE%A4%E8%AF%81%E8%A7%84%E5%88%99/" class="md-nav__link">
+        认证规则
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E8%B4%A6%E6%88%B7%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/" class="md-nav__link">
+        账户生命周期
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E9%9D%99%E6%80%81%E5%AD%98%E5%82%A8/" class="md-nav__link">
+        静态存储
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%8F%92%E4%BB%B6%E5%88%86%E7%B1%BB/%E9%A1%B5%E9%9D%A2%E4%B8%BB%E9%A2%98/" class="md-nav__link">
+        页面主题
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5_4_5" type="checkbox" id="__nav_5_4_5" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5_4_5">
+           测试与发布
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label=" 测试与发布" data-md-level="3">
+        <label class="md-nav__title" for="__nav_5_4_5">
+          <span class="md-nav__icon md-icon"></span>
+           测试与发布
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%B5%8B%E8%AF%95%E4%B8%8E%E5%8F%91%E5%B8%83/%20%E6%B5%8B%E8%AF%95/" class="md-nav__link">
+         测试
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%20%E6%8F%92%E4%BB%B6%E5%BC%80%E5%8F%91/%20%E6%B5%8B%E8%AF%95%E4%B8%8E%E5%8F%91%E5%B8%83/%E5%8F%91%E5%B8%83/" class="md-nav__link">
+        发布
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5_5" type="checkbox" id="__nav_5_5" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5_5">
+          参考文档
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="参考文档" data-md-level="2">
+        <label class="md-nav__title" for="__nav_5_5">
+          <span class="md-nav__icon md-icon"></span>
+          参考文档
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3/%20%E5%86%85%E6%A0%B8API/" class="md-nav__link">
+        内核API
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3/OpenAPI%20Plus/" class="md-nav__link">
+        OpenAPI Plus
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3/%E4%BA%8B%E4%BB%B6%E5%88%97%E8%A1%A8/" class="md-nav__link">
+        内核事件
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3/%E5%89%8D%E7%AB%AF%E7%95%8C%E9%9D%A2/" class="md-nav__link">
+        前端界面
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%20%20%E5%BC%80%E5%8F%91%E8%80%85%E6%8C%87%E5%8D%97/%E5%8F%82%E8%80%83%E6%96%87%E6%A1%A3/%E6%95%B0%E6%8D%AE%E8%A1%A8%E5%AE%9A%E4%B9%89/" class="md-nav__link">
+        数据表定义
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E5%85%B3%E4%BA%8E%E6%88%91%E4%BB%AC/">关于我们</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="关于我们" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          关于我们
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_7">
+          其他插件
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="其他插件" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          其他插件
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_1" type="checkbox" id="__nav_7_1" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_account_active/">Com longgui account active</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui account active" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_1">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui account active
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_2" type="checkbox" id="__nav_7_2" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_app_protocol_cas_server/">Com longgui app protocol cas server</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui app protocol cas server" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_2">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui app protocol cas server
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_3" type="checkbox" id="__nav_7_3" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_app_protocol_ldapserver/">Com longgui app protocol ldapserver</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui app protocol ldapserver" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_3">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui app protocol ldapserver
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_4" type="checkbox" id="__nav_7_4" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_app_protocol_radius_client/">Com longgui app protocol radius client</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui app protocol radius client" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_4">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui app protocol radius client
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_5" type="checkbox" id="__nav_7_5" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_app_protocol_radius_server/">Com longgui app protocol radius server</a>
+          
+            <label for="__nav_7_5">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui app protocol radius server" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_5">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui app protocol radius server
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../com_longgui_app_protocol_radius_server/Docs/" class="md-nav__link">
+        FreeRadius+Rest实现路由认证
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_6" type="checkbox" id="__nav_7_6" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_auth_factor_email/">Com longgui auth factor email</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth factor email" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_6">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth factor email
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_7" type="checkbox" id="__nav_7_7" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_auth_factor_ldap/">Com longgui auth factor ldap</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth factor ldap" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_7">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth factor ldap
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_8" type="checkbox" id="__nav_7_8" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_auth_factor_otp/">Com longgui auth factor otp</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth factor otp" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_8">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth factor otp
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_9" type="checkbox" id="__nav_7_9" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_auth_factor_scan/">Com longgui auth factor scan</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth factor scan" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_9">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth factor scan
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_10" type="checkbox" id="__nav_7_10" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_auth_factor_webauthn/">Com longgui auth factor webauthn</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth factor webauthn" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_10">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth factor webauthn
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_11" type="checkbox" id="__nav_7_11" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_auth_rule_black_list/">Com longgui auth rule black list</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth rule black list" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_11">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth rule black list
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_12" type="checkbox" id="__nav_7_12" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_auth_rule_white_list/">Com longgui auth rule white list</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth rule white list" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_12">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth rule white list
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_13" type="checkbox" id="__nav_7_13" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_auto_auth_kerberos/">Com longgui auto auth kerberos</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auto auth kerberos" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_13">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auto auth kerberos
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_14" type="checkbox" id="__nav_7_14" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_cache_redis/">Com longgui cache redis</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui cache redis" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_14">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui cache redis
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_15" type="checkbox" id="__nav_7_15" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_custom_field/">Com longgui custom field</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui custom field" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_15">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui custom field
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_16" type="checkbox" id="__nav_7_16" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_export_user/">Com longgui export user</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui export user" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_16">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui export user
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_17" type="checkbox" id="__nav_7_17" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_external_idp_dingding/">Com longgui external idp dingding</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui external idp dingding" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_17">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui external idp dingding
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_18" type="checkbox" id="__nav_7_18" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_external_idp_feishu/">Com longgui external idp feishu</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui external idp feishu" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_18">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui external idp feishu
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_19" type="checkbox" id="__nav_7_19" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_external_idp_gitee/">Com longgui external idp gitee</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui external idp gitee" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_19">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui external idp gitee
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_20" type="checkbox" id="__nav_7_20" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_external_idp_miniprogram/">Com longgui external idp miniprogram</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui external idp miniprogram" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_20">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui external idp miniprogram
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_21" type="checkbox" id="__nav_7_21" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_external_idp_wechatscan/">Com longgui external idp wechatscan</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui external idp wechatscan" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_21">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui external idp wechatscan
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_22" type="checkbox" id="__nav_7_22" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_external_idp_wechatwork/">Com longgui external idp wechatwork</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui external idp wechatwork" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_22">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui external idp wechatwork
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_23" type="checkbox" id="__nav_7_23" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_external_idp_wechatworkscan/">Com longgui external idp wechatworkscan</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui external idp wechatworkscan" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_23">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui external idp wechatworkscan
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_24" type="checkbox" id="__nav_7_24" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_language_en/">Com longgui language en</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui language en" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_24">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui language en
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_25" type="checkbox" id="__nav_7_25" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_message_artemis/">Com longgui message artemis</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui message artemis" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_25">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui message artemis
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7_26" type="checkbox" id="__nav_7_26" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index md-nav__link--active">
+          <a href="./">Com longgui multiotp</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui multiotp" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_26">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui multiotp
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_27" type="checkbox" id="__nav_7_27" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_other_app_subscribe/">Com longgui other app subscribe</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui other app subscribe" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_27">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui other app subscribe
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_28" type="checkbox" id="__nav_7_28" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_register_notice/">Com longgui register notice</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui register notice" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_28">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui register notice
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_29" type="checkbox" id="__nav_7_29" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_scim_sync_ad/">Com longgui scim sync ad</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui scim sync ad" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_29">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui scim sync ad
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_30" type="checkbox" id="__nav_7_30" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_scim_sync_database/">Com longgui scim sync database</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui scim sync database" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_30">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui scim sync database
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_31" type="checkbox" id="__nav_7_31" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_scim_sync_dingding/">Com longgui scim sync dingding</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui scim sync dingding" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_31">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui scim sync dingding
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_32" type="checkbox" id="__nav_7_32" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_scim_sync_feishu/">Com longgui scim sync feishu</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui scim sync feishu" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_32">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui scim sync feishu
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_33" type="checkbox" id="__nav_7_33" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_scim_sync_mssql/">Com longgui scim sync mssql</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui scim sync mssql" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_33">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui scim sync mssql
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_34" type="checkbox" id="__nav_7_34" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_scim_sync_wechatwork/">Com longgui scim sync wechatwork</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui scim sync wechatwork" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_34">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui scim sync wechatwork
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_7_35" type="checkbox" id="__nav_7_35" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../com_longgui_system_doc/">Com longgui system doc</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui system doc" data-md-level="2">
+        <label class="md-nav__title" for="__nav_7_35">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui system doc
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8" type="checkbox" id="__nav_8" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/">系统插件</a>
+          
+            <label for="__nav_8">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="系统插件" data-md-level="1">
+        <label class="md-nav__title" for="__nav_8">
+          <span class="md-nav__icon md-icon"></span>
+          系统插件
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_2" type="checkbox" id="__nav_8_2" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_account_life_arkid/">Com longgui account life arkid</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui account life arkid" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_2">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui account life arkid
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_3" type="checkbox" id="__nav_8_3" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_app_protocol_oidc/">Com longgui app protocol oidc</a>
+          
+            <label for="__nav_8_3">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui app protocol oidc" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_3">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui app protocol oidc
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_app_protocol_oidc/Case/" class="md-nav__link">
+        代码示例
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_app_protocol_oidc/OAuth2/" class="md-nav__link">
+        OAuth2
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_app_protocol_oidc/OIDC/" class="md-nav__link">
+        OIDC
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_4" type="checkbox" id="__nav_8_4" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_app_proxy_nginx/">Com longgui app proxy nginx</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui app proxy nginx" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_4">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui app proxy nginx
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_5" type="checkbox" id="__nav_8_5" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_approve_system_arkid/">Com longgui approve system arkid</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui approve system arkid" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_5">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui approve system arkid
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_6" type="checkbox" id="__nav_8_6" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_auth_factor_authcode/">Com longgui auth factor authcode</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth factor authcode" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_6">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth factor authcode
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_7" type="checkbox" id="__nav_8_7" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_auth_factor_mobile/">Com longgui auth factor mobile</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth factor mobile" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_7">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth factor mobile
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_8" type="checkbox" id="__nav_8_8" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_auth_factor_password/">Com longgui auth factor password</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth factor password" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_8">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth factor password
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_9" type="checkbox" id="__nav_8_9" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_auth_rule_retry_times/">Com longgui auth rule retry times</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auth rule retry times" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_9">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auth rule retry times
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_10" type="checkbox" id="__nav_8_10" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_auto_form_fill/">Com longgui auto form fill</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui auto form fill" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_10">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui auto form fill
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_11" type="checkbox" id="__nav_8_11" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_case/">Com longgui case</a>
+          
+            <label for="__nav_8_11">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui case" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_11">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui case
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_11_2" type="checkbox" id="__nav_8_11_2" checked>
+      
+      
+      
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_8_11_2">
+          Docs
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Docs" data-md-level="3">
+        <label class="md-nav__title" for="__nav_8_11_2">
+          <span class="md-nav__icon md-icon"></span>
+          Docs
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_11_2_1" type="checkbox" id="__nav_8_11_2_1" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_case/docs/English/">English</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="English" data-md-level="4">
+        <label class="md-nav__title" for="__nav_8_11_2_1">
+          <span class="md-nav__icon md-icon"></span>
+          English
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_12" type="checkbox" id="__nav_8_12" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_external_idp_github/">Com longgui external idp github</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui external idp github" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_12">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui external idp github
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_13" type="checkbox" id="__nav_8_13" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_impower_rule/">Com longgui impower rule</a>
+          
+            <label for="__nav_8_13">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui impower rule" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_13">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui impower rule
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_impower_rule/DefaultImpowerRule/" class="md-nav__link">
+        DefaultImpowerRule
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_14" type="checkbox" id="__nav_8_14" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_language_zh/">Com longgui language zh</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui language zh" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_14">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui language zh
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_15" type="checkbox" id="__nav_8_15" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_menu/">Com longgui menu</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui menu" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_15">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui menu
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_16" type="checkbox" id="__nav_8_16" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_scim_sync_arkid/">Com longgui scim sync arkid</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui scim sync arkid" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_16">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui scim sync arkid
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_17" type="checkbox" id="__nav_8_17" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_sms_aliyun/">Com longgui sms aliyun</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui sms aliyun" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_17">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui sms aliyun
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_8_18" type="checkbox" id="__nav_8_18" checked>
+      
+      
+      
+        
+          
+            
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../%E7%B3%BB%E7%BB%9F%E6%8F%92%E4%BB%B6/com_longgui_storage_local/">Com longgui storage local</a>
+          
+        </div>
+      
+      <nav class="md-nav" aria-label="Com longgui storage local" data-md-level="2">
+        <label class="md-nav__title" for="__nav_8_18">
+          <span class="md-nav__icon md-icon"></span>
+          Com longgui storage local
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    功能介绍
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    配置指南
+  </a>
+  
+    <nav class="md-nav" aria-label="配置指南">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multiotp-server" class="md-nav__link">
+    安装MultiOTP Server
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#windows-server" class="md-nav__link">
+    Windows Server上配置需要同步的用户
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#admultiotp" class="md-nav__link">
+    同步AD用户到multiOTP
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiotpcredentialprovider" class="md-nav__link">
+    用户电脑安装multiOTPCredentialProvider
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otp" class="md-nav__link">
+    重启电脑，验证OTP动态码
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+  
+                
+
+
+<h1 id="multiotp">MultiOTP第二因素认证<a class="headerlink" href="#multiotp" title="Permanent link">#</a></h1>
+<h2 id="_1">功能介绍<a class="headerlink" href="#_1" title="Permanent link">#</a></h2>
+<p>通过在服务器端部署MultiOTP Server，用户Windows系统安装multiOTPCredentialProvider, 实现用户本地登录或者通过远程桌面登录Windows时，<br/>
+除了需要提供用户的密码(本地账户密码或者域环境下的AD账户密码)外，仍然需要提供OTP动态密码，才能登陆Windows。</p>
+<h2 id="_2">配置指南<a class="headerlink" href="#_2" title="Permanent link">#</a></h2>
+<h3 id="multiotp-server">安装MultiOTP Server<a class="headerlink" href="#multiotp-server" title="Permanent link">#</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">下载MultOTP安装包</label><label for="__tabbed_1_2">安装webservice服务</label><label for="__tabbed_1_3">确认服务已经安装</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>下载链接：https://download.multiotp.net/</p>
+<p><a href="https://zimgs.com/i/BDncWZ"><img alt="BDncWZ.png" src="https://v1.ax1x.com/2022/12/09/BDncWZ.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p>在windows server上解压缩，管理员执行windows目录下的webservice_install脚本</p>
+<p><a href="https://zimgs.com/i/BDnRUV"><img alt="BDnRUV.png" src="https://v1.ax1x.com/2022/12/09/BDnRUV.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p>用chrome打开multiotp地址：http://localhost:8112/</p>
+<p><a href="https://zimgs.com/i/BDnY2L"><img alt="BDnY2L.png" src="https://v1.ax1x.com/2022/12/09/BDnY2L.png" /></a></p>
+</div>
+</div>
+</div>
+<h3 id="windows-server">Windows Server上配置需要同步的用户<a class="headerlink" href="#windows-server" title="Permanent link">#</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">创建安全组</label><label for="__tabbed_2_2">安全组添加同步用户</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><a href="https://zimgs.com/i/BDntEJ"><img alt="BDntEJ.png" src="https://v1.ax1x.com/2022/12/09/BDntEJ.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p><a href="https://zimgs.com/i/BDnjte"><img alt="BDnjte.png" src="https://v1.ax1x.com/2022/12/09/BDnjte.png" /></a></p>
+</div>
+</div>
+</div>
+<h3 id="admultiotp">同步AD用户到multiOTP<a class="headerlink" href="#admultiotp" title="Permanent link">#</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:6"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><input id="__tabbed_3_4" name="__tabbed_3" type="radio" /><input id="__tabbed_3_5" name="__tabbed_3" type="radio" /><input id="__tabbed_3_6" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">配置multiOTP服务端和客户端认证密码</label><label for="__tabbed_3_2">配置multiOTP同步参数并同步</label><label for="__tabbed_3_3">查看已同步用户</label><label for="__tabbed_3_4">点击打印按钮</label><label for="__tabbed_3_5">绑定手机认证软件</label><label for="__tabbed_3_6">手机认证软件显示动态码</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>打开Powershell终端, 进入multiOTP解压目录下的windows目录执行如下命令</br></p>
+<p>.\multiotp -config server-secret=secret2OTP</p>
+</div>
+<div class="tabbed-block">
+<p>打开Powershell终端, 进入multiOTP解压目录下的windows目录执行如下命令，注意更改AD的地址，端口，用户名和密码等参数</br></p>
+<p>.\multiotp -config default-request-prefix-pin=0 </br>
+.\multiotp -config default-request-ldap-pwd=0 </br>
+.\multiotp -config ldap-server-type=1 </br>
+.\multiotp -config ldap-cn-identifier="sAMAccountName" </br>
+.\multiotp -config ldap-group-cn-identifier="sAMAccountName"</br>
+.\multiotp -config ldap-group-attribute="memberOf"</br>
+.\multiotp -config ldap-ssl=0</br>
+.\multiotp -config ldap-port=389</br>
+.\multiotp -config ldap-domain-controllers=DC.dragon.com</br>
+.\multiotp -config ldap-base-dn="DC=dragon,DC=com"</br>
+.\multiotp -config ldap-bind-dn="CN=Administrator,CN=Users,DC=dragon,DC=com"</br>
+.\multiotp -config ldap-server-password="2wsx@WSX"</br>
+.\multiotp -config ldap-in-group="2FAVPNUsers"</br>
+.\multiotp -config ldap-network-timeout=10</br>
+.\multiotp -config ldap-time-limit=30</br>
+.\multiotp -config ldap-activated=1</br>
+.\multiotp -debug -display-log -ldap-users-sync</br></p>
+<p><a href="https://zimgs.com/i/BDnnoP"><img alt="BDnnoP.png" src="https://v1.ax1x.com/2022/12/09/BDnnoP.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p><a href="https://zimgs.com/i/BDnMHw"><img alt="BDnMHw.png" src="https://v1.ax1x.com/2022/12/09/BDnMHw.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p><a href="https://zimgs.com/i/BDnfU6"><img alt="BDnfU6.png" src="https://v1.ax1x.com/2022/12/09/BDnfU6.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p>使用Microsoft Authenticator 或者Google Authenticator扫描二维码</p>
+<p><a href="https://zimgs.com/i/BDni2O"><img alt="BDni2O.png" src="https://v1.ax1x.com/2022/12/09/BDni2O.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p>动态码每30秒更新一次</p>
+<p><a href="https://zimgs.com/i/BDn2QQ"><img alt="BDn2QQ.png" src="https://v1.ax1x.com/2022/12/09/BDn2QQ.png" /></a></p>
+</div>
+</div>
+</div>
+<h3 id="multiotpcredentialprovider">用户电脑安装multiOTPCredentialProvider<a class="headerlink" href="#multiotpcredentialprovider" title="Permanent link">#</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:7"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><input id="__tabbed_4_3" name="__tabbed_4" type="radio" /><input id="__tabbed_4_4" name="__tabbed_4" type="radio" /><input id="__tabbed_4_5" name="__tabbed_4" type="radio" /><input id="__tabbed_4_6" name="__tabbed_4" type="radio" /><input id="__tabbed_4_7" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">打开下载页面</label><label for="__tabbed_4_2">点击下载链接</label><label for="__tabbed_4_3">解压安装</label><label for="__tabbed_4_4">设置multiOTP Server URL和密码</label><label for="__tabbed_4_5">点击next</label><label for="__tabbed_4_6">配置本地登录和远程登录是否需要动态码</label><label for="__tabbed_4_7">点击安装</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>打开 https://download.multiotp.net/, 点击credential-provider链接</p>
+<p><a href="https://zimgs.com/i/BDn6cf"><img alt="BDn6cf.png" src="https://v1.ax1x.com/2022/12/09/BDn6cf.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p><a href="https://zimgs.com/i/BDnFnc"><img alt="BDnFnc.png" src="https://v1.ax1x.com/2022/12/09/BDnFnc.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p><a href="https://zimgs.com/i/BDndL3"><img alt="BDndL3.png" src="https://v1.ax1x.com/2022/12/09/BDndL3.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p>填写multiOTP的URL和secret，secret和上面配置的multiOTP Server密码保持相同</p>
+<p><a href="https://zimgs.com/i/BDneGj"><img alt="BDneGj.png" src="https://v1.ax1x.com/2022/12/09/BDneGj.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p>填写multiOTP的URL和secret，secret和上面配置的multiOTP Server密码保持相同</p>
+<p><a href="https://zimgs.com/i/BDnoz5"><img alt="BDnoz5.png" src="https://v1.ax1x.com/2022/12/09/BDnoz5.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p><a href="https://zimgs.com/i/BDIk9m"><img alt="BDIk9m.png" src="https://v1.ax1x.com/2022/12/09/BDIk9m.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p><a href="https://zimgs.com/i/BDIBH4"><img alt="BDIBH4.png" src="https://v1.ax1x.com/2022/12/09/BDIBH4.png" /></a></p>
+</div>
+</div>
+</div>
+<h3 id="otp">重启电脑，验证OTP动态码<a class="headerlink" href="#otp" title="Permanent link">#</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">输入用户密码</label><label for="__tabbed_5_2">输入手机动态码</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><a href="https://zimgs.com/i/BDIT1h"><img alt="BDIT1h.png" src="https://v1.ax1x.com/2022/12/09/BDIT1h.png" /></a></p>
+</div>
+<div class="tabbed-block">
+<p><a href="https://zimgs.com/i/BDIm69"><img alt="BDIm69.png" src="https://v1.ax1x.com/2022/12/09/BDIm69.png" /></a></p>
+</div>
+</div>
+</div>
+
+              
+
+  <!-- Giscus -->
+  <h2 id="__comments">评论</h2>
+  <!-- Replace with generated snippet -->
+  <script src="https://giscus.app/client.js"
+        data-repo="longguikeji/arkid"
+        data-repo-id="MDEwOlJlcG9zaXRvcnkyMDA1NjY0MTA="
+        data-category="General"
+        data-category-id="DIC_kwDOC_Rmis4COnhT"
+        data-mapping="title"
+        data-strict="1"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+  </script>
+  <!-- Reload on palette change -->
+  <script>
+    var palette = __md_get("__palette")
+    if (palette && typeof palette.color === "object")
+      if (palette.color.scheme === "slate") {
+        var giscus = document.querySelector("script[src*=giscus]")
+        giscus.setAttribute("data-theme", "dark") 
+      }
+
+    /* Register event handlers after documented loaded */
+    document.addEventListener("DOMContentLoaded", function() {
+      var ref = document.querySelector("[data-md-component=palette]")
+      ref.addEventListener("change", function() {
+        var palette = __md_get("__palette")
+        if (palette && typeof palette.color === "object") {
+          var theme = palette.color.scheme === "slate" ? "dark" : "light"
+
+          /* Instruct Giscus to change theme */
+          var frame = document.querySelector(".giscus-frame")
+          frame.contentWindow.postMessage(
+            { giscus: { setConfig: { theme } } },
+            "https://giscus.app"
+          )
+        }
+      })
+    })
+  </script>
+
+            </article>
+            
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../com_longgui_message_artemis/" class="md-footer__link md-footer__link--prev" aria-label="Previous: 消息中间件：Artemis" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              消息中间件：Artemis
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../com_longgui_other_app_subscribe/" class="md-footer__link md-footer__link--next" aria-label="Next: 应用订阅管理插件" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              应用订阅管理插件
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2018 - 2022 龙归科技
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    <a href="https://github.com/longguikeji/arkid" target="_blank" rel="noopener" title="longguikeji/arkid" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+    <a href="mailto:support@longguikeji.com" target="_blank" rel="noopener" title="技术支持" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="m511.6 36.86-64 415.1a32.008 32.008 0 0 1-31.65 27.147c-4.188 0-8.319-.815-12.29-2.472l-122.6-51.1-50.86 76.29C226.3 508.5 219.8 512 212.8 512c-11.5 0-20.8-9.3-20.8-20.8v-96.18c0-7.115 2.372-14.03 6.742-19.64L416 96 122.3 360.3 19.69 317.5C8.438 312.8.812 302.2.062 289.1s5.47-23.72 16.06-29.77l448-255.1c10.69-6.109 23.88-5.547 34 1.406S513.5 24.72 511.6 36.86z"/></svg>
+    </a>
+  
+    
+    
+    <a href="https://idaas.arkid.cc" target="_blank" rel="noopener" title="官方IDaaS" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M172.5 131.1c55.6-55.59 148-55.59 203.6 0 50 50 57.4 129.7 16.3 187.2l-1.1 1.6c-10.3 14.3-30.3 17.7-44.6 7.4-14.4-10.3-17.8-30.3-7.5-44.6l1.1-1.6c22.9-32.1 19.3-76-8.6-103.9-31.4-31.4-82.5-31.4-114 0L105.5 289.5c-31.51 30.6-31.51 82.5 0 114 27.8 27.9 71.8 31.5 103.8 8.6l1.6-2c14.4-9.4 34.4-6.1 44.6 8.3 10.3 14.4 7 34.4-7.4 44.7l-1.6 1.1c-58.4 41.1-136.3 34.5-186.29-15.4-56.469-56.5-56.469-148.1 0-204.5L172.5 131.1zm295 248.9c-56.5 56.5-148 56.5-204.5 0-50-50-56.5-128.8-15.4-186.3l1.1-1.6c9.4-14.3 29.4-17.7 44.6-7.4 14.4 9.4 17.8 29.4 7.5 44.6l-1.1 1.6c-22.9 31.2-19.3 76 8.6 103.9 31.4 31.4 82.5 31.4 114 0l112.2-112.3c31.5-31.5 31.5-83.4 0-114-27.8-27.87-71.8-31.51-103.8-8.6l-1.6 1.1c-14.4 10.3-34.4 6.1-44.6-7.42-10.3-14.38-7-34.37 7.4-44.64l1.6-1.12C451 6.731 529.8 13.25 579.8 63.24c56.5 56.46 56.5 148.06 0 204.46L467.5 380z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tabs", "navigation.tracking", "navigation.tabs.sticky", "navigation.indexes", "navigation.top", "navigation.expand", "toc.follow", "content.tabs.link", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.6c7ad80a.min.js"></script>
+      
+    
+  </body>
+</html>

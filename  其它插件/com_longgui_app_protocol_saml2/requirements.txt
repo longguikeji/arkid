@@ -1,3 +1,0 @@
--i https://mirrors.aliyun.com/pypi/simple
-pysaml2==7.1.2
-arrow==1.2.2

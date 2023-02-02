@@ -1,0 +1,2 @@
+-i https://mirrors.aliyun.com/pypi/simple
+alibabacloud-dysmsapi20170525==2.0.9
