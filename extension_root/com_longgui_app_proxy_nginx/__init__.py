@@ -50,6 +50,11 @@ class AppProxyNginxExtension(Extension):
 
     def nginx_auth(self, request, tenant_id, app_id):
         token = request.COOKIES.get("arkid_token", "")
+        logger.info(f"token:{token}, headers:{request.headers}")
+        app = App.active_objects.filter(id=app_id).first()
+        skip_token_verification = app.skip_token_verification
+        if skip_token_verification:
+            return 200, None
         if not token:
             logger.info(f"No arkid_token found")
             return 401, None
@@ -70,7 +75,6 @@ class AppProxyNginxExtension(Extension):
             return 401, None
 
         user = exp_token.user
-        app = App.active_objects.filter(id=app_id).first()
 
         if not app:
             logger.info(f"No such app: {app_id}")
@@ -153,7 +157,9 @@ class AppProxyNginxExtension(Extension):
                 logger.error(f"Wrong url Schema: {app.url}")
                 return
 
-            if not hasattr(app, "skip_verify_connection") or not getattr(app, "skip_verify_connection"):
+            if not hasattr(app, "skip_verify_connection") or not getattr(
+                app, "skip_verify_connection"
+            ):
                 opener = urllib.request.build_opener()
                 opener.addheaders = [('User-agent', 'Mozilla/49.0.2')]
                 try:
@@ -167,59 +173,62 @@ class AppProxyNginxExtension(Extension):
 
             arkid_be_host = os.environ.get("ARKIDBESVC")
             be_url = f'http://{arkid_be_host}/api/v1/tenant/{tenant_id}/com_longgui_app_proxy_nginx/nginx_auth/{app_id}'
-            portal_url = os.environ.get("ARKIDPORTALSVC")
+            # portal_url = os.environ.get("ARKIDPORTALSVC")
             # if not portal_url:
             #     logger.info("没有配置ARKIDPORTALSVC环境变量")
             #     return
             try:
-                create_url = f"http://{portal_url}/create/nginxconf"
+                # create_url = f"http://{portal_url}/create/nginxconf"
                 u = urlparse(app.url)
-                app_proxy_url = f"{u.scheme}://{u.netloc}"
-                json = {
-                    "dest_url": app_proxy_url,
-                    "server_name": app_server_name,
-                    "be_url": be_url,
+                # app_proxy_url = f"{u.scheme}://{u.netloc}"
+                # json = {
+                #     "dest_url": app_proxy_url,
+                #     "server_name": app_server_name,
+                #     "be_url": be_url,
+                # }
+                # res = requests.post(create_url, json=json)
+                # if res.json().get('code') == 0:
+                #     logger.info("Nginx 配置文件创建成功!")
+                #     nginx_app.nginx_config_created = True
+                #     nginx_app.save()
+                # else:
+                #     logger.info(f"Nginx 配置文件创建失败!: {res.text}")
+                apisix_host = "apisix-admin:9180"
+                apisix_key = "6f87ad84b625c8f1edd1c9f034335f13"
+                headers = {
+                    "X-API-KEY": apisix_key
                 }
-                res = requests.post(create_url, json=json)
-                if res.json().get('code') == 0:
-                    logger.info("Nginx 配置文件创建成功!")
+                route_url = f"http://{apisix_host}/apisix/admin/routes/{app.id.hex}"
+                body = {
+                    "uri": "/*",
+                    "host": app_server_name,
+                    "plugins": {
+                        "forward-auth": {
+                            "uri": be_url,
+                            "request_headers": ["cookie"],
+                            # "upstream_headers": ["X-User-ID"],
+                            # "client_headers": ["Location"]
+                        }
+                    },
+                    "upstream": {
+                        "nodes": {
+                            u.netloc: 1
+                        },
+                        "type": "roundrobin"
+                    }
+                }
+                logger.info(body)
+                res = requests.put(route_url, json=body, headers=headers)
+                if res.status_code == 201:
+                    logger.info("apisix route更新成功!")
                     nginx_app.nginx_config_created = True
                     nginx_app.save()
                 else:
-                    logger.info(f"Nginx 配置文件创建失败!: {res.text}")
-
+                    logger.info(f"apisix route更新失败!: {res.status_code}-{res.text}")
             except Exception as e:
-                logger.error("portal创建配置接口报错:")
+                logger.error("apisix创建更新route接口报错:")
                 logger.error(e)
-
-            return
         logger.info("没有做任何处理")
-        # base_dir = '/nginx/'
-        # if not os.path.exists(base_dir):
-        #     logger.error(f'App proxy nginx conf directory: {base_dir} does not exists')
-        #     return
-        # file_name = f"{app.id.hex}.conf"
-        # file_path = os.path.join(base_dir, file_name)
-        # logger.info(f'App proxy nginx start to write nginx conf file: {file_path}')
-        # arkid_be_host = os.environ.get("ARKIDBESVC")
-        # if not arkid_be_host:
-        #     arkid_be_host = u.netloc
-        # try:
-        #     with open(file_path, 'w') as f:
-        #         values = {
-        #             'app_server_name': app_server_name,
-        #             'port': port,
-        #             'app_proxy_url': app.url,
-        #             'nginx_auth_url': f'http://{arkid_be_host}/api/v1/tenant/{tenant_id}/com_longgui_app_proxy_nginx/nginx_auth/{app_id}',
-        #         }
-        #         content = NginxConfTemplate.substitute(values)
-        #         f.write(content)
-        # except Exception as e:
-        #     logger.error(
-        #         f'App proxy nginx write nginx conf file: {file_path} failed: {e}'
-        #     )
-        # else:
-        #     logger.info(f'App proxy nginx write nginx conf file: {file_path} success!')
 
     def delete_nginx_conf(self, event):
         app = event.data
@@ -231,40 +240,28 @@ class AppProxyNginxExtension(Extension):
 
         logger.info("开始删除nginx配置")
         try:
-            portal_url = os.environ.get("ARKIDPORTALSVC")
+            # portal_url = os.environ.get("ARKIDPORTALSVC")
             # if not portal_url:
             #     logger.info("没有配置ARKIDPORTALSVC环境变量")
             #     return
-            delete_url = f"http://{portal_url}/delete/nginxconf?appid={app.id.hex}"
-            res = requests.post(delete_url)
-            if res.json().get('code') == 0:
-                logger.info("Nginx 配置文件删除成功!")
+            # delete_url = f"http://{portal_url}/delete/nginxconf?appid={app.id.hex}"
+            apisix_host = "apisix-admin:9180"
+            apisix_key = "6f87ad84b625c8f1edd1c9f034335f13"
+            headers = {
+                "X-API-KEY": apisix_key
+            }
+            route_url = f"http://{apisix_host}/apisix/admin/routes/{app.id.hex}"
+            res = requests.delete(route_url, headers=headers)
+            if res.status_code == 200:
+                logger.info("apisix 配置文件删除成功!")
                 nginx_app.nginx_config_created = False
                 nginx_app.nginx_config_deleted = True
                 nginx_app.save()
             else:
-                logger.info(f"Nginx 配置文件删除失败!: {res.text}")
+                logger.info(f"apisix 配置文件删除失败!: {res.status_code}-{res.text}")
 
         except Exception as e:
             logger.error("portal删除配置接口报错:")
             logger.error(e)
-        # if nginx_app:
-        #     nginx_app.delete()
-        # else:
-        #     return
-
-        # base_dir = '/nginx/'
-        # file_name = f"{app.id.hex}.conf"
-        # file_path = os.path.join(base_dir, file_name)
-        # if not os.path.exists(file_path):
-        #     logger.error(f'App proxy nginx conf file: {file_path} does not exists')
-        #     return
-        # try:
-        #     os.remove(file_path)
-        # except Exception as e:
-        #     logger.error(f'Delete nginx conf file {file_path} failed: {e}')
-        # else:
-        #     logger.info(f'Delete nginx conf file {file_path} success!')
-
 
 extension = AppProxyNginxExtension()

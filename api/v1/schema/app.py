@@ -124,7 +124,7 @@ AppProtocolConfigIn = AppProtocolExtension.create_composite_config_schema(
 AppProtocolConfigItemOut = AppProtocolExtension.create_composite_config_schema(
     'AppProtocolConfigItemOut',
     id=(UUID, Field(hidden=True)),
-    exclude=["name", "type", "logo", "url", 'description', 'entry_permission', 'arkstore_app_id', 'arkstore_category_id'],
+    exclude=["name", "type", "logo", "url", 'description', 'entry_permission', 'arkstore_app_id', 'arkstore_category_id', 'skip_token_verification'],
 )
 
 
