@@ -532,7 +532,7 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
             "package":"com.longgui.app.protocol.oidc"
         }
 
-        app = create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, login_url)
+        app = create_oidc_app_for_private_app(request, request.tenant, app_info, data, app_name, login_url)
         oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
         oidc_config["arkid_oidc_root_url"] = get_app_proxy_url(app)
         values_data = Template(values_data).substitute(oidc_config)
@@ -949,54 +949,57 @@ def refresh_admin_uesr_token():
 
 def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, login_url):
     from arkid.core.event import APP_CONFIG_DONE, Event, dispatch_event
-    from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP
+    from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP, UPDATE_APP
 
     services = app_info.get('web_url_from_services')
     if services:
         services = services.split(' ')
-        url=f"http://{services[0]}.{app_name}:80{login_url}",
+        url=f"http://{services[0]}.{app_name}:80{login_url}"
     else:
-        url=f"http://{app_name}.{app_name}:80{login_url}",
+        url=f"http://{app_name}.{app_name}:80{login_url}"
 
     # 创建应用
     app, created = App.objects.update_or_create(
-        tenant=request.tenant,
+        tenant=tenant,
         arkstore_app_id=app_info["uuid"],
-        url=url,
-        is_del=False,
-        defaults={"name": app_info["name"], "logo": app_info["logo"], "description": app_info["description"]}
+        defaults={
+                "is_del": False,
+                "url": url,
+                "name": app_info["name"],
+                "logo": app_info["logo"],
+                "description": app_info["description"],
+                "arkstore_category_id": app_info.get('category_id', None),
+                "skip_token_verification": app_info.get('skip_token_verification', False)
+        }
     )
-    if created:
-        app.is_active = False
-        dispatch_event(Event(tag=CREATE_APP, tenant=request.tenant, request=request, data=app))
-
-    # enable app nginx proxy
-    # enable_nginx_proxy_for_private_app(request, tenant, app)
-    app_url = get_app_proxy_url(app)
-    data["config"]["redirect_uris"] = app_url + data["config"]["redirect_uris"]
-
-    app.arkstore_app_id = app_info["uuid"]
-    category_id = app_info.get('category_id', None)
-    if category_id:
-        app.arkstore_category_id = category_id
+    app.is_intranet_url = True
     app.save()
+    app.skip_verify_connection = True
+    
+    if created:
+        dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=app))
+    else:
+        dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=app))
 
-    data["app"] = app
+    if data:
+        app_url = get_app_proxy_url(app)
+        data["config"]["redirect_uris"] = app_url + data["config"]["redirect_uris"]
+        data["app"] = app
 
-    # 创建应用协议配置
-    results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=request.tenant, request=request, data=data, packages=[data["package"]]))
-    for func, (result, extension) in results:
-        if result:
-            # 创建config
-            config = extension.create_tenant_config(request.tenant, data["config"], app.name, data["app_type"])
-            # 创建app
-            app.type = data["app_type"]
-            app.package = data["package"]
-            app.config = config
-            app.save()
-            # 创建app完成进行事件分发
-            dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=request.tenant, request=request, data=app, packages=[data["package"]]))
-            break
+        # 创建应用协议配置
+        results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data, packages=[data["package"]]))
+        for func, (result, extension) in results:
+            if result:
+                # 创建config
+                config = extension.create_tenant_config(tenant, data["config"], app.name, data["app_type"])
+                # 创建app
+                app.type = data["app_type"]
+                app.package = data["package"]
+                app.config = config
+                app.save()
+                # 创建app完成进行事件分发
+                dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=tenant, request=request, data=app, packages=[data["package"]]))
+                break
     
     return app
 
