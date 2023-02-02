@@ -1,0 +1,23 @@
+name: mkdocszh
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature-947
+    paths:
+      - 'docs/**'
+      - 'extension_root/**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: ls
+      - run: rm -rf arkid_extensions
+
+      - run: ls arkid_extensions
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - run: python manage.py migrate
+      - run: mkdocs build -f docs/zh/mkdocs.yml
