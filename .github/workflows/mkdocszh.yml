@@ -19,7 +19,7 @@ jobs:
           ref: 'v2.5-dev'
           path: 'arkid_extensions'
           token: '${{ secrets.NOTEVERY_TEST_TOKEN }}'
-      - run: rm -rf arkid_extensions/com_longgui_app_protocol_saml2 arkid_extensions/com_longgui_auth_factor_saml2
+      - run: rm -rf arkid_extensions/com_longgui_app_protocol_saml2 arkid_extensions/com_longgui_auth_factor_saml2 arkid_extensions/com_longgui_app_protocol_radius_client
       - run: ls arkid_extensions
       - uses: actions/setup-python@v4
         with:
