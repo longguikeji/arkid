@@ -19,4 +19,5 @@ jobs:
       - run: pip install --disable-pip-version-check -r requirements.txt;
       - run: python manage.py migrate
       - run: mkdocs build -f docs/zh/mkdocs.yml
-      - run: ls site
+      - run: ls docs/zh/site
+      - run: mkdocs gh-deploy -f docs/zh/mkdocs.yml -b gh-page-zh
