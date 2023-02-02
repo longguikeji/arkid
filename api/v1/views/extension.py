@@ -229,16 +229,22 @@ def get_extension_markdown(request, id: str):
     
     ext_model = ExtensionModel.valid_objects.get(id=id)
     import os
+
+    language_map= {
+        "English":"en"
+    }
     
     # 添加多语言翻译
     language = request.GET.get('FrontendLanguage') or '简体中文'
-    doc_dir = os.path.join(ext_model.ext_dir,f'docs/{language}')
     base_path = ext_model.ext_dir
     
     files = os.listdir(ext_model.ext_dir)
-    if os.path.exists(doc_dir) and os.listdir(doc_dir):
-        files = os.listdir(doc_dir)
-        base_path = doc_dir
+    if language_map.get(language,None):
+        doc_dir = f'docs/{language_map[language]}/docs/{ext_model.ext_dir.replace("arkid_extensions","Other Plug -In").replace("extension_root","System Plug -In")}'
+
+        if os.path.exists(doc_dir) and os.listdir(doc_dir):
+            files = os.listdir(doc_dir)
+            base_path = doc_dir
         
     data = {}
     for file in files:

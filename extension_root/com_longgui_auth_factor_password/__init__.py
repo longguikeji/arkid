@@ -235,6 +235,9 @@ class PasswordAuthFactorExtension(AuthFactorExtension):
         username = data.get('username')
         password = data.get('password')
 
+        if data.get('checkpassword',None) != password:
+            return self.error(ErrorCode.TWO_TIME_PASSWORD_MISMATCH)
+
         config = self.get_current_config(event)
         ret, message = self.check_password_complexity(password, config)
         if not ret:
