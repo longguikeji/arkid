@@ -12,7 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: ls
+      - run: rm -rf arkid_extensions
+      - uses: actions/checkout@v3
+        with:
+          repository: 'longguikeji/arkid-extensions'
+          ref: 'v2.5-dev'
+          path: 'arkid_extensions'
+          token: '${{ secrets.NOTEVERY_TEST_TOKEN }}'
+      - run: ls arkid_extensions
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
