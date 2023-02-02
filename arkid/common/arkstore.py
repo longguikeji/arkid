@@ -968,11 +968,12 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, l
                 "name": app_info["name"],
                 "logo": app_info["logo"],
                 "description": app_info["description"],
-                "category_id": app_info.get('category_id', None),
-                "skip_token_verification": app_info.get('skip_token_verification', False),
-                "is_intranet_url": True
+                "arkstore_category_id": app_info.get('category_id', None),
+                "skip_token_verification": app_info.get('skip_token_verification', False)
         }
     )
+    app.is_intranet_url = True
+    app.save()
     app.skip_verify_connection = True
     
     if created:
