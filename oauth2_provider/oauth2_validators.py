@@ -774,8 +774,10 @@ class OAuth2Validator(RequestValidator):
         host = get_app_config().get_host()
         urlinfo = request.uri
         urlinfo = host+urlinfo
+        app_id = request.client.uuid
         if urlinfo.find('/oauth/token/') != -1:
             urlinfo = urlinfo.split('/oauth/token/')[0]
+            urlinfo = '{}/app/{}'.format(urlinfo, app_id)
         print('issinfo:'+urlinfo)
         # Required ID Token claims
         request.user.last_login = timezone.now()

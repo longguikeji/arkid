@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - v2.5-dev 
+      - v2.5-dev
     paths:
       - 'docs/**'
       - 'extension_root/**'
@@ -11,8 +11,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - run: ls
+      - uses: actions/checkout@v3
       - run: rm -rf arkid_extensions
       - uses: actions/checkout@v3
         with:
@@ -20,10 +19,22 @@ jobs:
           ref: 'v2.5-dev'
           path: 'arkid_extensions'
           token: '${{ secrets.NOTEVERY_TOKEN }}'
+      - run: rm -rf arkid_extensions/com_longgui_app_protocol_saml2 arkid_extensions/com_longgui_auth_factor_saml2
       - run: ls arkid_extensions
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: 3.8
-      - run: pip install -r requirements.txt
+      - run: pip install --disable-pip-version-check -r requirements.txt;
       - run: python manage.py migrate
-      - run: mkdocs gh-deploy --force
+      - run: mkdocs build -f docs/zh/mkdocs.yml -d site/zh
+      - run: mkdocs build -f docs/en/mkdocs.yml -d site/en
+      - run: cp -r docs/zh/site/zh/* docs/zh/site/
+      - run: cp -r docs/en/site/en docs/zh/site/
+      - name: push site to gh-pages branch
+        uses: Cecilapp/GitHub-Pages-deploy@v3
+        env:
+            GITHUB_TOKEN: ${{ secrets.NOTEVERY_TOKEN }}
+        with:
+            email: jiashuai@longguikeji.com
+            build_dir: docs/zh/site
+            branch: gh-pages

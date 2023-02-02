@@ -246,6 +246,9 @@ class App(BaseModel, ExpandModel):
         default=None,
         verbose_name=_('Arkstore app id', '方舟商店应用标识'),
     )
+    skip_token_verification = models.BooleanField(
+        default=False, verbose_name=_('Skip Token Verification', '应用入口地址跳过验证')
+    )
 
     def __str__(self) -> str:
         return f'Tenant: {self.tenant.name}, App: {self.name}'

@@ -1,0 +1,1 @@
+package = "com.longgui.other.app.subscribe"

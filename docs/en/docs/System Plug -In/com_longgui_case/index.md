@@ -1,0 +1,3 @@
+# Sample plugin
+
+Introduce the plug -in function here, etc......
