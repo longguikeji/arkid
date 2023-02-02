@@ -60,10 +60,10 @@ extra:
       name: Official IDaaS
   alternate:
     - name: English
-      link: /en/
+      link: /arkid/en/
       lang: en
     - name: 简体中文
-      link: /zh/
+      link: /arkid/zh/
       lang: zh
 
 

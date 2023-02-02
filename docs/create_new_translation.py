@@ -6,7 +6,7 @@ import string
 translator = google_translator() 
 
 dir_path = "zh/"
-target_dir_path = "en-us/"
+target_dir_path = "en/"
 target_lang = 'en'
 
 file_tree = {}
