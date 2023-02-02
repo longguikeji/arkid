@@ -951,11 +951,18 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, l
     from arkid.core.event import APP_CONFIG_DONE, Event, dispatch_event
     from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP
 
+    services = app_info.get('web_url_from_services')
+    if services:
+        services = services.split(' ')
+        url=f"http://{services[0]}.{app_name}:80{login_url}",
+    else:
+        url=f"http://{app_name}.{app_name}:80{login_url}",
+
     # 创建应用
     app, created = App.objects.update_or_create(
         tenant=request.tenant,
         arkstore_app_id=app_info["uuid"],
-        url=f"http://{app_name}.{app_name}:80{login_url}",
+        url=url,
         is_del=False,
         defaults={"name": app_info["name"], "logo": app_info["logo"], "description": app_info["description"]}
     )
