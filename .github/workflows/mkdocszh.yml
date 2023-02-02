@@ -19,12 +19,12 @@ jobs:
           ref: 'v2.5-dev'
           path: 'arkid_extensions'
           token: '${{ secrets.NOTEVERY_TEST_TOKEN }}'
-      - run: rm -rf arkid_extensions/com_longgui_app_protocol_saml2 arkid_extensions/com_longgui_auth_factor_saml2 arkid_extensions/com_longgui_app_protocol_radius_client
+      - run: rm -rf arkid_extensions/com_longgui_app_protocol_saml2 arkid_extensions/com_longgui_auth_factor_saml2
       - run: ls arkid_extensions
       - uses: actions/setup-python@v4
         with:
           python-version: 3.8
       - run: pip install --disable-pip-version-check -r requirements.txt;
       - run: python manage.py migrate
-      - run: mkdocs gh-deploy -f docs/zh/mkdocs.yml -b gh-page-zh
-      - run: mkdocs gh-deploy -f docs/en/mkdocs.yml -b gh-page-en
+      - run: mkdocs gh-deploy -f docs/zh/mkdocs.yml -b gh-page-zh --force
+      - run: mkdocs gh-deploy -f docs/en/mkdocs.yml -b gh-page-en --force
