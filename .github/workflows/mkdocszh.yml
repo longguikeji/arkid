@@ -20,4 +20,5 @@ jobs:
       - run: python manage.py migrate
       - run: mkdocs build -f docs/zh/mkdocs.yml
       - run: ls docs/zh/site
-      - run: mkdocs gh-deploy -f docs/zh/mkdocs.yml -b gh-page-zh
+      - run: mkdocs gh-deploy -f docs/zh/mkdocs.yml -d site/zh -b gh-page-zh
+      - run: mkdocs gh-deploy -f docs/en/mkdocs.yml -d site/en -b gh-page-en
