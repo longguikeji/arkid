@@ -13,9 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: ls
-      - run: rm -rf arkid_extensions
-
-      - run: ls arkid_extensions
       - uses: actions/setup-python@v2
         with:
           python-version: 3.8
