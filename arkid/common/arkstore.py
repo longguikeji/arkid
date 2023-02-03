@@ -962,8 +962,9 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, l
     app, created = App.objects.update_or_create(
         tenant=tenant,
         arkstore_app_id=app_info["uuid"],
+        is_del=False,
         defaults={
-                "is_del": False,
+                "is_active": False,
                 "url": url,
                 "name": app_info["name"],
                 "logo": app_info["logo"],
