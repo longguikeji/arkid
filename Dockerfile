@@ -7,8 +7,6 @@ ARG ARKID_VERSION=dev
 
 WORKDIR /var/arkid
 
-ENV PYTHONUSERBASE=/var/arkid/arkid_extensions PATH=$PATH:/var/arkid/arkid_extensions/bin ARKID_VERSION=${ARKID_VERSION}
-
 ADD . .
 RUN sed -i 's/MinProtocol = TLSv1.2/MinProtocol = TLSv1.0/g' /etc/ssl/openssl.cnf; \
     sed -i "s@https://mirrors.aliyun.com/pypi/simple@$PIP@g" requirements.txt; \
@@ -20,5 +18,7 @@ RUN sed -i 's/MinProtocol = TLSv1.2/MinProtocol = TLSv1.0/g' /etc/ssl/openssl.cn
         pip install --disable-pip-version-check -r $i; done ; \
     mv pip.conf /etc/pip.conf; \
     pip install uwsgi -i $PIP
+
+ENV PYTHONUSERBASE=/var/arkid/arkid_extensions PATH=$PATH:/var/arkid/arkid_extensions/bin:/root/.local/bin ARKID_VERSION=${ARKID_VERSION}
 ENTRYPOINT ["/var/arkid/docker-entrypoint.sh"]
 CMD ["tini", "--", "/usr/local/bin/python3.8", "manage.py", "runserver", "0.0.0.0:80"]
