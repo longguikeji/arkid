@@ -139,7 +139,7 @@ purchased_cascade_page.create_actions(
             page=default_values_page
         ),
         "install": actions.OpenAction(
-            name='安装',
+            name='安装/更新',
             page=install_page
         ),
     },
@@ -220,7 +220,7 @@ install_page.create_actions(
     ),
     global_actions={
         "confirm": actions.DirectAction(
-            name='安装',
+            name='安装/更新',
             path='/api/v1/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/',
             method=actions.FrontActionMethod.POST
         ),
