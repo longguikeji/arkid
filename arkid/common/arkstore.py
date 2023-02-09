@@ -499,48 +499,59 @@ def get_arkstore_private_app_name(tenant, token, app_id):
     return app_name, res
 
 
-def install_arkstore_private_app(request, tenant, token, app_id, values_data=""):
+def install_arkstore_private_app(request, tenant, token, app_id, custom_values=""):
+    import yaml
+    from string import Template
+
     data = get_arkstore_private_app_data(tenant, token, app_id)
     download_url = data["download_url"]
     oidc_values = data["oidc_values"]
     app_name, app_info = get_arkstore_private_app_name(tenant, token, app_id)
     k8s_url = settings.K8S_INSTALL_APP_URL + f'/ahc/{tenant.id}/crdchart/' + app_name
 
+    redirect_uris = ""
+    login_url = ""
     if oidc_values:
-        # create_oidc_app
-        import yaml
-        from string import Template
-        redirect_uris = yaml.safe_load(oidc_values).get("arkid_oidc_redirect_uris", "")
-        login_url = yaml.safe_load(oidc_values).get("arkid_oidc_login_url", "")
+        oidc_values_json = yaml.safe_load(oidc_values)
+        if oidc_values_json:
+            redirect_uris = oidc_values_json.get("arkid_oidc_redirect_uris", "")
+            login_url = oidc_values_json.get("arkid_oidc_login_url", "")
+    if custom_values:
+        custom_values_json = yaml.safe_load(custom_values)
+        if custom_values_json:
+            redirect_uris = custom_values_json.get("arkid_oidc_redirect_uris", "")
+            login_url = custom_values_json.get("arkid_oidc_login_url", "")
 
-        data = {
-            "app_type":"OIDC",
-            "config":{
-                "skip_authorization":False,
-                "redirect_uris":redirect_uris,
-                "client_type":"confidential",
-                "grant_type":"authorization-code",
-                "algorithm":"RS256",
-                "client_id":"",
-                "client_secret":"",
-                "authorize":"",
-                "token":"",
-                "userinfo":"",
-                "logout":"",
-                "issuer_url":""
-            },
-            "package":"com.longgui.app.protocol.oidc"
-        }
+    data = {
+        "app_type":"OIDC",
+        "config":{
+            "skip_authorization":False,
+            "redirect_uris":redirect_uris,
+            "client_type":"confidential",
+            "grant_type":"authorization-code",
+            "algorithm":"RS256",
+            "client_id":"",
+            "client_secret":"",
+            "authorize":"",
+            "token":"",
+            "userinfo":"",
+            "logout":"",
+            "issuer_url":""
+        },
+        "package":"com.longgui.app.protocol.oidc"
+    }
 
-        app = create_oidc_app_for_private_app(request, request.tenant, app_info, data, app_name, login_url)
-        oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
-        oidc_config["arkid_oidc_root_url"] = get_app_proxy_url(app)
-        values_data = Template(values_data).substitute(oidc_config)
+    app = create_oidc_app_for_private_app(request, request.tenant, app_info, data, app_name, login_url)
+    oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
+    oidc_config["arkid_oidc_root_url"] = get_app_proxy_url(app)
+    oidc_config["arkid_oidc_jwks_url"] = oidc_config.get("arkid_oidc_token", "")\
+        .replace("/oauth/token/", "/.well-known/jwks.json")
+    custom_values = Template(custom_values).substitute(oidc_config)
 
     data = {
         "chart": download_url,
         "targetNamespace": app_name,
-        "valuesContent": values_data,
+        "valuesContent": custom_values,
     }
     try:
         resp = requests.post(k8s_url, json=data, timeout=30)
@@ -559,7 +570,7 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
             logger.error(f"Install app to k8s failed: {resp['message']}")
             return resp
         
-        # 正在成功
+        # 正在安装
         private_app, created= PrivateApp.objects.update_or_create(
             tenant = tenant,
             arkstore_app_id = app_info['uuid'],
@@ -569,7 +580,7 @@ def install_arkstore_private_app(request, tenant, token, app_id, values_data="")
                 description = app_info['description'],
                 logo = app_info['logo'],
                 arkstore_category_id = app_info.get('category_id'),
-                values_data = values_data,
+                values_data = custom_values,
             )
         )
 
@@ -949,7 +960,7 @@ def refresh_admin_uesr_token():
 
 def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, login_url):
     from arkid.core.event import APP_CONFIG_DONE, Event, dispatch_event
-    from arkid.core.event import CREATE_APP_CONFIG, CREATE_APP, UPDATE_APP
+    from arkid.core.event import CREATE_APP_CONFIG, UPDATE_APP_CONFIG, CREATE_APP, UPDATE_APP
 
     services = app_info.get('web_url_from_services')
     if services:
@@ -962,9 +973,9 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, l
     app, created = App.objects.update_or_create(
         tenant=tenant,
         arkstore_app_id=app_info["uuid"],
-        is_del=False,
         defaults={
                 "is_active": False,
+                "is_del": False,
                 "url": url,
                 "name": app_info["name"],
                 "logo": app_info["logo"],
@@ -977,10 +988,8 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, l
     app.save()
     app.skip_verify_connection = True
     
-    if created:
-        dispatch_event(Event(tag=CREATE_APP, tenant=tenant, request=request, data=app))
-    else:
-        dispatch_event(Event(tag=UPDATE_APP, tenant=tenant, request=request, data=app))
+    tag = CREATE_APP if created else UPDATE_APP
+    dispatch_event(Event(tag=tag, tenant=tenant, request=request, data=app))
 
     if data:
         app_url = get_app_proxy_url(app)
@@ -988,7 +997,8 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, l
         data["app"] = app
 
         # 创建应用协议配置
-        results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data, packages=[data["package"]]))
+        tag = CREATE_APP_CONFIG if created else UPDATE_APP_CONFIG
+        results = dispatch_event(Event(tag=tag, tenant=tenant, request=request, data=data, packages=[data["package"]]))
         for func, (result, extension) in results:
             if result:
                 # 创建config
