@@ -76,7 +76,7 @@ distlib==0.3.5
 executing==0.9.0
 filelock==3.7.1
 identify==2.5.2
-ipython==8.4.0
+ipython==8.10.0
 isort==5.10.1
 jedi==0.18.1
 lazy-object-proxy==1.7.1
