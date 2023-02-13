@@ -62,7 +62,7 @@ def get_saas_token(tenant, token, use_cache=True):
     resp = AuthorizationView.as_view()(request)
     assert resp.status_code == 302
 
-    resp = requests.get(resp.url)
+    resp = requests.get(resp.url, timeout=30)
     if resp.status_code != 200:
         cache.delete(key)
         raise Exception(f'Error get_saas_token: {resp.status_code}')
@@ -116,7 +116,7 @@ def get_arkstore_access_token_with_saas_token(saas_tenant_slug, saas_tenant_id, 
     
     params = {'state': 'client', 'tenant_slug': saas_tenant_slug, 'tenant_id': str(saas_tenant_id), 'token': saas_token}
     app_login_url = settings.ARKSTOER_URL + '/api/v1/login'
-    resp = requests.get(app_login_url, params=params)
+    resp = requests.get(app_login_url, params=params, timeout=30)
     if resp.status_code != 200:
         cache.delete(key)
         raise Exception(f'Error get_arkstore_access_token_with_saas_token: {resp.status_code}, url: {resp.url}')
@@ -546,7 +546,10 @@ def install_arkstore_private_app(request, tenant, token, app_id, custom_values="
     oidc_config["arkid_oidc_root_url"] = get_app_proxy_url(app)
     oidc_config["arkid_oidc_jwks_url"] = oidc_config.get("arkid_oidc_token", "")\
         .replace("/oauth/token/", "/.well-known/jwks.json")
-    custom_values = Template(custom_values).substitute(oidc_config)
+    oidc_config["arkid_oidc_app_id"] = str(tenant.id)
+    oidc_config["arkid_oidc_tenant_id"] = str(app.id)
+    oidc_config["arkid_oidc_host"] = get_app_config().get_frontend_host()
+    custom_values = Template(custom_values).safe_substitute(oidc_config)
 
     data = {
         "chart": download_url,
