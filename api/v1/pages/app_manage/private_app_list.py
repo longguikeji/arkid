@@ -142,6 +142,9 @@ purchased_cascade_page.create_actions(
             name='安装/更新',
             page=install_page
         ),
+        "delete": actions.DeleteAction(
+            path="/api/v1/tenant/{tenant_id}/arkstore/private_app/{uuid}/",
+        )
     },
 )
 

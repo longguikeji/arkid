@@ -914,6 +914,8 @@ def delete_private_app_from_arkstore(request, tenant_id: str, uuid: str):
     result = delete_arkstore_private_app(tenant, token, uuid)
     if result['code'] == 0:
         return {'error': ErrorCode.OK.value, 'data': {}}
+    if result['code'] == 1:
+        return {'error': ErrorCode.OK.value, 'data': {}}
     return ErrorDict(ErrorCode.PRIVATE_APP_DELETE_FAILED, message=result['message'])
 
 

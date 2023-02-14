@@ -627,6 +627,14 @@ def delete_arkstore_private_app(tenant, token, app_id):
         resp = resp.json()
         if resp['code'] != 0:
             logger.error(f"delete_arkstore_private_app failed: {app_name} {resp['message']}")
+        # 删除成功
+        private_app = PrivateApp.active_objects.filter(
+            tenant = tenant,
+            arkstore_app_id = app_info['uuid']
+        ).first()
+        if private_app:
+            private_app.status = 'deleted'
+            private_app.save()
         return resp
     except Exception as e:
         logger.error(f"delete_arkstore_private_app failed: {app_name} {e}")
