@@ -926,6 +926,7 @@ class PrivateApp(BaseModel):
         ('install_success', _('Install Success', '安装成功')),
         ('installing', _('Installing', '正在安装')),
         ('install_fail', _('Install Fail', '安装失败')),
+        ('deleted', _('Deleted', '已删除')),
     )
 
     tenant = models.ForeignKey('Tenant', blank=False, on_delete=models.PROTECT)
