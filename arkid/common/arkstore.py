@@ -544,6 +544,8 @@ def install_arkstore_private_app(request, tenant, token, app_id, custom_values="
     app = create_oidc_app_for_private_app(request, request.tenant, app_info, data, app_name, login_url)
     oidc_config = {"arkid_oidc_" + k: v for k, v in app.config.config.items()}
     oidc_config["arkid_oidc_root_url"] = get_app_proxy_url(app)
+    oidc_config["arkid_oidc_root_scheme"] = get_app_proxy_url(app).split("://")[0]
+    oidc_config["arkid_oidc_root_domain"] = get_app_proxy_url(app).split("://")[-1]
     oidc_config["arkid_oidc_jwks_url"] = oidc_config.get("arkid_oidc_token", "")\
         .replace("/oauth/token/", "/.well-known/jwks.json")
     oidc_config["arkid_oidc_app_id"] = str(tenant.id)
@@ -584,6 +586,7 @@ def install_arkstore_private_app(request, tenant, token, app_id, custom_values="
                 logo = app_info['logo'],
                 arkstore_category_id = app_info.get('category_id'),
                 values_data = custom_values,
+                status = 'installing'
             )
         )
 
@@ -635,6 +638,10 @@ def delete_arkstore_private_app(tenant, token, app_id):
         if private_app:
             private_app.status = 'deleted'
             private_app.save()
+        # 删除应用
+        app = App.active_objects.filter(id=app_info['uuid']).first()
+        if app:
+            app.delete()
         return resp
     except Exception as e:
         logger.error(f"delete_arkstore_private_app failed: {app_name} {e}")
