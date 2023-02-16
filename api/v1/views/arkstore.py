@@ -870,10 +870,10 @@ def update_arkstore_extension_from_arkstore(request, tenant_id: str, package: st
 
 
 class CutomValuesData(Schema):
-    values_data: Optional[str] = Field(
+    custom_values_data: Optional[str] = Field(
         default="",
         format='textarea',
-        title=_('Values Data', '配置')
+        title=_('Custom Values Data', '自定义配置')
     )
 
 class CustomAppValuesOut(ResponseSchema):
@@ -890,7 +890,7 @@ def get_private_app_custom_values(request, tenant_id: str, uuid: str):
     else:
         data = get_arkstore_private_app_data(tenant, token, uuid)
         values_data = data.get("oidc_values")
-    return {"data": {"values_data": values_data or ""}}
+    return {"data": {"custom_values_data": values_data or ""}}
 
 
 @api.post("/tenant/{tenant_id}/arkstore/install/private_app/{uuid}/", tags=['方舟商店'], response=ResponseSchema)
@@ -898,7 +898,7 @@ def get_private_app_custom_values(request, tenant_id: str, uuid: str):
 def install_private_app_from_arkstore(request, tenant_id: str, uuid: str, data: CutomValuesData):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
-    result = install_arkstore_private_app(request, tenant, token, uuid, data.values_data)
+    result = install_arkstore_private_app(request, tenant, token, uuid, data.custom_values_data)
     if result['code'] == 0:
         return {'error': ErrorCode.OK.value, 'data': {}}
     if result['code'] == 1:
@@ -914,11 +914,22 @@ def delete_private_app_from_arkstore(request, tenant_id: str, uuid: str):
     result = delete_arkstore_private_app(tenant, token, uuid)
     if result['code'] == 0:
         return {'error': ErrorCode.OK.value, 'data': {}}
+    if result['code'] == 1:
+        return {'error': ErrorCode.OK.value, 'data': {}}
     return ErrorDict(ErrorCode.PRIVATE_APP_DELETE_FAILED, message=result['message'])
 
 
 class AppValuesSchema(Schema):
-    values_data: str = Field(format='textarea', readonly=True)
+    values_data: Optional[str] = Field(
+        default="",
+        format='textarea',
+        title=_('Values Data', 'values.yaml')
+    )
+    oidc_values: Optional[str] = Field(
+        default="",
+        format='textarea',
+        title=_('Oidc Values', 'arkid-oidc.yaml')
+    )
 
 class AppValuesOut(ResponseSchema):
     data: AppValuesSchema
