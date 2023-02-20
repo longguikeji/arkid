@@ -109,6 +109,7 @@ def update_tenant_config(request, tenant_id: str,data:TenantConfigUpdateIn):
     return ErrorDict(ErrorCode.OK)
 
 @api.get("/default_tenant/",response=DefaultTenantOut, tags=["租户管理"], auth=None)
+@operation(TenantLogoutOut)
 def default_tenant(request):
     """ 获取当前域名下的默认租户(如无slug则为平台租户)
     """
