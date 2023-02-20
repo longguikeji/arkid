@@ -86,6 +86,8 @@ class ErrorCode(Enum):
     CD_KEY_IMPORT_FAILED = ('17010', _('CDKEY import failed', 'CDKEY导入失败'))
     CD_KEY_INVALID = ('17011', _('CDKEY invalid', 'CDKEY无效'))
     CD_KEY_ALREADY_IMPORTED = ('17012', _('CDKEY already imported', 'CDKEY重复导入'))
+    BIND_SAAS_SLUG_CAN_NOT_CHANGE = ('17013', _('bind saas slug can not change', '中心ArkID租户Slug只能设置一次'))
+    BIND_SAAS_SLUG_INVALID = ('17014', _('bind saas slug can only contain numbers and letters', '中心ArkID租户Slug不能为空且只能包含数字和字母'))
 
     PASSWORD_NOT_CORRECT = ('18001', _('password not correct', '密码不正确'))
 
@@ -100,6 +102,7 @@ class ErrorCode(Enum):
     PLUG_IN_NOT_START = ('18007', _('plug-in not start', '这个插件没有配置'))
 
     NEED_APP_COFIG = ('18008', _('need app config', '需要先配置应用协议'))
+
     
 class ErrorDict(dict):
 

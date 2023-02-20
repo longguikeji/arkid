@@ -884,7 +884,7 @@ class CustomAppValuesOut(ResponseSchema):
 def get_private_app_custom_values(request, tenant_id: str, uuid: str):
     token = request.user.auth_token
     tenant = Tenant.objects.get(id=tenant_id)
-    private_app = PrivateApp.active_objects.filter(arkstore_app_id=uuid).first()
+    private_app = PrivateApp.active_objects.filter(tenant=tenant, arkstore_app_id=uuid).first()
     if private_app:
         values_data = private_app.values_data
     else:

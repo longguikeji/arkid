@@ -1,3 +1,4 @@
+import re
 from arkid.core.constants import *
 from arkid.core.models import Tenant
 from django.views import View
@@ -15,6 +16,8 @@ from ninja import Schema
 from pydantic import Field
 from typing import Optional
 from arkid.core.api import api, operation
+from arkid.core.schema import ResponseSchema
+from arkid.core.error import ErrorCode, ErrorDict, SuccessDict
 
 
 class BindSaasSchemaOut(Schema):
@@ -62,17 +65,23 @@ def get_bind_saas_slug(request, tenant_id: str):
     return bind_info
 
 
-@api.post("/tenant/{tenant_id}/bind_saas/slug/", tags=['中心平台'])
+@api.post("/tenant/{tenant_id}/bind_saas/slug/", tags=['中心平台'], response=ResponseSchema)
 @operation(roles=[TENANT_ADMIN, PLATFORM_ADMIN])
 def set_bind_saas_slug(request, tenant_id: str, data: BindSaasSlugSchemaOut):
     """
     设置 saas slug 绑定信息
     """
+    bind_info = get_bind_info(tenant_id)
+    if bind_info.get('saas_tenant_slug'):
+        return ErrorDict(ErrorCode.BIND_SAAS_SLUG_CAN_NOT_CHANGE)
+    saas_tenant_slug = data.saas_tenant_slug
+    if not saas_tenant_slug or not re.match(r"^[a-zA-Z0-9]+$", saas_tenant_slug):
+        return ErrorDict(ErrorCode.BIND_SAAS_SLUG_INVALID)
     tenant = Tenant.objects.get(id=tenant_id)
     bind_info = set_saas_bind_slug(tenant, data.dict())
     create_arkidstore_login_app(tenant, bind_info['saas_tenant_id'])
     create_arkid_saas_login_app(tenant, bind_info['saas_tenant_id'], bind_info.get('saas_login_url'))
-    return bind_info
+    return ErrorDict(ErrorCode.OK)
 
 
 @api.get("/tenant/{tenant_id}/bind_saas/info/", tags=['中心平台'], response=BindSaasInfoSchema)
