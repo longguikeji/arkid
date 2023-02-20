@@ -25,6 +25,25 @@ from pathlib import Path
 from arkid.common.logger import logger
 from django.core.cache import cache
 from django_celery_beat.models import PeriodicTask, CrontabSchedule
+from arkid.core.event import listen_event
+from arkid.core import event as core_event
+
+
+def delete_private_app(event, **kwargs):
+    app = event.data
+    tenant = event.tenant
+    token = event.request.user.auth_token
+    arkstore_app_id = app.arkstore_app_id
+    if arkstore_app_id:
+        private_app = PrivateApp.active_objects.filter(
+            tenant = tenant,
+            arkstore_app_id = arkstore_app_id
+        ).exists()
+        if private_app:
+            delete_arkstore_private_app(tenant, token, arkstore_app_id)
+    return True
+
+listen_event(core_event.DELETE_APP, delete_private_app)
 
 
 def get_saas_token(tenant, token, use_cache=True):
@@ -639,7 +658,10 @@ def delete_arkstore_private_app(tenant, token, app_id):
             private_app.status = 'deleted'
             private_app.save()
         # 删除应用
-        app = App.active_objects.filter(id=app_info['uuid']).first()
+        app = App.active_objects.filter(
+            tenant=tenant,
+            arkstore_app_id=app_info["uuid"]
+        ).first()
         if app:
             app.delete()
         return resp
@@ -1014,22 +1036,39 @@ def create_oidc_app_for_private_app(request, tenant, app_info, data, app_name, l
         data["config"]["redirect_uris"] = app_url + data["config"]["redirect_uris"]
         data["app"] = app
 
-        # 创建应用协议配置
-        tag = CREATE_APP_CONFIG if created else UPDATE_APP_CONFIG
-        results = dispatch_event(Event(tag=tag, tenant=tenant, request=request, data=data, packages=[data["package"]]))
-        for func, (result, extension) in results:
-            if result:
-                # 创建config
-                config = extension.create_tenant_config(tenant, data["config"], app.name, data["app_type"])
-                # 创建app
-                app.type = data["app_type"]
-                app.package = data["package"]
-                app.config = config
-                app.save()
-                # 创建app完成进行事件分发
-                dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=tenant, request=request, data=app, packages=[data["package"]]))
-                break
-    
+        if app.config:
+            # 更新应用协议配置
+            results = dispatch_event(Event(tag=UPDATE_APP_CONFIG, tenant=tenant, request=request, data=data, packages=[data["package"]]))
+            for func, (result, extension) in results:
+                # 修改app信息
+                if result and extension.package == 'com.longgui.app.protocol.oidc':
+                    app.type = data["app_type"]
+                    app.package = data["package"]
+                    app.save()
+                    # 修改config
+                    extension.update_tenant_config(app.config.id, data["config"], app.name, data["app_type"])
+                    dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=tenant, request=request, data=app, packages=[data["package"]]))
+                    break
+        else:
+            # 创建应用协议配置
+            results = dispatch_event(Event(tag=CREATE_APP_CONFIG, tenant=tenant, request=request, data=data, packages=[data["package"]]))
+            flag = False
+            for func, (result, extension) in results:
+                if result and extension.package == 'com.longgui.app.protocol.oidc':
+                    flag = True
+                    # 创建config
+                    config = extension.create_tenant_config(tenant, data["config"], app.name, data["app_type"])
+                    # 创建app
+                    app.type = data["app_type"]
+                    app.package = data["package"]
+                    app.config = config
+                    app.save()
+                    # 创建app完成进行事件分发
+                    dispatch_event(Event(tag=APP_CONFIG_DONE, tenant=tenant, request=request, data=app, packages=[data["package"]]))
+                    break
+            if flag is False:
+                return logger.error(f"extension com.longgui.app.protocol.oidc not enabled")
+
     return app
 
 
