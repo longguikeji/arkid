@@ -180,6 +180,7 @@ OIDC是基于OAuth2和OpenID整合的新认证授权协议
     | `token_type` | Bearer |
     | `scope` | userinfo openid |
     | `refresh_token` | 用于更新令牌的令牌 |
+    | `id_token` | id_token(需要用户在获取AuthorizationCode时scope参数中额外传递openid) |
 
     - 返回示例: 
     ``` json
