@@ -5107,7 +5107,7 @@
 <a href="https://zimgs.com/i/BxUvvt"><img alt="BxUvvt.png" src="https://v1.ax1x.com/2022/11/11/BxUvvt.png" /></a></p>
 </li>
 <li>
-<p>安装 点击菜单 "应用管理&gt;应用商店&gt;私有化应用&gt;已购买&gt;选择记录&gt;安装"，配置参考Helm Chart的values.yaml，可为空
+<p>安装 点击菜单 "应用管理&gt;应用商店&gt;私有化应用&gt;已购买&gt;选择记录&gt;安装"，配置参考Helm Chart的values.yaml，可为空<br/>
 <a href="https://zimgs.com/i/BxUcNB"><img alt="BxUcNB.md.png" src="https://v1.ax1x.com/2022/11/11/BxUcNB.md.png" /></a>
 <br/>
 自定义配置参数说明：应用安装支持自动配置OIDC来登录应用，下表中参数会被发送给Helm Chart的values.yaml前替换成实际的OIDC地址
@@ -5149,7 +5149,7 @@
 <td>https://arkidv2.dev.longguikeji.com/api/v1/tenant/49b91127-f786-4535-917d-a88024831a6d/oauth/token/</td>
 </tr>
 <tr>
-<td>$arkid_oidc_jwks</td>
+<td>$arkid_oidc_jwks_url</td>
 <td>获取jwks证书地址</td>
 <td>https://arkidv2.dev.longguikeji.com/api/v1/tenant/49b91127-f786-4535-917d-a88024831a6d/.well-known/jwks.json</td>
 </tr>
@@ -5163,8 +5163,60 @@
 <td>登出地址</td>
 <td>https://arkidv2.dev.longguikeji.com/api/v1/tenant/49b91127-f786-4535-917d-a88024831a6d/oidc/logout/</td>
 </tr>
+<tr>
+<td>$arkid_oidc_issuer_url</td>
+<td>issuer地址</td>
+<td>https://arkidv2.dev.longguikeji.com/api/v1/tenant/49b91127-f786-4535-917d-a88024831a6d</td>
+</tr>
+<tr>
+<td>$arkid_oidc_skip_authorization</td>
+<td>是否隐藏授权页</td>
+<td>False</td>
+</tr>
+<tr>
+<td>$arkid_oidc_client_type</td>
+<td>客户端类型</td>
+<td>confidential</td>
+</tr>
+<tr>
+<td>$arkid_oidc_grant_type</td>
+<td>授权模式</td>
+<td>authorization-code</td>
+</tr>
+<tr>
+<td>$arkid_oidc_algorithm</td>
+<td>加密类型</td>
+<td>RS256</td>
+</tr>
+<tr>
+<td>$arkid_oidc_redirect_uris</td>
+<td>回调地址</td>
+<td>/oidc/callback</td>
+</tr>
+<tr>
+<td>$arkid_oidc_login_url</td>
+<td>OIDC登录地址</td>
+<td>/oidc/login</td>
+</tr>
+<tr>
+<td>$arkid_oidc_app_id</td>
+<td>应用ID</td>
+<td>e0d0253a-a97b-4b98-8506-cd1275573bdb</td>
+</tr>
+<tr>
+<td>$arkid_oidc_tenant_id</td>
+<td>租户ID</td>
+<td>49b91127-f786-4535-917d-a88024831a6d</td>
+</tr>
+<tr>
+<td>$arkid_oidc_host</td>
+<td>登出地址</td>
+<td>https://arkidv2.dev.longguikeji.com</td>
+</tr>
 </tbody>
 </table>
+<p>如所需参数不在上表中，可采用字符串拼接方式来生成：<br/>
+例如："${arkid_oidc_host}/api/v1/tenant/${arkid_oidc_tenant_id}/oauth/userinfo/"，在私有化应用安装时会被替换成："https://arkidv2.dev.longguikeji.com/api/v1/tenant/49b91127-f786-4535-917d-a88024831a6d/oauth/userinfo/"</p>
 <p>例子1： Jumpserver 安装参数
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>global:
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  storageClass: standard
@@ -5241,7 +5293,7 @@
 <p>如果私有化应用有入口地址，安装后自动在应用列表中创建相应入口应用
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># 私有化应用 Chart.yaml 中annotations须加入下来配置，才会自动创建入口应用
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>annotations:
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  web_url_from_services: 应用名
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  web_url_from_services: HelmChart中k8s的service名称
 </code></pre></div>
 <a href="https://zimgs.com/i/BxUP96"><img alt="BxUP96.png" src="https://v1.ax1x.com/2022/11/11/BxUP96.png" /></a></p>
 </li>

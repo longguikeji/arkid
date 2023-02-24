@@ -5329,7 +5329,7 @@
 <p>1.Chart.yaml文件中添加额外字段<br/>
 Chart.yaml中annotations须加入下来配置，才会让ArkID自动创建入口应用
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>annotations:
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  web_url_from_services: HelmChart应用名
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  web_url_from_services: HelmChart中k8s的service名称
 </code></pre></div>
 示例：
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>annotations:
@@ -5358,8 +5358,11 @@ Chart.yaml中annotations须加入下来配置，才会让ArkID自动创建入口
 <a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>- https://github.com/grafana/grafana
 <a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>type: application
 <a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>version: 6.44.6
-</code></pre></div>
-2.Helm Chart的根目录添加arkid-oidc.yaml文件，与values.yaml在同一个目录下<br/>
+</code></pre></div></p>
+<p>2.Helm Chart的templates目录下service.yaml文件处理<br/>
+service.yaml里的service名字需要与1中annotations.web_url_from_services.service名字一致，且service port必须为80。
+如果不是，可以复制service.yaml来创建service-copy.yaml文件，修改复制后文件里的service名字和port端口。</p>
+<p>3.Helm Chart的根目录添加arkid-oidc.yaml文件，与values.yaml在同一个目录下<br/>
 arkid-oidc.yaml文件在私有化部署应用安装时，作为自定义配置来覆盖Helm Chart默认的values.yaml配置。<br/>
 arkid-oidc.yaml文件中支持下列oidc自定义配置参数，说明：应用安装支持自动配置OIDC来登录应用，下表中参数会被发送给Helm前替换成实际的OIDC地址
 <br/></p>
@@ -5398,7 +5401,7 @@ arkid-oidc.yaml文件中支持下列oidc自定义配置参数，说明：应用�
 <td>https://arkidv2.dev.longguikeji.com/api/v1/tenant/49b91127-f786-4535-917d-a88024831a6d/oauth/token/</td>
 </tr>
 <tr>
-<td>$arkid_oidc_jwks</td>
+<td>$arkid_oidc_jwks_url</td>
 <td>获取jwks证书地址</td>
 <td>https://arkidv2.dev.longguikeji.com/api/v1/tenant/49b91127-f786-4535-917d-a88024831a6d/.well-known/jwks.json</td>
 </tr>
@@ -5412,8 +5415,60 @@ arkid-oidc.yaml文件中支持下列oidc自定义配置参数，说明：应用�
 <td>登出地址</td>
 <td>https://arkidv2.dev.longguikeji.com/api/v1/tenant/49b91127-f786-4535-917d-a88024831a6d/oidc/logout/</td>
 </tr>
+<tr>
+<td>$arkid_oidc_issuer_url</td>
+<td>issuer地址</td>
+<td>https://arkidv2.dev.longguikeji.com/api/v1/tenant/49b91127-f786-4535-917d-a88024831a6d</td>
+</tr>
+<tr>
+<td>$arkid_oidc_skip_authorization</td>
+<td>是否隐藏授权页</td>
+<td>False</td>
+</tr>
+<tr>
+<td>$arkid_oidc_client_type</td>
+<td>客户端类型</td>
+<td>confidential</td>
+</tr>
+<tr>
+<td>$arkid_oidc_grant_type</td>
+<td>授权模式</td>
+<td>authorization-code</td>
+</tr>
+<tr>
+<td>$arkid_oidc_algorithm</td>
+<td>加密类型</td>
+<td>RS256</td>
+</tr>
+<tr>
+<td>$arkid_oidc_redirect_uris</td>
+<td>回调地址</td>
+<td>/oidc/callback</td>
+</tr>
+<tr>
+<td>$arkid_oidc_login_url</td>
+<td>OIDC登录地址</td>
+<td>/oidc/login</td>
+</tr>
+<tr>
+<td>$arkid_oidc_app_id</td>
+<td>应用ID</td>
+<td>e0d0253a-a97b-4b98-8506-cd1275573bdb</td>
+</tr>
+<tr>
+<td>$arkid_oidc_tenant_id</td>
+<td>租户ID</td>
+<td>49b91127-f786-4535-917d-a88024831a6d</td>
+</tr>
+<tr>
+<td>$arkid_oidc_host</td>
+<td>登出地址</td>
+<td>https://arkidv2.dev.longguikeji.com</td>
+</tr>
 </tbody>
 </table>
+<p>如所需参数不在上表中，可采用字符串拼接方式来生成：<br/>
+例如："${arkid_oidc_host}/api/v1/tenant/${arkid_oidc_tenant_id}/oauth/userinfo/"，在私有化应用安装时会被替换成："https://arkidv2.dev.longguikeji.com/api/v1/tenant/49b91127-f786-4535-917d-a88024831a6d/oauth/userinfo/"</p>
 <p>例子1： Jumpserver的arkid-oidc.yaml文件
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>global:
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  storageClass: standard
@@ -5493,14 +5548,16 @@ arkid-oidc.yaml文件中支持下列oidc自定义配置参数，说明：应用�
 <a href="https://x.imgtu.com/i/Bb8gpP"><img alt="Bb8gpP.png" src="https://v1.ax1x.com/2022/10/24/Bb8gpP.png" /></a></p>
 <p>上传文件Helm Chart的tgz文件
 <a href="https://x.imgtu.com/i/Bb8hGw"><img alt="Bb8hGw.png" src="https://v1.ax1x.com/2022/10/24/Bb8hGw.png" /></a></p>
-<p>5.设置价格，详情请见<a href="../#_2"><strong>价格规则</strong></a><br/>
+<p>3.设置价格，详情请见<a href="../#_2"><strong>价格规则</strong></a><br/>
 点击设置价格
 <a href="https://x.imgtu.com/i/Bb8Kje"><img alt="Bb8Kje.png" src="https://v1.ax1x.com/2022/10/24/Bb8Kje.png" /></a></p>
 <p>设置价格
 <a href="https://x.imgtu.com/i/Bb87tV"><img alt="Bb87tV.png" src="https://v1.ax1x.com/2022/10/24/Bb87tV.png" /></a></p>
 <p>4.提交审核</p>
 <p><a href="https://x.imgtu.com/i/Bb8Kje"><img alt="Bb8Kje.png" src="https://v1.ax1x.com/2022/10/24/Bb8Kje.png" /></a></p>
-<p>7.龙归审核通过后，应用上架完成，所有ArkID的用户在其应用商店中都能看到该应用。</p>
+<p>5.龙归审核通过后，应用上架完成，所有ArkID的用户在其应用商店中都能看到该应用。</p>
+<p>6.应用更新，点击编辑-更新安装包
+<a href="https://x.imgtu.com/i/Bb8Kje"><img alt="Bb8Kje.png" src="https://v1.ax1x.com/2022/10/24/Bb8Kje.png" /></a></p>
 
               
 
