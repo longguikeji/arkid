@@ -11,6 +11,7 @@ from django.db.models import Q
 
 import collections
 import requests
+import logging
 import uuid
 import jwt
 import re
@@ -3420,6 +3421,10 @@ class PermissionData(object):
                 # 不同租户
                 permissions = Permission.valid_objects.filter(app_id=app_id)
                 max_permission = permissions.order_by('-sort_id').first()
+                # 不是所有的应用，都有额外都应用权限，只能保证有入口权限
+                if max_permission is None:
+                    logging.info('app_id not app_permission continue:{}'.format(str(app_id)))
+                    continue
                 # 增加是否开放给本租户其它用户访问字段
                 if permissions:
                     openpermissions = OpenPermission.valid_objects.filter(
