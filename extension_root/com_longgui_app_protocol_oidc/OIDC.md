@@ -180,15 +180,17 @@ OIDC是基于OAuth2和OpenID整合的新认证授权协议
     | `token_type` | Bearer |
     | `scope` | userinfo openid |
     | `refresh_token` | 用于更新令牌的令牌 |
+    | `id_token` | id_token(需要用户在获取AuthorizationCode时scope参数中额外传递openid) |
 
     - 返回示例: 
     ``` json
     {
-        "access_token": "cFcWq78HH9MKVQOFJgGPl6RFtESAc2",
+        "access_token": "yytknMlZC6P6cIqPnN0XPRPEBRVf2X",
         "expires_in": 36000,
         "token_type": "Bearer",
-        "scope": "userinfo",
-        "refresh_token": "oRHcgoGYsL5h1UimT4rWcg93lcTyjN"
+        "scope": "userinfo openid",
+        "refresh_token": "2rw6Bn0BZuVjll0KKWGg7DYJTdlACC",
+        "id_token": "xxxxx"
     }
     ```
 
@@ -288,8 +290,13 @@ OIDC是基于OAuth2和OpenID整合的新认证授权协议
 
     | 参数名称        | 参数说明           | 示例           |
     | :---------:    | :--------------: | :--------------: |
-    | `id_token_hint`    | id_token  |         
+    | `id_token_hint`    | id_token(这个id_token需从获取AccessToken接口中获取)  |         
     | `post_logout_redirect_uri` | 退出登录后跳转的地址(可选) |
+
+    - 请求示例: 
+    ``` text
+    http://logout_url?id_token_hint=xxxx&post_logout_redirect_uri=xxxxx
+    ```
 
     - 返回参数:
 
