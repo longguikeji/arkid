@@ -935,6 +935,11 @@ class OAuth2Validator(RequestValidator):
             groups.append('tenant_admin')
         if tenant.is_platform_tenant and tenant.has_admin_perm(user) and 'platform_admin' not in groups:
             groups.append('platform_admin')
+
+        from arkid.core.models import User
+        user_expand = User.expand_objects.filter(id=user.id).first()
+        mobile = user_expand.get("mobile",None)
+
         return {
             "sub": str(request.user.id),
             "sub_id": str(request.user.id),
@@ -943,6 +948,7 @@ class OAuth2Validator(RequestValidator):
             # 'given_name': request.user.first_name,
             # 'family_name': request.user.last_name,
             'email': request.user.email if hasattr(request.user, "email") else request.user.username + '@arkid.cc',
+            'mobile': mobile or "",
             'groups': groups,
             'tenant_id': str(request.user.current_tenant.id),
             "tenant_slug": request.user.current_tenant.slug,
