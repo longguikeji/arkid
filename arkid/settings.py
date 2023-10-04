@@ -263,9 +263,8 @@ UPDATE_URL = "http://longguikeji.gitee.io/arkid/%20%20%20%E5%BF%AB%E9%80%9F%E5%B
 # k8s_url
 K8S_INSTALL_APP_URL = 'http://localhost:8080' # k8s私有化应用安装链接
 
+CSRF_TRUSTED_ORIGINS = []
+
 # 引入settings_local.py 本地配置文件
 if os.path.exists(os.path.join(BASE_DIR, 'settings_local.py')):
     exec(open(os.path.join(BASE_DIR, 'settings_local.py')).read())
-
-
-CSRF_TRUSTED_ORIGINS = []
